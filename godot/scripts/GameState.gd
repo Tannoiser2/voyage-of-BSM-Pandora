@@ -514,6 +514,8 @@ func move_expedition(hex_id: int) -> void:
 		explore_environ_hex(hex_id, terrain)
 
 func explore_environ_hex(hex_id: int, terrain: String) -> void:
+	if not environ_grid.has(hex_id):
+		return  # nessun esagono valido da esplorare (spedizione non sbarcata)
 	environ_grid[hex_id]["explored"] = true
 	# Esplorare costa le ore del terreno (Carta 6.6), modificate dall'equipaggiamento
 	var explore_cost := explore_cost_for(terrain)
