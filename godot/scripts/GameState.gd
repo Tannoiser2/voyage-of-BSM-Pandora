@@ -54,6 +54,12 @@ var crew: Dictionary = {
 var visited_systems: Array = []
 var log_entries: Array = []
 
+# Preparazione della spedizione (regola 5.0)
+var planet_gravity: String = "Terrestre"   # gravità del pianeta in orbita
+var shuttle_capacity: int = 80             # capacità di porto dello shuttle (Carta 5.8)
+var expedition_units: Array = []           # chiavi dei personaggi scelti per la spedizione
+var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
+
 # Combattimento / incontri
 var current_creature: String = ""
 var creature_rating: int = 0          # valutazione della creatura per l'esagono (8.4)
@@ -86,6 +92,10 @@ func start_new_game(p_tour_length: int) -> void:
 	current_planet = ""
 	visited_systems = []
 	log_entries = []
+	expedition_units = []
+	planned_supply = 6
+	planet_gravity = "Terrestre"
+	shuttle_capacity = 80
 
 	# Set initial VP based on tour length (from rules)
 	match tour_length:
@@ -193,6 +203,88 @@ func land_on_planet(die_result: int) -> void:
 	add_log("Atterraggio su %s. Dado: %d → Paragrafo %03d" % [current_system, die_result, landing_para])
 	set_phase(Phase.EXPEDITION)
 	show_paragraph(landing_para)
+
+# --- Preparazione della spedizione (regola 5.0) ------------------------------
+
+# Chiamata all'ingresso in orbita: determina gravità, capacità e squadra iniziale.
+func setup_orbit_planet() -> void:
+	planet_gravity = _gravity_for_system(current_system)
+	shuttle_capacity = GameData.shuttle_capacity_for(planet_gravity)
+	expedition_units = default_team()
+	planned_supply = clampi(6, 0, max_planned_supply())
+	add_log("In orbita su %s — gravità %s, capacità shuttle %d." % [current_system, planet_gravity, shuttle_capacity])
+
+func _gravity_for_system(sys: String) -> String:
+	var g: Array = GameData.gravity_list()
+	if g.is_empty():
+		return "Terrestre"
+	if sys != "" and sys != "Sol":
+		return g[abs(sys.hash()) % g.size()]
+	return "Terrestre"
+
+# Squadra di default: tutti i personaggi vivi che rientrano nella capacità.
+func default_team() -> Array:
+	var team: Array = []
+	var w := 0
+	for k in GameData.get_character_keys():
+		if not crew.get(k, {}).get("alive", true):
+			continue
+		var uw: int = int(GameData.get_character(k).get("weight", 6))
+		if w + uw <= shuttle_capacity:
+			team.append(k)
+			w += uw
+	if team.is_empty():
+		var keys := GameData.get_character_keys()
+		if keys.size() > 0:
+			team.append(keys[0])
+	return team
+
+func toggle_expedition_unit(key: String) -> void:
+	if key in expedition_units:
+		expedition_units.erase(key)
+	else:
+		expedition_units.append(key)
+	planned_supply = clampi(planned_supply, 0, max_planned_supply())
+
+func units_weight() -> int:
+	var w := 0
+	for k in expedition_units:
+		w += int(GameData.get_character(k).get("weight", 6))
+	return w
+
+func total_load() -> int:
+	return units_weight() + planned_supply
+
+func max_planned_supply() -> int:
+	return clampi(shuttle_capacity - units_weight(), 0, GameData.max_supply())
+
+func has_character_selected() -> bool:
+	return expedition_units.size() > 0
+
+# La preparazione è valida se c'è almeno un personaggio e il carico sta nella capacità (5.2).
+func prep_valid() -> bool:
+	return has_character_selected() and total_load() <= shuttle_capacity
+
+# Lancia lo shuttle con la squadra e i rifornimenti scelti.
+func launch_expedition(die_result: int) -> void:
+	if not prep_valid():
+		add_log("Preparazione non valida: serve almeno un personaggio entro la capacità.")
+		return
+	shuttle_supply = planned_supply
+	var names: Array = []
+	for k in expedition_units:
+		names.append(GameData.get_character(k).get("name", k))
+	add_log("Shuttle lanciato: %s · Rifornimenti %d." % [", ".join(names), planned_supply])
+	land_on_planet(die_result)
+
+# Miglior valore di combattimento tra i personaggi della spedizione (8.0).
+func best_combat(mode: String) -> int:
+	var best := 0
+	for k in expedition_units:
+		var u := GameData.get_character(k)
+		var v: int = int(u.get("capture", 0)) if mode == "capture" else int(u.get("kill", 0))
+		best = maxi(best, v)
+	return best if best > 0 else 3
 
 func show_paragraph(para_num: int) -> void:
 	current_paragraph = para_num
