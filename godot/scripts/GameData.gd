@@ -45,6 +45,21 @@ func get_character(key: String) -> Dictionary:
 func get_character_keys() -> Array:
 	return units.get("characters", {}).keys()
 
+func get_bot_keys() -> Array:
+	return units.get("bots", {}).keys()
+
+func get_tool_keys() -> Array:
+	return units.get("tools", {}).keys()
+
+# Restituisce i dati di un'unità qualsiasi (personaggio, robot o strumento).
+func get_unit(key: String) -> Dictionary:
+	var u: Dictionary = units.get("characters", {}).get(key, {})
+	if u.is_empty():
+		u = units.get("bots", {}).get(key, {})
+	if u.is_empty():
+		u = units.get("tools", {}).get(key, {})
+	return u
+
 # Capacità di porto dello shuttle in base alla gravità del pianeta (Carta 5.8)
 func shuttle_capacity_for(gravity: String) -> int:
 	return int(units.get("shuttle_capacity", {}).get(gravity, 80))

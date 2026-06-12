@@ -715,17 +715,38 @@ func _build_prep_panel() -> void:
 	info.custom_minimum_size = Vector2(520, 0)
 	vbox.add_child(info)
 
-	var hdr := Label.new()
-	hdr.text = "Squadra (almeno un personaggio):"
-	hdr.add_theme_font_size_override("font_size", 12)
-	vbox.add_child(hdr)
+	# Lista scrollabile di unità imbarcabili: personaggi, robot, strumenti
+	var list_scroll := ScrollContainer.new()
+	list_scroll.custom_minimum_size = Vector2(0, 240)
+	list_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(list_scroll)
+	var list_vbox := VBoxContainer.new()
+	list_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list_scroll.add_child(list_vbox)
 
+	_add_prep_section(list_vbox, "Personaggi (almeno uno):")
 	for k in GameData.get_character_keys():
 		var chk := CheckBox.new()
 		chk.name = "PrepChk_%s" % k
 		chk.add_theme_font_size_override("font_size", 12)
 		chk.toggled.connect(_on_prep_unit_toggled.bind(k))
-		vbox.add_child(chk)
+		list_vbox.add_child(chk)
+
+	_add_prep_section(list_vbox, "Robot:")
+	for k in GameData.get_bot_keys():
+		var bchk := CheckBox.new()
+		bchk.name = "PrepGear_%s" % k
+		bchk.add_theme_font_size_override("font_size", 12)
+		bchk.toggled.connect(_on_prep_gear_toggled.bind(k))
+		list_vbox.add_child(bchk)
+
+	_add_prep_section(list_vbox, "Strumenti:")
+	for k in GameData.get_tool_keys():
+		var tchk := CheckBox.new()
+		tchk.name = "PrepGear_%s" % k
+		tchk.add_theme_font_size_override("font_size", 12)
+		tchk.toggled.connect(_on_prep_gear_toggled.bind(k))
+		list_vbox.add_child(tchk)
 
 	var sup_box := HBoxContainer.new()
 	sup_box.add_theme_constant_override("separation", 8)
@@ -752,10 +773,6 @@ func _build_prep_panel() -> void:
 	load_lbl.add_theme_font_size_override("font_size", 13)
 	vbox.add_child(load_lbl)
 
-	var spacer := Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(spacer)
-
 	var btns := HBoxContainer.new()
 	btns.alignment = BoxContainer.ALIGNMENT_CENTER
 	btns.add_theme_constant_override("separation", 12)
@@ -772,6 +789,13 @@ func _build_prep_panel() -> void:
 	cancel.custom_minimum_size = Vector2(0, 44)
 	cancel.pressed.connect(_on_prep_cancel)
 	btns.add_child(cancel)
+
+func _add_prep_section(parent: Control, title: String) -> void:
+	var lbl := Label.new()
+	lbl.text = title
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	parent.add_child(lbl)
 
 func _open_prep_panel() -> void:
 	# Inizializza la preparazione se non è ancora stata impostata per questo pianeta
@@ -805,6 +829,19 @@ func _refresh_prep_panel() -> void:
 			u.get("name", k), u.get("capture", 0), u.get("kill", 0),
 			u.get("weight", 0), u.get("port", 0), u.get("speed", 0)]
 		chk.disabled = not GameState.crew.get(k, {}).get("alive", true)
+	# Robot e strumenti imbarcabili
+	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
+		var gchk := find_child("PrepGear_%s" % k, true, false) as CheckBox
+		if not gchk:
+			continue
+		var g := GameData.get_unit(k)
+		gchk.button_pressed = k in GameState.expedition_gear
+		var line := "%s — Peso %d" % [g.get("name", k), int(g.get("weight", 0))]
+		if g.get("combat", false) or GameData.get_bot_keys().has(k):
+			line += " · Catt %d / Ucc %d" % [int(g.get("capture", 0)), int(g.get("kill", 0))]
+		if g.has("desc") and g.get("desc", "") != "":
+			line += " · " + str(g.get("desc"))
+		gchk.text = line
 	var slider := find_child("PrepSupply", true, false) as HSlider
 	if slider:
 		slider.max_value = max(GameState.max_planned_supply(), GameState.planned_supply)
@@ -829,6 +866,12 @@ func _on_prep_unit_toggled(_pressed: bool, key: String) -> void:
 	if _prep_updating:
 		return
 	GameState.toggle_expedition_unit(key)
+	_refresh_prep_panel()
+
+func _on_prep_gear_toggled(_pressed: bool, key: String) -> void:
+	if _prep_updating:
+		return
+	GameState.toggle_gear_unit(key)
 	_refresh_prep_panel()
 
 func _on_prep_supply_changed(value: float) -> void:
