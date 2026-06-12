@@ -14,6 +14,10 @@ func _ready() -> void:
 	_build_ui()
 	_connect_signals()
 	_update_display()
+	# Ripristina la visualizzazione del paragrafo corrente (es. al rientro nella scena)
+	if GameState.current_paragraph > 0 and GameState.current_phase == GameState.Phase.PARAGRAPH:
+		_on_paragraph_request(GameState.current_paragraph)
+	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
 func _build_ui() -> void:
 	# Background
