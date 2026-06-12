@@ -576,6 +576,14 @@ func start_encounter(creature_name: String) -> void:
 	# Determina la valutazione della creatura per l'esagono (8.4): 2d6 + Mod. Combattimento
 	creature_rating = GameData.roll_creature_combat_rating(creature_name)
 	add_log("Incontro con %s! Valutazione di combattimento: %d" % [creature_name, creature_rating])
+	# Sorpresa (8.1): la creatura può colpire per prima. Lo Scanner riduce la probabilità.
+	var threshold := 1 if _gear_has("Scanner") else 2
+	var sroll := randi_range(1, 6)
+	if sroll <= threshold:
+		add_log("Sorpresa (8.1)! %s colpisce per prima (tiro %d): 1 Punto Danno." % [creature_name, sroll])
+		_apply_damage(1)
+	elif _gear_has("Scanner") and sroll == 2:
+		add_log("Lo Scanner ha sventato un attacco a sorpresa (tiro %d)." % sroll)
 	encounter_started.emit(creature_name)
 	state_updated.emit()
 
