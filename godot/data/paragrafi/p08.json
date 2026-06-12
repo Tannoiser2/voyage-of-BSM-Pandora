@@ -1,0 +1,177 @@
+{
+  "060": {
+    "it": "La spedizione scopre una creatura sauriana addormentata. La bestia lunga 3 metri si agita mentre il gruppo la ispeziona. Scegli una strategia d'incontro.\n* Combattimento: la creatura spaventata agita selvaggiamente i suoi artigli che secernono liquido mentre cerca di difendersi. Vai al ¶180.",
+    "en": "The expedition discovers a sleeping saurian creature. The ten foot long beast stirs as the party inspects it. Choose an encounter strategy.\n* Combat: The startled creature flails its liquid secreting claws wildly as it tries to defend itself. Go to ¶180."
+  },
+  "061": {
+    "it": "Uscendo dall'FTL, la Pandora viene intercettata da una piccola flotta di mercanti liberi rinnegati che insistono per ispezionarne il carico. Se l'ufficiale alle armi è a bordo, tira due dadi.\n* Se il risultato dei dadi è inferiore al suo Valore di Intelligenza, egli usa abilmente i sistemi di schermatura della Pandora per respingere i raggi di aggancio degli intrusi e la Pandora riesce a fuggire con un salto dalle navi degli sciacalli. Si spende un mese di Tempo di Tour extra. Procedi all'uso della Tabella Pianeti.\n* Se l'ufficiale alle armi non è a bordo, oppure il risultato dei dadi è uguale o maggiore del suo Valore di Intelligenza, vai al ¶169.",
+    "en": "After coming out of FTL, the Pandora is intercepted by a small fleet of renegade free traders who insist on inspecting her cargo. If the weapons officer is on board, roll two dice.\n* If the dice result is less than his Intelligence Rating, he skillfully uses the Pandora's screen systems to repel the intruder's grappling beams and the Pandora succeeds in jumping away from the scavengers' ships. One extra month of Tour Time is expended. Proceed to use of the Planet Table.\n* If the weapons officer is not on board, or the dice result is equal to or greater than his Intelligence Rating, go to ¶169."
+  },
+  "062": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di struttura aliena: ¶030.\n* Si sta esplorando un esagono di vegetazione rada, oppure vi si è entrati durante il movimento affrettato, e la gravità è pesante o opprimente: ¶179.\n* Si sta esplorando un esagono di collina senza vegetazione, oppure vi si è entrati durante il movimento affrettato, e la gravità è pesante: ¶066.",
+    "en": "Expedition encounter.\n* An alien structure hex is being explored: ¶030.\n* A light vegetation hex is being explored or was entered during hasty movement, and the gravity is heavy or oppressive: ¶179.\n* A hill hex with no vegetation is being explored or was entered during hasty movement, and the gravity is heavy: ¶066."
+  },
+  "063": {
+    "it": "La spedizione incontra un gigantesco rettile marino simile al plesiosauro estinto da tempo. Se questa creatura viene catturata, servono tre E-cage per trasportarla. Scegli una strategia d'incontro.",
+    "en": "The expedition encounters a gargantuan sea-going reptile similar to the long extinct plesiosaur. If this creature is captured, three E-cages are required to port it. Choose an encounter strategy."
+  },
+  "064": {
+    "it": "Se la rotta del salto interstellare attuale entra in un punto qualsiasi nell'esagono 14 (Opoplo) o in un esagono adiacente al 14, i sensori della Pandora captano una serie di trasmissioni indecifrabili dal pianeta. I regolamenti della Commissione di Rilevamento Galattico impongono alla Pandora di investigare. La rotta della Pandora deve essere modificata (se necessario) dall'esagono in cui viene ricevuta la trasmissione fino a Opoplo, e va speso Tempo di Tour per adattarla alla nuova destinazione (vedi 5.0). Una volta a Opoplo, organizza una spedizione sulla superficie del pianeta (vedi 5.0). Non tirare il dado per determinare in quale esagono viene piazzata la spedizione; invece piazza il gruppo nell'esagono 0817 e procedi al ¶076. Se la rotta del salto interstellare non passa entro un esagono da Opoplo, non si verifica alcun evento interstellare: procedi sulla rotta pianificata e usa la Tabella Pianeti.",
+    "en": "If the route of the current interstellar jump enters hex 14 (Opoplo) or any hex adjacent to 14 at any point, the Pandora's sensors pick up a series of indecipherable transmissions from the planet. Galactic Survey Commission regulations require that the Pandora investigate. The course of the Pandora must be altered (if necessary) from the hex in which the transmission is received to Opoplo, and Tour Time expended in altering it to fit the new destination (see 5.0). Once at Opoplo, organize an expedition to the planet's surface (see 5.0). Do not roll the die to determine which hex the expedition is placed in; instead place the party in hex 0817 and proceed to ¶076. If the interstellar jump route does not pass within one hex of Opoplo, no interstellar event occurs, proceed on the planned course and use the Planet Table."
+  },
+  "065": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di città aliena, oppure vi si è entrati durante il movimento affrettato: ¶030.\n* Si sta esplorando un esagono di dirupo, oppure vi si è entrati durante il movimento affrettato: ¶170.\n* Si sta esplorando un esagono sottomarino con vegetazione, oppure vi si è entrati durante il movimento affrettato: ¶075.",
+    "en": "Expedition encounter.\n* An alien city hex is being explored, or was entered during hasty movement: ¶030.\n* A cliff hex is being explored or was entered during hasty movement: ¶170.\n* An underwater hex with vegetation is being explored or was entered during hasty movement: ¶075."
+  },
+  "066": {
+    "it": "Una nebbia variopinta compie improvvisamente gesti minacciosi. È organica e carnivora. Non c'è una pedina che rappresenti questa creatura. I suoi modificatori di attributo sono: Intelligenza +2, Combattimento +1, Aggressività +3 e Velocità +3. Se la spedizione è colta di sorpresa (vedi 8.1), conduci il combattimento con uno spostamento di due colonne a sinistra sulla Tabella dei Risultati di Combattimento. Se la spedizione non è colta di sorpresa, scegli una strategia d'incontro. Se l'Holographer è nella spedizione (che la creatura colga di sorpresa o meno), si guadagnano quattro Punti Vittoria (a meno che la spedizione non scelga di fuggire).",
+    "en": "A colorful mist suddenly makes ominous gestures. It is organic and carnivorous. There is no counter to represent this creature. Its attribute modifiers are: Intelligence, +2, Combat, +1, Aggression, +3, and Speed, +3. If the expedition is surprised (see 8.1), conduct combat, with a shift of two columns to the left on the Combat Results Table. If the expedition is not surprised, choose an encounter strategy. If the holographer is in the expedition (whether it surprises the expedition or not), four Victory Points are earned (unless the expedition chooses to flee)."
+  },
+  "067": {
+    "it": "La follia dell'ufficiale scientifico è temporanea. Dopo la spesa di un mese aggiuntivo di Tempo di Tour, il virus fa il suo corso e tutto torna normale. Procedi all'uso della Tabella Pianeti.",
+    "en": "The science officer's madness is temporary. After the expenditure of one month additional Tour Time, the virus runs its course and all is normal. Proceed to use of the Planet Table."
+  },
+  "068": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di struttura aliena, oppure vi si è entrati durante il movimento affrettato: ¶004.\n* Si sta esplorando un esagono di vegetazione fitta: ¶173.\n* Si sta esplorando una palude: ¶181.",
+    "en": "Expedition encounter.\n* An alien structure hex is being explored, or was entered during hasty movement: ¶004.\n* A heavy vegetation hex is being explored: ¶173.\n* A marsh is being explored: ¶181."
+  },
+  "069": {
+    "it": "La spedizione scopre una creatura umanoide lunga e magra. Le sue viscere gorgoglianti si vedono attraverso la pelle traslucida. Scegli una strategia d'incontro.\n* Comunica: tira un dado. Con un risultato da 1 a 3, vai al ¶213; con un risultato da 4 a 6, vai al ¶217.\n* Combatti: tira un dado. Con un risultato da 1 a 4, vai al ¶220; con un risultato di 5 o 6, vai al ¶217.",
+    "en": "The expedition discovers a long spindly humanoid creature. Its gurgling innards can be seen through translucent skin. Choose an encounter strategy.\n* Communicate: Roll one die. On a result of 1 to 3, go to ¶213; on a result of 4 to 6, go to ¶217.\n* Combat: Roll one die. On a result of 1 to 4, go to ¶220; on a result of 5 or 6, go to ¶217."
+  },
+  "070": {
+    "it": "Tira due dadi. Se il risultato dei dadi è...\n* inferiore di due o più al Valore di Intelligenza del navigatore: l'abile manovra dello shuttle si traduce in un atterraggio sicuro senza danni strutturali.\n* inferiore di uno, uguale, o superiore di uno al Valore di Intelligenza del navigatore: lo shuttle viene guidato a un atterraggio movimentato ma sicuro. Un robot (se presente, determinato a caso) viene danneggiato.\n* superiore di due o più al Valore di Intelligenza del navigatore: lo shuttle si schianta. La spedizione subisce immediatamente cinque Punti Danno (vedi 8.8).\nDopo aver applicato i risultati dell'incidente (se presenti), scegli un'azione di spedizione.",
+    "en": "Roll two dice. If the dice result is...\n* two or more less than the Navigator's Intelligence Rating; skillful handling of the shuttle results in a safe landing with no structural damage.\n* one less than, equal to or one greater than the Navigator's Intelligence Rating; the shuttle is guided to a bumpy but safe landing. One bot (if any, determined at random) is damaged.\n* two or more greater than the Navigator's Intelligence Rating; the shuttle crash-lands. The expedition immediately suffers five Damage Points (see 8.8).\nAfter applying the results of the accident (if any), choose an expedition action."
+  },
+  "071": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di struttura aliena: ¶042.\n* L'area ha una gravità quasi assente: ¶051.\n* L'area ha un'atmosfera velenosa: ¶043.",
+    "en": "Expedition encounter.\n* An alien structure hex is being explored: ¶042.\n* The environ has a near weightless gravity: ¶051.\n* The environ has a poisonous atmosphere: ¶043."
+  },
+  "072": {
+    "it": "Il terreno duro davanti alla spedizione esplode improvvisamente verso l'alto mentre un'indescrivibile forma di vita blu erompe da sotto la roccia, con i suoi tentacoli che si protendono in tutte le direzioni. Se la spedizione è colta di sorpresa (vedi 8.1), conduci il combattimento con uno spostamento di una colonna a sinistra sulla Tabella dei Risultati di Combattimento. Se la spedizione non è colta di sorpresa, scegli una strategia d'incontro. Se durante questo incontro si deve risolvere un combattimento (dopo una sorpresa o una strategia d'incontro), vai al ¶206.\n* Fuga: il personaggio con il Valore di Velocità più basso viene afferrato dalla creatura. Il personaggio e la creatura scompaiono sottoterra, per non essere mai più visti. Il resto della spedizione fugge. Scegli un'azione di spedizione.",
+    "en": "The hard ground in front of the expedition suddenly explodes upward as an indescribable blue life form erupts from beneath the rock, its tendrils streaming in all directions. If the expedition is surprised (see 8.1), conduct combat, with a shift of one column to the left on the Combat Results Table. If the expedition is not surprised, choose an encounter strategy. If a combat must be resolved during this encounter (after a surprise or an encounter strategy), go to ¶206.\n* Flee: The character with the lowest Speed Rating is seized by the creature. The character and the creature disappear underground, never to be seen again. The remainder of the expedition escapes. Choose an expedition action."
+  },
+  "073": {
+    "it": "Tira due dadi e confronta il risultato con il Valore di Intelligenza dell'ufficiale medico.\n* Se il risultato del dado è uguale o inferiore al Valore di Intelligenza, la follia dell'ufficiale scientifico è curata. Procedi all'uso della Tabella Pianeti.\n* Se il risultato del dado è maggiore del Valore di Intelligenza dell'ufficiale medico, oppure egli non è a bordo, non si trova una cura per l'afflizione dell'ufficiale scientifico; egli viene posto in animazione sospesa e non può essere usato per il resto del gioco. I suoi Punti Resistenza sono persi. Procedi all'uso della Tabella Pianeti.",
+    "en": "Roll two dice and compare the result to the medical officer's Intelligence Rating.\n* If the die result is equal to or less than the Intelligence Rating, the science officer's madness is cured. Proceed to use of the Planet Table.\n* If the die result is greater than the Intelligence Rating of the medical officer or he is not aboard, a cure for the science officer's affliction cannot be found; he is placed in suspended animation and may not be used for the remainder of the game. His Endurance Points are lost. Proceed to use of the Planet Table."
+  },
+  "074": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di struttura aliena, oppure vi si è entrati durante il movimento affrettato: ¶028.\n* Si sta esplorando un esagono pianeggiante, e la gravità è pesante o opprimente: ¶009.\n* Si sta esplorando una caverna: ¶057.",
+    "en": "Expedition encounter.\n* An alien structure hex is being explored, or was entered during hasty movement: ¶028.\n* A flat hex is being explored, the gravity is heavy or oppressive: ¶009.\n* A cave is being explored: ¶057."
+  },
+  "075": {
+    "it": "Una creatura acquatica di forma umanoide sfreccia verso la spedizione. Se colta di sorpresa (vedi 8.1), conduci il combattimento con uno spostamento di due colonne a sinistra sulla Tabella dei Risultati di Combattimento. Se non colta di sorpresa, scegli una strategia d'incontro.\n* Comunica: la creatura dona alla spedizione una forma di vita larvale e sfreccia via. Vai al ¶208.",
+    "en": "An aquatic creature of humanoid form darts toward the expedition. If surprised (see 8.1), conduct combat with a shift of two columns to the left on the Combat Results Table. If not surprised, choose an encounter strategy.\n* Communicate: The creature gives the expedition a larval life form and zips away. Go to ¶208."
+  },
+  "076": {
+    "it": "Lo shuttle è atterrato su una pianura punteggiata di chiazze erbose. Sotto la pianura si trova la fonte delle trasmissioni. Si considera che esista una struttura aliena sottoterra negli esagoni 0715 e 1016. Il clima è temperato. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6). L'esplorazione dell'esagono di atterraggio non è richiesta; può essere eseguita qualsiasi azione di spedizione. Il gruppo non può lasciare l'area finché l'esagono 0715 o 1016 non è stato esplorato sottoterra.",
+    "en": "The shuttle has landed on a plain dotted with grass-like patches. Beneath the plain lies the source of the transmissions. An alien structure is considered to exist underground in hexes 0715 and 1016. The climate is temperate. Deploy the characters, bots, and tools in the expedition display (see 5.6). Exploration of the landing hex is not required; any expedition action may be performed. The party may not leave the environ until hex 0715 or 1016 has been explored underground."
+  },
+  "077": {
+    "it": "La spedizione scopre una grande creatura simile a una stella marina distesa su una roccia. Scegli una strategia d'incontro.\n* Comunica: se il neuroscanner è nella spedizione, vai al ¶211. Se non c'è, vai al ¶016.\n* Combatti: vai al ¶215.",
+    "en": "The expedition discovers a large starfish-like creature splayed across a rock. Choose an encounter strategy.\n* Communicate: If the neuroscanner is in the expedition, go to ¶211. If not, go to ¶016.\n* Combat: Go to ¶215."
+  },
+  "078": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di struttura aliena: ¶009.\n* Si sta esplorando un esagono pianeggiante, e il clima è tropicale: ¶009.\n* Si sta esplorando un esagono di palude, stagno o fiume, e il clima è tropicale: ¶005.",
+    "en": "Expedition encounter.\n* An alien structure hex is being explored: ¶009.\n* A flat hex is being explored, and the climate is tropical: ¶009.\n* A marsh, pond, or river hex is being explored and the climate is tropical: ¶005."
+  },
+  "079": {
+    "it": "La spedizione incontra una grande creatura simile a un orso con chiazze di un esoscheletro naturale. Scegli una strategia d'incontro.",
+    "en": "The expedition encounters a large bear-like creature with patches of a natural exo-skeleton. Choose an encounter strategy."
+  },
+  "080": {
+    "it": "Immediatamente dopo l'uscita dall'FTL, una creatura a bordo della Pandora (determinata a caso) si evolve improvvisamente in un essere altamente aggressivo, potente e intelligente. Se il Valore di Intelligenza della creatura è maggiore di 6, vai al ¶081. Se il suo Valore di Combattimento è superiore a 7 e il suo Valore di Intelligenza è inferiore a sei, vai al ¶082. Se il suo Valore di Combattimento è 6 o 7 e il suo Valore di Intelligenza è inferiore a 6, vai al ¶083. Se i suoi Valori non rientrano in nessuna delle categorie precedenti, vai al ¶084. Se non ci sono creature a bordo della Pandora, procedi all'uso della Tabella Pianeti.",
+    "en": "Immediately after coming out of FTL, one creature aboard the Pandora (determined at random) suddenly evolves into a highly aggressive, powerful, intelligent being. If the creature's Intelligence Rating is greater than 6, go to ¶081. If its Combat Rating is above 7 and its Intelligence Rating is less than six, go to ¶082. If its Combat Rating is 6 or 7 and its Intelligence Rating is less than 6, go to ¶083. If its Ratings fit none of the above categories, go to ¶084. If no creatures are aboard the Pandora, proceed to use of the Planet Table."
+  },
+  "081": {
+    "it": "La creatura sfugge facilmente dal suo baccello di contenimento, neutralizza tutti i robot, uccide tutti i personaggi e prende il controllo della Pandora per compiere un destino a noi sconosciuto. Il gioco è finito.",
+    "en": "The creature easily escapes from its restraint pod, neutralizes all bots, kills all characters, and takes over the Pandora to fulfill a destiny unknown to us. The game is over."
+  },
+  "082": {
+    "it": "La creatura si scatena in una furia distruttiva, riducendo la Pandora a un ammasso di metallo contorto, mentre la creatura e tutti a bordo vengono uccisi. Il gioco è finito.",
+    "en": "The creature goes on a rampage of destruction, reducing the Pandora to a hunk of twisted metal, as the creature and all aboard are killed. The game is over."
+  },
+  "083": {
+    "it": "La creatura distrugge il baccello in cui è contenuta. Essa, e un terzo delle creature a bordo della Pandora (determinate a caso), vengono distrutte. Procedi all'uso della Tabella Pianeti.",
+    "en": "The creature destroys the pod in which he is restrained. He, and one third of the creatures aboard the Pandora (determined at random) are destroyed. Proceed to use of the Planet Table."
+  },
+  "084": {
+    "it": "La creatura esce vagando dal suo baccello di contenimento in cerca di carne umana. Tira due dadi e confronta il risultato con il Valore di Combattimento o di Intelligenza dell'esemplare (quello più alto). Se il risultato dei dadi è uguale o maggiore del valore, l'esemplare viene distrutto senza fare danni. Se il risultato dei dadi è inferiore al valore, la differenza rappresenta il numero di personaggi (determinati a caso) che vengono uccisi prima che la creatura sia distrutta. Procedi all'uso della Tabella Pianeti.",
+    "en": "The creature wanders out of its restraint pod looking for human flesh. Roll two dice and compare the result to the specimen's combat or Intelligence Rating, whichever is higher. If the dice result is equal to or greater than the rating, the specimen is destroyed without doing harm. If the dice result is less than the Rating, the difference represents the number of characters (determined at random) that are killed before the creature is destroyed. Proceed to use of the Planet Table."
+  },
+  "085": {
+    "it": "In orbita attorno a Korkran. Gravità: Leggera. Atmosfera: Velenosa. Idrografia: 75%. Geologia: Quieta. Valore di Supporto Vitale: 1. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1502, ¶125; risultato 4-5, esagono 1721, ¶131; risultato 6, esagono 0306, ¶132.",
+    "en": "Orbiting Korkran. Gravity: Light. Atmosphere: Poison. Hydrograph: 75%. Geology: Quiet. Life Support Value: 1. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1502, ¶125; result 4,5, hex 1721, ¶131; result 6, hex 0306, ¶132.",
+    "planet": {"name": "Korkran", "gravity": "Light", "atmosphere": "Poison", "hydro": 75, "geology": "Quiet", "lsv": 1, "landing": [{"die": [1,2,3], "hex": "1502", "para": "125"}, {"die": [4,5], "hex": "1721", "para": "131"}, {"die": [6], "hex": "0306", "para": "132"}]}
+  },
+  "086": {
+    "it": "In orbita attorno a Picole. Gravità: Quasi assente. Atmosfera: Velenosa. Idrografia: 25%. Geologia: Quieta. Valore di Supporto Vitale: 2. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0412, ¶119; risultato 4-5, esagono 0906, ¶115; risultato 6, esagono 1404, ¶116.",
+    "en": "Orbiting Picole. Gravity: Near weightless. Atmosphere: Poison. Hydrograph: 25%. Geology: Quiet. Life Support Value: 2. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0412, ¶119; result 4,5, hex 0906, ¶115; result 6, hex 1404, ¶116.",
+    "planet": {"name": "Picole", "gravity": "Near weightless", "atmosphere": "Poison", "hydro": 25, "geology": "Quiet", "lsv": 2, "landing": [{"die": [1,2,3], "hex": "0412", "para": "119"}, {"die": [4,5], "hex": "0906", "para": "115"}, {"die": [6], "hex": "1404", "para": "116"}]}
+  },
+  "087": {
+    "it": "In orbita attorno a Suwathe. Gravità: Tipo terrestre. Atmosfera: Corrosiva. Idrografia: 0%. Geologia: Quieta. Valore di Supporto Vitale: 2. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1803, ¶134; risultato 4-5, esagono 1520, ¶122; risultato 6, esagono 0306, ¶132.",
+    "en": "Orbiting Suwathe. Gravity: Earth like. Atmosphere: Corrosive. Hydrograph: 0%. Geology: Quiet. Life Support Value: 2. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1803, ¶134; result 4,5, hex 1520, ¶122; result 6, hex 0306, ¶132.",
+    "planet": {"name": "Suwathe", "gravity": "Earth like", "atmosphere": "Corrosive", "hydro": 0, "geology": "Quiet", "lsv": 2, "landing": [{"die": [1,2,3], "hex": "1803", "para": "134"}, {"die": [4,5], "hex": "1520", "para": "122"}, {"die": [6], "hex": "0306", "para": "132"}]}
+  },
+  "088": {
+    "it": "In orbita attorno a Opoplo. Gravità: Pesante. Atmosfera: Normale. Idrografia: 50%. Geologia: Attiva. Valore di Supporto Vitale: 1. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1721, ¶131; risultato 4-5, esagono 1109, ¶117; risultato 6, esagono 1117, ¶138.",
+    "en": "Orbiting Opoplo. Gravity: Heavy. Atmosphere: Normal. Hydrograph: 50%. Geology: Active. Life Support Value: 1. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1721, ¶131; result 4,5, hex 1109, ¶117; result 6, hex 1117, ¶138.",
+    "planet": {"name": "Opoplo", "gravity": "Heavy", "atmosphere": "Normal", "hydro": 50, "geology": "Active", "lsv": 1, "landing": [{"die": [1,2,3], "hex": "1721", "para": "131"}, {"die": [4,5], "hex": "1109", "para": "117"}, {"die": [6], "hex": "1117", "para": "138"}]}
+  },
+  "089": {
+    "it": "In orbita attorno a Mezo. Gravità: Tipo terrestre. Atmosfera: Assente. Idrografia: 0%. Geologia: Quieta. Valore di Supporto Vitale: 4. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1109, ¶117; risultato 4-5, esagono 0806, ¶124; risultato 6, esagono 0806, ¶115.",
+    "en": "Orbiting Mezo. Gravity: Earth like. Atmosphere: None. Hydrograph: 0%. Geology: Quiet. Life Support Value: 4. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1109, ¶117; result 4,5, hex 0806, ¶124; result 6, hex 0806, ¶115.",
+    "planet": {"name": "Mezo", "gravity": "Earth like", "atmosphere": "None", "hydro": 0, "geology": "Quiet", "lsv": 4, "landing": [{"die": [1,2,3], "hex": "1109", "para": "117"}, {"die": [4,5], "hex": "0806", "para": "124"}, {"die": [6], "hex": "0806", "para": "115"}]}
+  },
+  "090": {
+    "it": "In orbita attorno a Paleo. Gravità: Tipo terrestre. Atmosfera: Rarefatta. Idrografia: 0%. Geologia: Attiva. Valore di Supporto Vitale: 4. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1002, ¶133; risultato 4-5, esagono 0816, ¶121; risultato 6, esagono 1411, ¶136.",
+    "en": "Orbiting Paleo. Gravity: Earth like. Atmosphere: Thin. Hydrograph: 0%. Geology: Active. Life Support Value: 4. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1002, ¶133; result 4,5, hex 0816, ¶121; result 6, hex 1411, ¶136.",
+    "planet": {"name": "Paleo", "gravity": "Earth like", "atmosphere": "Thin", "hydro": 0, "geology": "Active", "lsv": 4, "landing": [{"die": [1,2,3], "hex": "1002", "para": "133"}, {"die": [4,5], "hex": "0816", "para": "121"}, {"die": [6], "hex": "1411", "para": "136"}]}
+  },
+  "091": {
+    "it": "In orbita attorno a Birss. Gravità: Leggera. Atmosfera: Assente. Idrografia: 0%. Geologia: Attiva. Valore di Supporto Vitale: 4. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1109, ¶117; risultato 4-5, esagono 0806, ¶115; risultato 6, esagono 1712, ¶127.",
+    "en": "Orbiting Birss. Gravity: Light. Atmosphere: None. Hydrograph: 0%. Geology: Active. Life Support Value: 4. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1109, ¶117; result 4,5, hex 0806, ¶115; result 6, hex 1712, ¶127.",
+    "planet": {"name": "Birss", "gravity": "Light", "atmosphere": "None", "hydro": 0, "geology": "Active", "lsv": 4, "landing": [{"die": [1,2,3], "hex": "1109", "para": "117"}, {"die": [4,5], "hex": "0806", "para": "115"}, {"die": [6], "hex": "1712", "para": "127"}]}
+  },
+  "092": {
+    "it": "In orbita attorno a Mephisto. Gravità: Leggera. Atmosfera: Normale. Idrografia: 0%. Geologia: Attiva. Valore di Supporto Vitale: 2. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1513, ¶118; risultato 4-5, esagono 1002, ¶133; risultato 6, esagono 0413, ¶128.",
+    "en": "Orbiting Mephisto. Gravity: Light. Atmosphere: Normal. Hydrograph: 0%. Geology: Active. Life Support Value: 2. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1513, ¶118; result 4,5, hex 1002, ¶133; result 6, hex 0413, ¶128.",
+    "planet": {"name": "Mephisto", "gravity": "Light", "atmosphere": "Normal", "hydro": 0, "geology": "Active", "lsv": 2, "landing": [{"die": [1,2,3], "hex": "1513", "para": "118"}, {"die": [4,5], "hex": "1002", "para": "133"}, {"die": [6], "hex": "0413", "para": "128"}]}
+  },
+  "093": {
+    "it": "In orbita attorno a New Alto. Gravità: Leggera. Atmosfera: Rarefatta. Idrografia: 0%. Geologia: Quieta. Valore di Supporto Vitale: 3. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0412, ¶119; risultato 4-5, esagono 0806, ¶124; risultato 6, esagono 0806, ¶115.",
+    "en": "Orbiting New Alto. Gravity: Light. Atmosphere: Thin. Hydrograph: 0%. Geology: Quiet. Life Support Value: 3. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0412, ¶119; result 4,5, hex 0806, ¶124; result 6, hex 0806, ¶115.",
+    "planet": {"name": "New Alto", "gravity": "Light", "atmosphere": "Thin", "hydro": 0, "geology": "Quiet", "lsv": 3, "landing": [{"die": [1,2,3], "hex": "0412", "para": "119"}, {"die": [4,5], "hex": "0806", "para": "124"}, {"die": [6], "hex": "0806", "para": "115"}]}
+  },
+  "094": {
+    "it": "In orbita attorno a Korkran. Gravità: Tipo terrestre. Atmosfera: Normale. Idrografia: 50%. Geologia: Quieta. Valore di Supporto Vitale: 3. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1803, ¶134; risultato 4-5, esagono 1520, ¶122; risultato 6, esagono 1117, ¶138.",
+    "en": "Orbiting Korkran. Gravity: Earth like. Atmosphere: Normal. Hydrograph: 50%. Geology: Quiet. Life Support Value: 3. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1803, ¶134; result 4,5, hex 1520, ¶122; result 6, hex 1117, ¶138.",
+    "planet": {"name": "Korkran", "gravity": "Earth like", "atmosphere": "Normal", "hydro": 50, "geology": "Quiet", "lsv": 3, "landing": [{"die": [1,2,3], "hex": "1803", "para": "134"}, {"die": [4,5], "hex": "1520", "para": "122"}, {"die": [6], "hex": "1117", "para": "138"}]}
+  },
+  "095": {
+    "it": "In orbita attorno a Picole. Gravità: Quasi assente. Atmosfera: Assente. Idrografia: 25%. Geologia: Quieta. Valore di Supporto Vitale: 3. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0806, ¶124; risultato 4-5, esagono 0213, ¶137; risultato 6, esagono 1502, ¶125.",
+    "en": "Orbiting Picole. Gravity: Near weightless. Atmosphere: None. Hydrograph: 25%. Geology: Quiet. Life Support Value: 3. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0806, ¶124; result 4,5, hex 0213, ¶137; result 6, hex 1502, ¶125.",
+    "planet": {"name": "Picole", "gravity": "Near weightless", "atmosphere": "None", "hydro": 25, "geology": "Quiet", "lsv": 3, "landing": [{"die": [1,2,3], "hex": "0806", "para": "124"}, {"die": [4,5], "hex": "0213", "para": "137"}, {"die": [6], "hex": "1502", "para": "125"}]}
+  },
+  "096": {
+    "it": "In orbita attorno a Suwathe. Gravità: Pesante. Atmosfera: Velenosa. Idrografia: 100%. Geologia: Attiva. Valore di Supporto Vitale: 3. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0302, ¶123; risultato 4-5, esagono 0306, ¶132; risultato 6, esagono 0504, ¶114.",
+    "en": "Orbiting Suwathe. Gravity: Heavy. Atmosphere: Poison. Hydrograph: 100%. Geology: Active. Life Support Value: 3. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0302, ¶123; result 4,5, hex 0306, ¶132; result 6, hex 0504, ¶114.",
+    "planet": {"name": "Suwathe", "gravity": "Heavy", "atmosphere": "Poison", "hydro": 100, "geology": "Active", "lsv": 3, "landing": [{"die": [1,2,3], "hex": "0302", "para": "123"}, {"die": [4,5], "hex": "0306", "para": "132"}, {"die": [6], "hex": "0504", "para": "114"}]}
+  },
+  "097": {
+    "it": "In orbita attorno a Opoplo. Gravità: Opprimente. Atmosfera: Velenosa. Idrografia: 50%. Geologia: Quieta. Valore di Supporto Vitale: 4. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1404, ¶116; risultato 4-5, esagono 1320, ¶139; risultato 6, esagono 1117, ¶138.",
+    "en": "Orbiting Opoplo. Gravity: Oppressive. Atmosphere: Poison. Hydrograph: 50%. Geology: Quiet. Life Support Value: 4. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1404, ¶116; result 4,5, hex 1320, ¶139; result 6, hex 1117, ¶138.",
+    "planet": {"name": "Opoplo", "gravity": "Oppressive", "atmosphere": "Poison", "hydro": 50, "geology": "Quiet", "lsv": 4, "landing": [{"die": [1,2,3], "hex": "1404", "para": "116"}, {"die": [4,5], "hex": "1320", "para": "139"}, {"die": [6], "hex": "1117", "para": "138"}]}
+  },
+  "098": {
+    "it": "In orbita attorno a Mezo. Gravità: Pesante. Atmosfera: Rarefatta. Idrografia: 25%. Geologia: Quieta. Valore di Supporto Vitale: 2. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1109, ¶117; risultato 4-5, esagono 0806, ¶124; risultato 6, esagono 0412, ¶119.",
+    "en": "Orbiting Mezo. Gravity: Heavy. Atmosphere: Thin. Hydrograph: 25%. Geology: Quiet. Life Support Value: 2. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1109, ¶117; result 4,5, hex 0806, ¶124; result 6, hex 0412, ¶119.",
+    "planet": {"name": "Mezo", "gravity": "Heavy", "atmosphere": "Thin", "hydro": 25, "geology": "Quiet", "lsv": 2, "landing": [{"die": [1,2,3], "hex": "1109", "para": "117"}, {"die": [4,5], "hex": "0806", "para": "124"}, {"die": [6], "hex": "0412", "para": "119"}]}
+  },
+  "099": {
+    "it": "In orbita attorno a Paleo. Gravità: Pesante. Atmosfera: Normale. Idrografia: 25%. Geologia: Attiva. Valore di Supporto Vitale: 1. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1513, ¶118; risultato 4-5, esagono 1120, ¶129; risultato 6, esagono 0413, ¶128.",
+    "en": "Orbiting Paleo. Gravity: Heavy. Atmosphere: Normal. Hydrograph: 25%. Geology: Active. Life Support Value: 1. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1513, ¶118; result 4,5, hex 1120, ¶129; result 6, hex 0413, ¶128.",
+    "planet": {"name": "Paleo", "gravity": "Heavy", "atmosphere": "Normal", "hydro": 25, "geology": "Active", "lsv": 1, "landing": [{"die": [1,2,3], "hex": "1513", "para": "118"}, {"die": [4,5], "hex": "1120", "para": "129"}, {"die": [6], "hex": "0413", "para": "128"}]}
+  }
+}

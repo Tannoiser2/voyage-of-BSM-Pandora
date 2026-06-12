@@ -1,0 +1,198 @@
+{
+  "100": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando l'esagono di atterraggio: ¶002.\n* Si sta esplorando un esagono di struttura aliena: ¶006.\n* Si sta esplorando un esagono di vegetazione e la gravità è pesante o opprimente: ¶207.\n* Si sta esplorando un esagono di vegetazione fitta e l'atmosfera è rarefatta: ¶005.",
+    "en": "Expedition encounter.\n* The landing hex is being explored: ¶002.\n* An alien structure hex is being explored: ¶006.\n* A vegetation hex is being explored and the gravity is heavy or oppressive: ¶207.\n* A heavy vegetation hex is being explored and the atmosphere is thin: ¶005."
+  },
+  "101": {
+    "it": "In orbita attorno a Birss. Gravità: Tipo terrestre. Atmosfera: Rarefatta. Idrografia: 0%. Geologia: Attiva. Valore di Supporto Vitale: 2. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1109, ¶117; risultato 4-5, esagono 1712, ¶127; risultato 6, esagono 0909, ¶126.",
+    "en": "Orbiting Birss. Gravity: Earth like. Atmosphere: Thin. Hydrograph: 0%. Geology: Active. Life Support Value: 2. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1109, ¶117; result 4,5, hex 1712, ¶127; result 6, hex 0909, ¶126.",
+    "planet": {"name": "Birss", "gravity": "Earth like", "atmosphere": "Thin", "hydro": 0, "geology": "Active", "lsv": 2, "landing": [{"die": [1,2,3], "hex": "1109", "para": "117"}, {"die": [4,5], "hex": "1712", "para": "127"}, {"die": [6], "hex": "0909", "para": "126"}]}
+  },
+  "102": {
+    "it": "In orbita attorno a Mephisto. Gravità: Tipo terrestre. Atmosfera: Velenosa. Idrografia: 0%. Geologia: Attiva. Valore di Supporto Vitale: 4. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1002, ¶133; risultato 4-5, esagono 1513, ¶118; risultato 6, esagono 1411, ¶136.",
+    "en": "Orbiting Mephisto. Gravity: Earth like. Atmosphere: Poison. Hydrograph: 0%. Geology: Active. Life Support Value: 4. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1002, ¶133; result 4,5, hex 1513, ¶118; result 6, hex 1411, ¶136.",
+    "planet": {"name": "Mephisto", "gravity": "Earth like", "atmosphere": "Poison", "hydro": 0, "geology": "Active", "lsv": 4, "landing": [{"die": [1,2,3], "hex": "1002", "para": "133"}, {"die": [4,5], "hex": "1513", "para": "118"}, {"die": [6], "hex": "1411", "para": "136"}]}
+  },
+  "103": {
+    "it": "In orbita attorno a New Alto. Gravità: Tipo terrestre. Atmosfera: Normale. Idrografia: 25%. Geologia: Attiva. Valore di Supporto Vitale: 1. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0412, ¶119; risultato 4-5, esagono 1106, ¶141; risultato 6, esagono 1520, ¶122.",
+    "en": "Orbiting New Alto. Gravity: Earth like. Atmosphere: Normal. Hydrograph: 25%. Geology: Active. Life Support Value: 1. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0412, ¶119; result 4,5, hex 1106, ¶141; result 6, hex 1520, ¶122.",
+    "planet": {"name": "New Alto", "gravity": "Earth like", "atmosphere": "Normal", "hydro": 25, "geology": "Active", "lsv": 1, "landing": [{"die": [1,2,3], "hex": "0412", "para": "119"}, {"die": [4,5], "hex": "1106", "para": "141"}, {"die": [6], "hex": "1520", "para": "122"}]}
+  },
+  "104": {
+    "it": "In orbita attorno a Korkran. Gravità: Pesante. Atmosfera: Normale. Idrografia: 100%. Geologia: Quieta. Valore di Supporto Vitale: 0. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0306, ¶132; risultato 4-5, esagono 0302, ¶123; risultato 6, esagono 0504, ¶114.",
+    "en": "Orbiting Korkran. Gravity: Heavy. Atmosphere: Normal. Hydrograph: 100%. Geology: Quiet. Life Support Value: 0. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0306, ¶132; result 4,5, hex 0302, ¶123; result 6, hex 0504, ¶114.",
+    "planet": {"name": "Korkran", "gravity": "Heavy", "atmosphere": "Normal", "hydro": 100, "geology": "Quiet", "lsv": 0, "landing": [{"die": [1,2,3], "hex": "0306", "para": "132"}, {"die": [4,5], "hex": "0302", "para": "123"}, {"die": [6], "hex": "0504", "para": "114"}]}
+  },
+  "105": {
+    "it": "In orbita attorno a Picole. Gravità: Leggera. Atmosfera: Rarefatta. Idrografia: 50%. Geologia: Quieta. Valore di Supporto Vitale: 1. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1520, ¶122; risultato 4-5, esagono 1404, ¶116; risultato 6, esagono 0213, ¶137.",
+    "en": "Orbiting Picole. Gravity: Light. Atmosphere: Thin. Hydrograph: 50%. Geology: Quiet. Life Support Value: 1. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1520, ¶122; result 4,5, hex 1404, ¶116; result 6, hex 0213, ¶137.",
+    "planet": {"name": "Picole", "gravity": "Light", "atmosphere": "Thin", "hydro": 50, "geology": "Quiet", "lsv": 1, "landing": [{"die": [1,2,3], "hex": "1520", "para": "122"}, {"die": [4,5], "hex": "1404", "para": "116"}, {"die": [6], "hex": "0213", "para": "137"}]}
+  },
+  "106": {
+    "it": "In orbita attorno a Suwathe. Gravità: Pesante. Atmosfera: Corrosiva. Idrografia: 50%. Geologia: Attiva. Valore di Supporto Vitale: 3. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1502, ¶125; risultato 4-5, esagono 1712, ¶127; risultato 6, esagono 0413, ¶128.",
+    "en": "Orbiting Suwathe. Gravity: Heavy. Atmosphere: Corrosive. Hydrograph: 50%. Geology: Active. Life Support Value: 3. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1502, ¶125; result 4,5, hex 1712, ¶127; result 6, hex 0413, ¶128.",
+    "planet": {"name": "Suwathe", "gravity": "Heavy", "atmosphere": "Corrosive", "hydro": 50, "geology": "Active", "lsv": 3, "landing": [{"die": [1,2,3], "hex": "1502", "para": "125"}, {"die": [4,5], "hex": "1712", "para": "127"}, {"die": [6], "hex": "0413", "para": "128"}]}
+  },
+  "107": {
+    "it": "In orbita attorno a Opoplo. Gravità: Opprimente. Atmosfera: Corrosiva. Idrografia: 0%. Geologia: Quieta. Valore di Supporto Vitale: 4. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0806, ¶115; risultato 4-5, esagono 1106, ¶141; risultato 6, esagono 0909, ¶126.",
+    "en": "Orbiting Opoplo. Gravity: Oppressive. Atmosphere: Corrosive. Hydrograph: 0%. Geology: Quiet. Life Support Value: 4. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0806, ¶115; result 4,5, hex 1106, ¶141; result 6, hex 0909, ¶126.",
+    "planet": {"name": "Opoplo", "gravity": "Oppressive", "atmosphere": "Corrosive", "hydro": 0, "geology": "Quiet", "lsv": 4, "landing": [{"die": [1,2,3], "hex": "0806", "para": "115"}, {"die": [4,5], "hex": "1106", "para": "141"}, {"die": [6], "hex": "0909", "para": "126"}]}
+  },
+  "108": {
+    "it": "In orbita attorno a Mezo. Gravità: Pesante. Atmosfera: Velenosa. Idrografia: 50%. Geologia: Attiva. Valore di Supporto Vitale: 3. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0412, ¶119; risultato 4-5, esagono 1411, ¶136; risultato 6, esagono 1320, ¶139.",
+    "en": "Orbiting Mezo. Gravity: Heavy. Atmosphere: Poison. Hydrograph: 50%. Geology: Active. Life Support Value: 3. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0412, ¶119; result 4,5, hex 1411, ¶136; result 6, hex 1320, ¶139.",
+    "planet": {"name": "Mezo", "gravity": "Heavy", "atmosphere": "Poison", "hydro": 50, "geology": "Active", "lsv": 3, "landing": [{"die": [1,2,3], "hex": "0412", "para": "119"}, {"die": [4,5], "hex": "1411", "para": "136"}, {"die": [6], "hex": "1320", "para": "139"}]}
+  },
+  "109": {
+    "it": "In orbita attorno a Paleo. Gravità: Pesante. Atmosfera: Corrosiva. Idrografia: 0%. Geologia: Attiva. Valore di Supporto Vitale: 4. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 0816, ¶121; risultato 4-5, esagono 1002, ¶133; risultato 6, esagono 1411, ¶136.",
+    "en": "Orbiting Paleo. Gravity: Heavy. Atmosphere: Corrosive. Hydrograph: 0%. Geology: Active. Life Support Value: 4. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 0816, ¶121; result 4,5, hex 1002, ¶133; result 6, hex 1411, ¶136.",
+    "planet": {"name": "Paleo", "gravity": "Heavy", "atmosphere": "Corrosive", "hydro": 0, "geology": "Active", "lsv": 4, "landing": [{"die": [1,2,3], "hex": "0816", "para": "121"}, {"die": [4,5], "hex": "1002", "para": "133"}, {"die": [6], "hex": "1411", "para": "136"}]}
+  },
+  "110": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di città aliena, oppure vi si è entrati durante il movimento affrettato: ¶028.\n* Si sta esplorando un esagono pianeggiante o di collina e la gravità è quasi assente: ¶159.\n* Si sta esplorando un esagono di abisso: ¶176.",
+    "en": "Expedition encounter.\n* An alien city hex is being explored, or was entered during hasty movement: ¶028.\n* A flat or hill hex is being explored and the gravity is near weightless: ¶159.\n* An abyss hex is being explored: ¶176."
+  },
+  "111": {
+    "it": "In orbita attorno a Birss. Gravità: Pesante. Atmosfera: Velenosa. Idrografia: 0%. Geologia: Attiva. Valore di Supporto Vitale: 4. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1712, ¶127; risultato 4-5, esagono 1109, ¶117; risultato 6, esagono 0808, ¶135.",
+    "en": "Orbiting Birss. Gravity: Heavy. Atmosphere: Poison. Hydrograph: 0%. Geology: Active. Life Support Value: 4. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1712, ¶127; result 4,5, hex 1109, ¶117; result 6, hex 0808, ¶135.",
+    "planet": {"name": "Birss", "gravity": "Heavy", "atmosphere": "Poison", "hydro": 0, "geology": "Active", "lsv": 4, "landing": [{"die": [1,2,3], "hex": "1712", "para": "127"}, {"die": [4,5], "hex": "1109", "para": "117"}, {"die": [6], "hex": "0808", "para": "135"}]}
+  },
+  "112": {
+    "it": "In orbita attorno a Mephisto. Gravità: Pesante. Atmosfera: Velenosa. Idrografia: 25%. Geologia: Attiva. Valore di Supporto Vitale: 3. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1120, ¶129; risultato 4-5, esagono 1513, ¶118; risultato 6, esagono 1411, ¶136.",
+    "en": "Orbiting Mephisto. Gravity: Heavy. Atmosphere: Poison. Hydrograph: 25%. Geology: Active. Life Support Value: 3. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1120, ¶129; result 4,5, hex 1513, ¶118; result 6, hex 1411, ¶136.",
+    "planet": {"name": "Mephisto", "gravity": "Heavy", "atmosphere": "Poison", "hydro": 25, "geology": "Active", "lsv": 3, "landing": [{"die": [1,2,3], "hex": "1120", "para": "129"}, {"die": [4,5], "hex": "1513", "para": "118"}, {"die": [6], "hex": "1411", "para": "136"}]}
+  },
+  "113": {
+    "it": "In orbita attorno a New Alto. Gravità: Pesante. Atmosfera: Velenosa. Idrografia: 50%. Geologia: Attiva. Valore di Supporto Vitale: 3. Se il pianeta verrà esplorato, vedi 5.0. Tira un dado: risultato 1-3, esagono 1404, ¶116; risultato 4-5, esagono 1120, ¶129; risultato 6, esagono 1320, ¶139.",
+    "en": "Orbiting New Alto. Gravity: Heavy. Atmosphere: Poison. Hydrograph: 50%. Geology: Active. Life Support Value: 3. If the planet will be explored, see 5.0. Roll one die: result 1-3, hex 1404, ¶116; result 4,5, hex 1120, ¶129; result 6, hex 1320, ¶139.",
+    "planet": {"name": "New Alto", "gravity": "Heavy", "atmosphere": "Poison", "hydro": 50, "geology": "Active", "lsv": 3, "landing": [{"die": [1,2,3], "hex": "1404", "para": "116"}, {"die": [4,5], "hex": "1120", "para": "129"}, {"die": [6], "hex": "1320", "para": "139"}]}
+  },
+  "114": {
+    "it": "Lo shuttle è atterrato sulla superficie dell'acqua. Non c'è terra in vista. Gli strumenti mostrano che sotto la superficie ci sono vegetazione lussureggiante e molte strutture artificiali. Tutta l'esplorazione deve essere condotta in immersione (vedi 6.7). Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on the surface of water. No land is in sight. Instruments show that below the surface there is lush vegetation and many artificial structures. All exploration must be conducted while submerged (see 6.7). Deploy the characters, bots, and tools in the expedition display (see 5.6) and explore the landing hex."
+  },
+  "115": {
+    "it": "Lo shuttle è atterrato su una distesa pianeggiante e brulla, con colline desolate e montagne che si innalzano a ovest. Il clima è artico. Aggiungi uno al Valore di Supporto Vitale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a flat barren expanse with bleak hills and mountains rising to the west. The climate is arctic. Add one to the life support value. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "116": {
+    "it": "Lo shuttle è atterrato su una radura erbosa circondata da una fitta foresta. Si sente il rumore di acqua corrente a sud-est. Il clima è temperato. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a grassy clearing surrounded by a dense forest. The sound of running water is heard to the southeast. The climate is temperate. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "117": {
+    "it": "Lo shuttle è atterrato su un terreno duro e freddo, riparato da una collinetta da un ghiacciaio che ha origine lontano a est. Tutti gli esagoni di città aliena sono considerati esagoni di ghiaccio glaciale. Il clima è artico. Aggiungi uno al Valore di Supporto Vitale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on hard, cold ground shielded from a glacier originating far to the east by a small hill. All alien city hexes are considered glacial ice hexes. The climate is arctic. Add one to the life support value. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "118": {
+    "it": "Lo shuttle è atterrato sul bordo di una colata di lava solidificata. A ovest, un vulcano attivo si riversa sul paesaggio. Il clima è sahariano. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on the edge of a solidified lava flow. To the west, an active volcano spills across the landscape. The climate is saharan. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "119": {
+    "it": "Lo shuttle è atterrato ai piedi di una montagna massiccia dalla cima piatta. La struttura aliena nell'esagono 0310 non esiste. Attorno alla montagna si vedono chiazze di bassi cespugli. Il clima è temperato. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has landed at the foot of a massive mountain with a flat top. The alien structure in hex 0310 does not exist. Patches of low bushes can be seen around the mountain. The climate is temperate. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "120": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di struttura aliena: ¶006.\n* Si sta esplorando un esagono di caverna e l'atmosfera è rarefatta o normale: ¶181.\n* Si sta esplorando un esagono pianeggiante o di collina, la gravità è tipo terrestre e il clima non è artico: ¶060.",
+    "en": "Expedition encounter.\n* An alien structure hex is being explored: ¶006.\n* A cave hex is being explored and the atmosphere is thin or normal: ¶181.\n* A flat or hill hex is being explored, the gravity is earth-like and the climate is not arctic: ¶060."
+  },
+  "121": {
+    "it": "Lo shuttle è atterrato su una pianura perfettamente piatta e sconfinata, interrotta solo da un canyon a est. Non c'è vegetazione nella zona. Il clima è sahariano. Aggiungi uno al Valore di Supporto Vitale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a perfectly flat, endless plain, disturbed only by a canyon to the east. No vegetation is in the area. The climate is saharan. Add one to the LSV. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "122": {
+    "it": "Lo shuttle è atterrato su una radura asciutta circondata da fiumi lenti e paludi. A ovest, queste acque confluiscono in un grande lago. Il clima è tropicale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a dry clearing surrounded by sluggish rivers and swamps. To the west, these waters flow into a large lake. The climate is tropical. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "123": {
+    "it": "Lo shuttle è atterrato sulla superficie di un oceano che si estende a perdita d'occhio in ogni direzione. Gli strumenti dello shuttle rilevano vegetazione lussureggiante e alcune strutture artificiali sotto la superficie. Tutte le strutture aliene nell'area non esistono. Gli esagoni di città aliena (0204 e 0304) sono considerati esagoni di struttura aliena. Tutta l'esplorazione deve essere condotta in immersione (vedi 6.7). Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle landed on the surface of an ocean stretching beyond sight in all directions. Lush vegetation and some artificial structures are detected below the surface by the shuttle's instruments. All alien structures in the environ do not exist. The alien city hexes (0204 and 0304) are considered alien structure hexes. All exploration must be conducted while submerged (see 6.7). Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "124": {
+    "it": "Lo shuttle è atterrato su una dura pianura con colline brulle e montagne che si innalzano a ovest. Il clima è temperato. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a hard plain with barren hills and mountains rising to the west. The climate is temperate. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "125": {
+    "it": "Lo shuttle è atterrato su una collina coperta di felci. Un fitto fogliame circonda la collina e si scorge un fiume giù per un ripido pendio. Il clima è tropicale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a fern covered hill. Thick foliage surrounds the hill and a river is seen down a steep slope. The climate is tropical. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "126": {
+    "it": "Lo shuttle è atterrato su una pianura brulla ai margini di un campo di ghiaccio apparentemente sconfinato. Lontano a est, il bagliore di metallo lucente spunta dal biancore. Tutti gli esagoni di città aliena tranne l'esagono 1012 sono considerati esagoni di ghiaccio glaciale. Il clima è artico. Aggiungi uno al Valore di Supporto Vitale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has landed on a barren plain at the edge of a seemingly endless ice field. Far to the east, the glint of bright metal juts from the whiteness. All alien city hexes except hex 1012 are considered glacial ice hexes. The climate is arctic. Add one to the LSV. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "127": {
+    "it": "Lo shuttle è atterrato su una zona contorta di lava solidificata, con roccia fusa su entrambi i lati che proviene da un piccolo foro a est e da un cono enorme a ovest. Il clima è temperato. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has landed on a gnarled patch of solidified lava, with molten rock on either side originating from a small hole to the east and a mammoth cone to the west. The climate is temperate. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "128": {
+    "it": "Lo shuttle è atterrato su una pianura brulla. Una montagna enorme riempie la vista a ovest. La sua cima è piatta e ospita tre torri costruite di origine sconosciuta. Non esiste vegetazione nella zona. Il clima è sahariano. Aggiungi uno al Valore di Supporto Vitale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a barren plain. A huge mountain fills the view from the west. Its top is flat and hosts three constructed towers of unknown origin. No vegetation exists in the area. The climate is saharan. Add one to the LSV. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "129": {
+    "it": "Lo shuttle è atterrato su una pianura punteggiata di chiazze di arbusti. Un canyon con un fiume sul fondo si trova subito a ovest. Le caverne non esistono. Il clima è tropicale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a plain dotted with patches of shrubs. A canyon with a river at its bottom lies just west. The caves do not exist. The climate is tropical. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "130": {
+    "it": "Incontro di spedizione.\n* La gravità del pianeta è quasi assente o opprimente: ¶166.\n* Si sta esplorando un esagono di città aliena, oppure vi si è entrati durante il movimento affrettato: ¶042.\n* Si sta esplorando un esagono sottomarino, oppure vi si è entrati durante il movimento affrettato: ¶142.\n* Si sta esplorando un esagono di vegetazione fitta, oppure vi si è entrati durante il movimento affrettato: ¶029.",
+    "en": "Expedition encounter.\n* The gravity of the planet is near weightless or oppressive: ¶166.\n* An alien city hex is being explored, or was entered during hasty movement: ¶042.\n* An underwater hex is being explored or was entered during hasty movement: ¶142.\n* A heavy vegetation hex is being explored, or was entered during hasty movement: ¶029."
+  },
+  "131": {
+    "it": "Lo shuttle è atterrato accanto a un ruscello che sfocia in una palude. Più a ovest, le acque fangose si trasformano in un mare immobile. Il clima è temperato. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down next to a stream running into marshland. Further west, the muddy waters turn into a still sea. The climate is temperate. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "132": {
+    "it": "Lo shuttle galleggia sulla superficie di un oceano circondato da alte escrescenze di vegetazione che spuntano fuori dall'acqua. Tutti gli esagoni di vegetazione fitta sono considerati vegetazione fitta sia sopra che sotto la superficie. Non esistono esagoni di città o struttura aliena. Il clima è tropicale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle is floating on the surface of an ocean surrounded by tall growths of vegetation shooting out of the water. All heavy vegetation hexes are considered heavy vegetation above the surface, as well as below the surface. No alien city or structure hexes exist. The climate is tropical. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "133": {
+    "it": "Lo shuttle è atterrato su un pendio brullo circondato da montagne. Una valle obliqua conduce a est attraverso le vette fino a una pianura desolata. Le caverne negli esagoni 1101, 1102 e 1103 non esistono. Il clima è sahariano. Aggiungi uno al Valore di Supporto Vitale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has landed on a barren slope surrounded by mountains. An angled valley leads east through the peaks to a bleak plain. The caves in hexes 1101, 1102 and 1103 do not exist. The climate is saharan. Add one to the LSV. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "134": {
+    "it": "Lo shuttle è atterrato in cima a un pendio coperto di edera. Una fitta foschia sulla regione impedisce ulteriori informazioni visive. Il clima è tropicale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down atop an ivy covered slope. A heavy mist over the region prevents further visual information. The climate is tropical. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "135": {
+    "it": "Lo shuttle è atterrato su un campo di neve circondato da colline e chiazze di ghiaccio. Conglomerati di strutture colorate di metallo e pietra si estendono a sud e a ovest verso l'orizzonte. Sembrano convergere lontano a est. Il clima è artico. Aggiungi uno al Valore di Supporto Vitale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a snow field surrounded by hills and ice patches. Conglomerations of colorful metal and stone-like structures run south and west to the horizon. They appear to converge far to the east. The climate is arctic. Add one to the LSV. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "136": {
+    "it": "Lo shuttle è atterrato su lava indurita. Una nebbia vaporosa copre la zona. Il bagliore della roccia fusa si vede a ovest. Il clima è tropicale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on hardened lava. A steamy fog covers the area. The glow of molten rock is seen to the west. The climate is tropical. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "137": {
+    "it": "Lo shuttle è atterrato su una pianura punteggiata di rampicanti striscianti. La gigantesca montagna a forma di mesa a ovest è sormontata da una cupola artificiale. Il clima è tropicale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a plain dotted with crawling vines. The giant mesa-like mountain to the west is topped with an artificial dome. The climate is tropical. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "138": {
+    "it": "Lo shuttle è atterrato su una pianura, a ovest di un canyon. Zone di vegetazione erbosa interrompono la piattezza dell'area. Il clima è temperato. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a plain, west of a canyon. Areas of grass-like vegetation break up the area's flatness. The climate is temperate. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "139": {
+    "it": "Lo shuttle è atterrato su un terreno coperto di ghiaccio accanto a un fiume gelato. Una fitta nebbia avvolge la zona. Lontano a ovest si sente un oceano. Tutti i fiumi sono considerati gelati e tutti gli esagoni di palude sono considerati ghiaccio glaciale. Il clima è artico. Aggiungi uno al Valore di Supporto Vitale. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has landed on ice-covered ground next to a frozen river. Thick fog blankets the area. Far to the west an ocean is heard. All rivers are considered frozen and all marsh hexes are considered glacial ice. The climate is arctic. Add one to the LSV. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "140": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di città aliena: ¶006.\n* Si sta esplorando un esagono pianeggiante e l'atmosfera è normale o velenosa: ¶003.\n* Si sta esplorando un esagono di ghiaccio glaciale, oppure vi si è entrati durante il movimento affrettato, e la gravità è tipo terrestre: ¶170.",
+    "en": "Expedition encounter.\n* An alien city hex is being explored: ¶006.\n* A flat hex is being explored and the atmosphere is normal or poisonous: ¶003.\n* A glacial ice hex is being explored or was entered during hasty movement and the gravity is earth-like: ¶170."
+  },
+  "141": {
+    "it": "Lo shuttle è atterrato su un terreno piatto e privo di vita. Una fitta nebbia copre la zona. Il clima è temperato. Schiera i personaggi, i robot e gli strumenti nel Display della Spedizione (vedi 5.6) ed esplora l'esagono di atterraggio.",
+    "en": "The shuttle has set down on a flat, lifeless ground. A dense fog covers the area. The climate is temperate. Deploy the characters, bots, and tools in the Expedition Display (see 5.6) and explore the landing hex."
+  },
+  "142": {
+    "it": "La spedizione è sorpresa da un predatore arancione dai molti tentacoli. Se la creatura ottiene la sorpresa (vedi 8.1), conduci il combattimento con uno spostamento di due colonne a sinistra sulla Tabella dei Risultati di Combattimento. Se la creatura non coglie di sorpresa la spedizione, scegli una strategia d'incontro.",
+    "en": "The expedition is startled by an orange, multi-tentacled predator. If the creature achieves surprise (see 8.1), conduct combat, with a shift of two columns to the left on the Combat Results Table. If the creature does not surprise the expedition, choose an encounter strategy."
+  },
+  "143": {
+    "it": "Incontro di spedizione.\n* Si sta esplorando un esagono di città aliena: ¶006.\n* Si sta esplorando un esagono pianeggiante con vegetazione rada e l'idrografia è al 50% o 75%: ¶003.\n* Si sta esplorando un esagono di caverna, oppure vi si è entrati durante il movimento affrettato, e l'atmosfera è velenosa o corrosiva: ¶162.",
+    "en": "Expedition encounter.\n* An alien city hex is being explored: ¶006.\n* A flat hex with light vegetation is being explored and the hydrograph is 50% or 75%: ¶003.\n* A cave hex is being explored or was entered during hasty movement, and the atmosphere is poisonous or corrosive: ¶162."
+  },
+  "144": {
+    "it": "L'ufficiale scientifico muore della sua misteriosa afflizione, nonostante le cure intensive. Tira un dado per determinare quanti Mesi di Tour aggiuntivi vengono spesi nel vano tentativo di salvargli la vita (tratta un risultato di 5 o 6 come nessun mese speso). Inoltre, se il Valore di Intelligenza dell'ufficiale medico è sei o meno, oppure egli non è a bordo, il virus ha infettato un altro membro dell'equipaggio (determinato a caso). Vai al paragrafo 058, sostituendo il personaggio appena infettato all'ufficiale scientifico. Se il Valore di Intelligenza dell'ufficiale medico è sette o più, procedi all'uso della Tabella Pianeti.",
+    "en": "The science officer dies of his mysterious affliction, despite extensive treatment. Roll one die to determine how many additional Tour Months are expended in the futile attempt to save his life (treat a roll of 5 or 6 as no months expended). Furthermore, if the medical officer's Intelligence Rating is six or less or he is not aboard, the virus has infected another crew member (determined at random). Go to paragraph 058, substituting the newly infected character for the science officer. If the medical officer's Intelligence Rating is seven or greater, proceed to use of the Planet Table."
+  },
+  "145": {
+    "it": "La spedizione scopre un insetto alato bipede. La creatura alta circa un metro sta pascolando. Scegli una strategia d'incontro.\n* Comunica o Combatti: la creatura tenta di fuggire. Determina il suo Valore di Velocità. Solo i personaggi e i robot con Valori di Velocità maggiori di quello della creatura possono iniziare il combattimento (anche se è stata scelta la strategia di comunicazione).",
+    "en": "The expedition discovers a bipedal winged insect. The three foot high creature is grazing. Choose an encounter strategy.\n* Communicate or Combat: The creature attempts to flee. Determine its Speed Rating. Only those characters and bots with Speed Ratings greater than the creature's may initiate combat (even if the communication strategy was chosen)."
+  }
+}
