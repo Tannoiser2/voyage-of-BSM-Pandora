@@ -55,7 +55,8 @@ var visited_systems: Array = []
 var log_entries: Array = []
 
 # Preparazione della spedizione (regola 5.0)
-var planet_gravity: String = "Terrestre"   # gravità del pianeta in orbita
+var planet_attrs: Dictionary = {}          # attributi reali del pianeta in orbita
+var planet_gravity: String = "Earth like"  # gravità del pianeta in orbita
 var shuttle_capacity: int = 80             # capacità di porto dello shuttle (Carta 5.8)
 var expedition_units: Array = []           # chiavi dei personaggi scelti per la spedizione
 var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
@@ -94,7 +95,8 @@ func start_new_game(p_tour_length: int) -> void:
 	log_entries = []
 	expedition_units = []
 	planned_supply = 6
-	planet_gravity = "Terrestre"
+	planet_attrs = {}
+	planet_gravity = "Earth like"
 	shuttle_capacity = 80
 
 	# Set initial VP based on tour length (from rules)
@@ -187,10 +189,12 @@ func land_on_planet(die_result: int) -> void:
 	var planet_info: Dictionary = para_data.get("planet", {})
 	var landings: Array = planet_info.get("landing", [])
 	var landing_para := 114  # default
+	var landing_real := ""   # esagono di atterraggio globale (es. "1502")
 	for entry in landings:
 		var dice_range: Array = entry.get("die", [])
 		if die_result in dice_range:
 			landing_para = entry.get("para", "114").to_int()
+			landing_real = entry.get("hex", "")
 			break
 
 	current_planet = current_system
@@ -198,7 +202,7 @@ func land_on_planet(die_result: int) -> void:
 	expedition_supply = shuttle_supply  # bring supplies from shuttle
 	shuttle_supply = 0
 	reset_expedition_state()
-	generate_environ(landing_para)
+	generate_environ_at(landing_real)
 
 	add_log("Atterraggio su %s. Dado: %d → Paragrafo %03d" % [current_system, die_result, landing_para])
 	set_phase(Phase.EXPEDITION)
@@ -206,21 +210,17 @@ func land_on_planet(die_result: int) -> void:
 
 # --- Preparazione della spedizione (regola 5.0) ------------------------------
 
-# Chiamata all'ingresso in orbita: determina gravità, capacità e squadra iniziale.
+# Chiamata all'ingresso in orbita: legge gli attributi reali del pianeta,
+# imposta gravità, capacità dello shuttle e squadra iniziale.
 func setup_orbit_planet() -> void:
-	planet_gravity = _gravity_for_system(current_system)
+	planet_attrs = GameData.get_planet_attributes(current_system, tour_length)
+	planet_gravity = planet_attrs.get("gravity", "Earth like")
 	shuttle_capacity = GameData.shuttle_capacity_for(planet_gravity)
 	expedition_units = default_team()
 	planned_supply = clampi(6, 0, max_planned_supply())
-	add_log("In orbita su %s — gravità %s, capacità shuttle %d." % [current_system, planet_gravity, shuttle_capacity])
-
-func _gravity_for_system(sys: String) -> String:
-	var g: Array = GameData.gravity_list()
-	if g.is_empty():
-		return "Terrestre"
-	if sys != "" and sys != "Sol":
-		return g[abs(sys.hash()) % g.size()]
-	return "Terrestre"
+	add_log("In orbita su %s — gravità %s, atmosfera %s, capacità shuttle %d." % [
+		current_system, GameData.gravity_it(planet_gravity),
+		GameData.atmosphere_it(planet_attrs.get("atmosphere", "Normal")), shuttle_capacity])
 
 # Squadra di default: tutti i personaggi vivi che rientrano nella capacità.
 func default_team() -> Array:
@@ -369,15 +369,19 @@ func environ_neighbors(hex_id: int) -> Array:
 			result.append(environ_hex_id(c[0], c[1]))
 	return result
 
-func generate_environ(_landing: int) -> void:
+# Genera l'environ a partire dall'esagono di atterraggio reale della carta pianeta
+# (es. "1502"), scegliendo l'environ corretto e l'esagono d'atterraggio corretto.
+func generate_environ_at(landing_real: String) -> void:
 	environ_grid = {}
-	# Sceglie uno degli 8 environ reali. Deterministico per sistema stellare,
-	# così lo stesso pianeta mostra sempre la stessa superficie.
-	current_environ_id = _pick_environ_id()
+	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
+	if place.is_empty():
+		# Fallback: environ deterministico per sistema, atterraggio al centro.
+		current_environ_id = _pick_environ_id()
+	else:
+		current_environ_id = place.get("env", 0)
 	var env: Dictionary = GameData.get_environ(current_environ_id)
 	var hexes: Dictionary = env.get("hexes", {})
 	if hexes.is_empty():
-		# Fallback: griglia generata se i dati non sono disponibili
 		_generate_environ_fallback()
 		return
 	for key in hexes:
@@ -390,12 +394,17 @@ func generate_environ(_landing: int) -> void:
 			"x": h.get("x", 0.0),
 			"y": h.get("y", 0.0),
 		}
-	# Esagono di atterraggio: il più vicino al centro della griglia, già esplorato.
-	landing_hex = _central_environ_hex()
-	if environ_grid.has(landing_hex):
-		environ_grid[landing_hex]["explored"] = true
+	# Esagono di atterraggio: quello indicato dalla carta, o il più vicino al centro.
+	landing_hex = place.get("local", _central_environ_hex()) if not place.is_empty() else _central_environ_hex()
+	if not environ_grid.has(landing_hex):
+		landing_hex = _central_environ_hex()
+	environ_grid[landing_hex]["explored"] = true
 	expedition_pos = landing_hex
 	environ_changed.emit()
+
+# Versione legacy (atterraggio al centro) mantenuta per compatibilità.
+func generate_environ(_landing: int) -> void:
+	generate_environ_at("")
 
 func _pick_environ_id() -> int:
 	var n := GameData.environ_count()
