@@ -61,6 +61,7 @@ var planet_attrs: Dictionary = {}          # attributi reali del pianeta in orbi
 var planet_gravity: String = "Earth like"  # gravità del pianeta in orbita
 var shuttle_capacity: int = 80             # capacità di porto dello shuttle (Carta 5.8)
 var expedition_units: Array = []           # chiavi dei personaggi scelti per la spedizione
+var expedition_gear: Array = []            # chiavi di robot/strumenti imbarcati (5.2)
 var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
 
 # Combattimento / incontri
@@ -96,6 +97,7 @@ func start_new_game(p_tour_length: int) -> void:
 	visited_systems = []
 	log_entries = []
 	expedition_units = []
+	expedition_gear = []
 	planned_supply = 6
 	planet_attrs = {}
 	planet_gravity = "Earth like"
@@ -222,6 +224,7 @@ func setup_orbit_planet() -> void:
 	planet_gravity = planet_attrs.get("gravity", "Earth like")
 	shuttle_capacity = GameData.shuttle_capacity_for(planet_gravity)
 	expedition_units = default_team()
+	expedition_gear = []
 	planned_supply = clampi(6, 0, max_planned_supply())
 	add_log("In orbita su %s — gravità %s, atmosfera %s, capacità shuttle %d." % [
 		current_system, GameData.gravity_it(planet_gravity),
@@ -251,10 +254,20 @@ func toggle_expedition_unit(key: String) -> void:
 		expedition_units.append(key)
 	planned_supply = clampi(planned_supply, 0, max_planned_supply())
 
+# Imbarca/rimuove un robot o strumento (5.2)
+func toggle_gear_unit(key: String) -> void:
+	if key in expedition_gear:
+		expedition_gear.erase(key)
+	else:
+		expedition_gear.append(key)
+	planned_supply = clampi(planned_supply, 0, max_planned_supply())
+
 func units_weight() -> int:
 	var w := 0
 	for k in expedition_units:
 		w += int(GameData.get_character(k).get("weight", 6))
+	for k in expedition_gear:
+		w += int(GameData.get_unit(k).get("weight", 0))
 	return w
 
 func total_load() -> int:
@@ -279,16 +292,26 @@ func launch_expedition(die_result: int) -> void:
 	var names: Array = []
 	for k in expedition_units:
 		names.append(GameData.get_character(k).get("name", k))
-	add_log("Shuttle lanciato: %s · Rifornimenti %d." % [", ".join(names), planned_supply])
+	var gear_names: Array = []
+	for k in expedition_gear:
+		gear_names.append(GameData.get_unit(k).get("name", k))
+	var gear_txt := "" if gear_names.is_empty() else " · Equip.: %s" % ", ".join(gear_names)
+	add_log("Shuttle lanciato: %s · Rifornimenti %d%s." % [", ".join(names), planned_supply, gear_txt])
 	land_on_planet(die_result)
 
-# Miglior valore di combattimento tra i personaggi della spedizione (8.0).
+# Miglior valore di combattimento tra personaggi, robot e armi imbarcate (8.0).
+# Le armi (Netgun/Stunbomb/Turbolaser) sostituiscono i valori del personaggio (2.5).
 func best_combat(mode: String) -> int:
 	var best := 0
 	for k in expedition_units:
 		var u := GameData.get_character(k)
 		var v: int = int(u.get("capture", 0)) if mode == "capture" else int(u.get("kill", 0))
 		best = maxi(best, v)
+	for k in expedition_gear:
+		var g := GameData.get_unit(k)
+		if g.get("combat", false) or GameData.get_bot_keys().has(k):
+			var gv: int = int(g.get("capture", 0)) if mode == "capture" else int(g.get("kill", 0))
+			best = maxi(best, gv)
 	return best if best > 0 else 3
 
 func show_paragraph(para_num: int) -> void:
