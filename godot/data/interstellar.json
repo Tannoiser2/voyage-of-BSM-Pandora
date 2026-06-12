@@ -55,11 +55,16 @@
       "planet_para": {"10": "092", "20": "102", "30": "112"}
     },
     "New Alto": {
-      "hex": 42,
+      "hex": 41,
       "x": 320, "y": 265,
       "planets": ["New Alto"],
       "planet_para": {"10": "093", "20": "103", "30": "113"}
     }
+  },
+  "map": {
+    "image": "res://assets/map/Voyage Map.jpg",
+    "region": {"x": 0, "y": 1335, "w": 510, "h": 545},
+    "grid": {"base_x": 66, "base_y": 1376, "dx": 63, "dy": 77, "even_offset": 38}
   },
   "adjacency": {
     "11": [12, 21],

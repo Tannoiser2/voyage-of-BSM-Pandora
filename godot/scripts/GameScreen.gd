@@ -11,6 +11,15 @@ var status_display: Control
 var dice_panel: Control
 var current_para_num: int = 0
 
+# Overlay della mappa interstellare reale (Voyage Map.jpg)
+const INTER_REGION := Rect2(0, 1335, 510, 545)
+const INTER_SCALE := 0.94
+const INTER_OFFSET := Vector2(6, 30)
+const GRID_BASE := Vector2(66, 1376)   # centro esagono 11 in pixel mappa
+const GRID_DX := 63.0
+const GRID_DY := 77.0
+const GRID_EVEN_OFFSET := 38.0
+
 func _ready() -> void:
 	_build_ui()
 	_connect_signals()
@@ -46,14 +55,24 @@ func _build_ui() -> void:
 	interstellar_display = Control.new()
 	interstellar_display.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	left_panel.add_child(interstellar_display)
-	interstellar_display.draw.connect(_draw_interstellar)
+
+	# Sfondo: ritaglio reale del Display Interstellare dalla mappa originale
+	var inter_bg := TextureRect.new()
+	var atlas := AtlasTexture.new()
+	atlas.atlas = load("res://assets/map/Voyage Map.jpg")
+	atlas.region = INTER_REGION
+	inter_bg.texture = atlas
+	inter_bg.position = INTER_OFFSET
+	inter_bg.size = INTER_REGION.size * INTER_SCALE
+	inter_bg.stretch_mode = TextureRect.STRETCH_SCALE
+	interstellar_display.add_child(inter_bg)
 
 	# LEFT PANEL title
 	var left_title := Label.new()
 	left_title.text = "Mappa Interstellare"
-	left_title.position = Vector2(10, 5)
+	left_title.position = Vector2(10, 6)
 	left_title.add_theme_font_size_override("font_size", 13)
-	left_title.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	left_title.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
 	interstellar_display.add_child(left_title)
 
 	# Draw hex buttons
@@ -331,28 +350,35 @@ func _build_hex_buttons() -> void:
 
 			var btn := Button.new()
 			btn.name = "Hex_%d" % hex_id
-			btn.custom_minimum_size = Vector2(64, 64)
-			btn.position = pos - Vector2(32, 32)
+			btn.custom_minimum_size = Vector2(52, 52)
+			btn.size = Vector2(52, 52)
+			btn.position = pos - Vector2(26, 26)
 			btn.pressed.connect(_on_hex_clicked.bind(hex_id))
-
 			var sys_name := GameData.get_planet_for_hex(hex_id)
-			if sys_name != "" and sys_name != "Sol":
-				btn.text = sys_name.substr(0, 3)  # abbreviated name
-			elif sys_name == "Sol":
-				btn.text = "SOL"
-			else:
-				btn.text = str(hex_id)
-
+			btn.tooltip_text = sys_name if sys_name != "" else "Esagono %d" % hex_id
 			interstellar_display.add_child(btn)
 
+	# Marker originale della Pandora (sopra i pulsanti)
+	var marker := TextureRect.new()
+	marker.name = "PandoraMarker"
+	marker.texture = load("res://assets/markers/Marker_Pandora.png")
+	marker.custom_minimum_size = Vector2(44, 38)
+	marker.size = Vector2(44, 38)
+	marker.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	interstellar_display.add_child(marker)
+
 func _hex_to_screen_pos(hex_id: int) -> Vector2:
+	# Centro dell'esagono in coordinate del pannello, allineato alla mappa reale
 	var col := hex_id / 10
 	var row := hex_id % 10
-	var x := 80.0 + (col - 1) * 95.0
-	var y := 80.0 + (row - 1) * 82.0
+	var fx := GRID_BASE.x + (col - 1) * GRID_DX
+	var fy := GRID_BASE.y + (row - 1) * GRID_DY
 	if col % 2 == 0:
-		y += 41.0  # stagger even columns
-	return Vector2(x, y)
+		fy += GRID_EVEN_OFFSET
+	var px := INTER_OFFSET.x + (fx - INTER_REGION.position.x) * INTER_SCALE
+	var py := INTER_OFFSET.y + (fy - INTER_REGION.position.y) * INTER_SCALE
+	return Vector2(px, py)
 
 # --- Environ (superficie planetaria) -----------------------------------------
 
@@ -521,18 +547,33 @@ func _refresh_hex_buttons() -> void:
 			var btn := find_child("Hex_%d" % hex_id, true, false) as Button
 			if not btn: continue
 
+			var sb := StyleBoxFlat.new()
+			sb.bg_color = Color(0, 0, 0, 0)
+			sb.set_corner_radius_all(26)
+			sb.set_border_width_all(3)
+			sb.border_color = Color(1, 1, 1, 0)  # invisibile di default
+
 			if hex_id == GameState.pandora_hex:
-				btn.modulate = Color(0.3, 0.8, 1.0)
+				sb.border_color = Color(0.3, 0.9, 1.0)
+				sb.bg_color = Color(0.3, 0.9, 1.0, 0.28)
 			elif GameData.get_planet_for_hex(hex_id) != "":
-				var can_reach := GameState.can_move_to(hex_id)
-				btn.modulate = Color(1.0, 0.8, 0.2) if can_reach else Color(0.5, 0.4, 0.1)
+				if GameState.can_move_to(hex_id):
+					sb.border_color = Color(1.0, 0.85, 0.2)
+					sb.bg_color = Color(1.0, 0.85, 0.2, 0.18)
 			else:
 				if GameState.can_move_to(hex_id):
-					btn.modulate = Color(0.7, 0.7, 0.8)
-				else:
-					btn.modulate = Color(0.35, 0.35, 0.4)
+					sb.border_color = Color(0.85, 0.9, 1.0, 0.7)
+
+			for st in ["normal", "hover", "pressed", "focus"]:
+				btn.add_theme_stylebox_override(st, sb)
 
 			btn.disabled = (GameState.current_phase != GameState.Phase.INTERSTELLAR)
+
+	# Posiziona il marker della Pandora sull'esagono attuale
+	var marker := find_child("PandoraMarker", true, false) as TextureRect
+	if marker:
+		var p := _hex_to_screen_pos(GameState.pandora_hex)
+		marker.position = p - marker.size / 2.0
 
 func _draw_interstellar() -> void:
 	pass  # hex buttons handle display; could add draw lines between hexes later
