@@ -5,11 +5,20 @@ var center_panel: Panel
 var right_panel: Panel
 var interstellar_display: Control
 var environ_display: Control
+var env_scroll: ScrollContainer
+var env_canvas: Control
+var env_map: TextureRect
+var env_loaded_id: int = 0
 var paragraph_display: Control
 var log_display: RichTextLabel
 var status_display: Control
 var dice_panel: Control
 var current_para_num: int = 0
+
+# Fattore di scala con cui la mappa reale dell'environ viene mostrata nel pannello.
+# 1.0 = dimensione nativa del rendering; valori < 1 rimpiccioliscono. La vista è
+# scrollabile e si centra automaticamente sulla posizione della spedizione.
+const ENVIRON_DISPLAY_SCALE := 0.62
 
 # Overlay della mappa interstellare reale (Voyage Map.jpg)
 # Coordinate ricavate per calibrazione dai cerchi dei sistemi stellari sull'originale.
@@ -85,15 +94,34 @@ func _build_ui() -> void:
 	environ_display.visible = false
 	left_panel.add_child(environ_display)
 
+	# Vista scrollabile con la mappa reale dell'environ
+	env_scroll = ScrollContainer.new()
+	env_scroll.name = "EnvScroll"
+	env_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	env_scroll.offset_left = 4
+	env_scroll.offset_top = 26
+	env_scroll.offset_right = -4
+	env_scroll.offset_bottom = -4
+	environ_display.add_child(env_scroll)
+
+	env_canvas = Control.new()
+	env_canvas.name = "EnvCanvas"
+	env_scroll.add_child(env_canvas)
+
+	env_map = TextureRect.new()
+	env_map.name = "EnvMap"
+	env_map.position = Vector2.ZERO
+	env_map.stretch_mode = TextureRect.STRETCH_SCALE
+	env_canvas.add_child(env_map)
+
 	var env_title := Label.new()
 	env_title.name = "EnvironTitle"
 	env_title.text = "Superficie Planetaria"
 	env_title.position = Vector2(10, 5)
 	env_title.add_theme_font_size_override("font_size", 13)
 	env_title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
+	env_title.z_index = 10
 	environ_display.add_child(env_title)
-
-	_build_environ_buttons()
 
 	# CENTER PANEL - Log + Paragraph
 	var center_vbox := VBoxContainer.new()
@@ -383,69 +411,95 @@ func _hex_to_screen_pos(hex_id: int) -> Vector2:
 
 # --- Environ (superficie planetaria) -----------------------------------------
 
-const TERRAIN_COLORS := {
-	"Open":     Color(0.55, 0.62, 0.45),
-	"Rough":    Color(0.55, 0.45, 0.35),
-	"Mountain": Color(0.45, 0.42, 0.40),
-	"Forest":   Color(0.25, 0.45, 0.28),
-	"Desert":   Color(0.75, 0.65, 0.40),
-	"Ice":      Color(0.70, 0.80, 0.88),
-}
+# Costruisce (o ricostruisce) la vista della mappa reale per l'environ corrente.
+func _load_environ_view() -> void:
+	var eid := GameState.current_environ_id
+	var env: Dictionary = GameData.get_environ(eid)
+	# Rimuove i vecchi bottoni esagono (mantiene la TextureRect della mappa).
+	# Liberazione immediata per evitare collisioni di nome con i nuovi bottoni.
+	for child in env_canvas.get_children():
+		if child != env_map:
+			env_canvas.remove_child(child)
+			child.free()
+	if env.is_empty():
+		env_loaded_id = eid
+		return
+	var iw: float = float(env.get("w", 1000)) * ENVIRON_DISPLAY_SCALE
+	var ih: float = float(env.get("h", 1400)) * ENVIRON_DISPLAY_SCALE
+	env_map.texture = load(env.get("img", ""))
+	env_map.size = Vector2(iw, ih)
+	env_canvas.custom_minimum_size = Vector2(iw, ih)
+	env_canvas.size = Vector2(iw, ih)
 
-func _build_environ_buttons() -> void:
-	for col in range(1, GameState.ENVIRON_COLS + 1):
-		for row in range(1, GameState.ENVIRON_ROWS + 1):
-			var hex_id := col * 10 + row
-			var pos := _environ_to_screen_pos(hex_id)
-			var btn := Button.new()
-			btn.name = "Env_%d" % hex_id
-			btn.custom_minimum_size = Vector2(70, 70)
-			btn.size = Vector2(70, 70)
-			btn.position = pos - Vector2(35, 35)
-			btn.pressed.connect(_on_environ_hex_clicked.bind(hex_id))
-			environ_display.add_child(btn)
+	var dx: float = float(env.get("dx", 168.0))
+	var bsize: float = dx * ENVIRON_DISPLAY_SCALE * 0.92
+	for hex_id in GameState.environ_grid:
+		var pos := _environ_hex_screen_pos(hex_id)
+		var btn := Button.new()
+		btn.name = "Env_%d" % hex_id
+		btn.custom_minimum_size = Vector2(bsize, bsize)
+		btn.size = Vector2(bsize, bsize)
+		btn.position = pos - Vector2(bsize, bsize) * 0.5
+		btn.pressed.connect(_on_environ_hex_clicked.bind(hex_id))
+		env_canvas.add_child(btn)
+	env_loaded_id = eid
+	_refresh_environ_buttons()
+	call_deferred("_center_on_expedition")
 
-func _environ_to_screen_pos(hex_id: int) -> Vector2:
-	var col := hex_id / 10
-	var row := hex_id % 10
-	var x := 90.0 + (col - 1) * 88.0
-	var y := 95.0 + (row - 1) * 78.0
-	if col % 2 == 0:
-		y += 39.0
-	return Vector2(x, y)
+func _environ_hex_screen_pos(hex_id: int) -> Vector2:
+	var cell: Dictionary = GameState.environ_grid.get(hex_id, {})
+	return Vector2(cell.get("x", 0.0), cell.get("y", 0.0)) * ENVIRON_DISPLAY_SCALE
 
 func _refresh_environ_buttons() -> void:
-	for col in range(1, GameState.ENVIRON_COLS + 1):
-		for row in range(1, GameState.ENVIRON_ROWS + 1):
-			var hex_id := col * 10 + row
-			var btn := find_child("Env_%d" % hex_id, true, false) as Button
-			if not btn: continue
-			var cell: Dictionary = GameState.environ_grid.get(hex_id, {})
-			var terrain: String = cell.get("terrain", "Open")
-			var explored: bool = cell.get("explored", false)
-			var base: Color = TERRAIN_COLORS.get(terrain, Color(0.5, 0.5, 0.5))
+	for hex_id in GameState.environ_grid:
+		var btn := env_canvas.find_child("Env_%d" % hex_id, false, false) as Button
+		if not btn:
+			continue
+		var explored: bool = GameState.environ_grid[hex_id].get("explored", false)
+		var is_pos: bool = (hex_id == GameState.expedition_pos)
+		var reachable: bool = GameState.can_move_expedition(hex_id)
 
-			if hex_id == GameState.expedition_pos:
-				btn.text = "◉"
-				btn.modulate = Color(1.0, 1.0, 1.0)
-				base = Color(0.3, 0.8, 1.0)
-			elif explored:
-				btn.text = terrain.substr(0, 3)
-				btn.modulate = Color(1.0, 1.0, 1.0)
-			elif GameState.can_move_expedition(hex_id):
-				btn.text = "?"
-				btn.modulate = Color(1.0, 1.0, 1.0)
-			else:
-				btn.text = ""
-				btn.modulate = Color(0.6, 0.6, 0.6)
+		var fill := Color(0, 0, 0, 0)
+		var border := Color(0, 0, 0, 0)
+		var bw := 0
+		btn.text = ""
+		if is_pos:
+			fill = Color(0.2, 0.8, 1.0, 0.35)
+			border = Color(0.3, 0.9, 1.0, 1.0)
+			bw = 4
+			btn.text = "◉"
+			btn.add_theme_color_override("font_color", Color(1, 1, 1))
+			btn.add_theme_font_size_override("font_size", 22)
+		elif reachable:
+			fill = Color(1.0, 1.0, 1.0, 0.16)
+			border = Color(1.0, 0.95, 0.5, 0.9)
+			bw = 3
+		elif explored:
+			border = Color(0.4, 1.0, 0.5, 0.5)
+			bw = 2
 
-			var sb := StyleBoxFlat.new()
-			sb.bg_color = base
-			sb.set_corner_radius_all(6)
-			btn.add_theme_stylebox_override("normal", sb)
-			btn.add_theme_stylebox_override("hover", sb)
-			btn.add_theme_stylebox_override("pressed", sb)
-			btn.disabled = not (GameState.can_move_expedition(hex_id) or hex_id == GameState.expedition_pos)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = fill
+		sb.border_color = border
+		sb.set_border_width_all(bw)
+		sb.set_corner_radius_all(int(btn.size.x * 0.5))
+		var hover := sb.duplicate() as StyleBoxFlat
+		hover.bg_color = Color(fill.r, fill.g, fill.b, min(fill.a + 0.18, 0.6)) if reachable else fill
+		btn.add_theme_stylebox_override("normal", sb)
+		btn.add_theme_stylebox_override("hover", hover)
+		btn.add_theme_stylebox_override("pressed", sb)
+		btn.add_theme_stylebox_override("focus", sb)
+		btn.add_theme_stylebox_override("disabled", sb)
+		btn.disabled = not (reachable or is_pos)
+		btn.mouse_filter = Control.MOUSE_FILTER_STOP if (reachable or is_pos) else Control.MOUSE_FILTER_IGNORE
+
+func _center_on_expedition() -> void:
+	if not env_scroll:
+		return
+	var pos := _environ_hex_screen_pos(GameState.expedition_pos)
+	var vp := env_scroll.size
+	env_scroll.scroll_horizontal = int(max(0.0, pos.x - vp.x * 0.5))
+	env_scroll.scroll_vertical = int(max(0.0, pos.y - vp.y * 0.5))
 
 func _on_environ_hex_clicked(hex_id: int) -> void:
 	if GameState.can_move_expedition(hex_id):
@@ -459,7 +513,10 @@ func _update_left_panel_mode() -> void:
 	if environ_display:
 		environ_display.visible = on_surface
 		if on_surface:
-			_refresh_environ_buttons()
+			if env_loaded_id != GameState.current_environ_id:
+				_load_environ_view()
+			else:
+				_refresh_environ_buttons()
 
 func _connect_signals() -> void:
 	GameState.phase_changed.connect(_on_phase_changed)
@@ -472,6 +529,9 @@ func _connect_signals() -> void:
 
 func _on_environ_changed() -> void:
 	_update_left_panel_mode()
+	# La vista segue la spedizione mentre si sposta sulla superficie
+	if environ_display and environ_display.visible and env_loaded_id == GameState.current_environ_id:
+		call_deferred("_center_on_expedition")
 
 func _on_phase_changed(phase: String) -> void:
 	_update_display()

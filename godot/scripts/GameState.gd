@@ -61,11 +61,13 @@ var damage_points: int = 0            # danni accumulati dalla spedizione
 var captured_creatures: Array = []    # creature catturate vive (PV extra)
 
 # Superficie planetaria (environ) — regola 6.0
-const ENVIRON_COLS := 5
-const ENVIRON_ROWS := 5
-var environ_grid: Dictionary = {}     # hex_id -> {"terrain": String, "explored": bool}
+# Ogni environ è una mappa reale di 6 colonne × 7 righe (42 esagoni).
+const ENVIRON_COLS := 6
+const ENVIRON_ROWS := 7
+var environ_grid: Dictionary = {}     # hex_id locale -> {"terrain","explored","real","x","y"}
 var expedition_pos: int = 0           # esagono attuale della spedizione (0 = non sbarcata)
 var landing_hex: int = 0
+var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 signal environ_changed
 
 func _ready() -> void:
@@ -253,6 +255,7 @@ func reset_expedition_state() -> void:
 	environ_grid = {}
 	expedition_pos = 0
 	landing_hex = 0
+	current_environ_id = 0
 
 # --- Superficie planetaria (environ) -----------------------------------------
 
@@ -274,17 +277,63 @@ func environ_neighbors(hex_id: int) -> Array:
 			result.append(environ_hex_id(c[0], c[1]))
 	return result
 
-func generate_environ(landing: int) -> void:
+func generate_environ(_landing: int) -> void:
 	environ_grid = {}
+	# Sceglie uno degli 8 environ reali. Deterministico per sistema stellare,
+	# così lo stesso pianeta mostra sempre la stessa superficie.
+	current_environ_id = _pick_environ_id()
+	var env: Dictionary = GameData.get_environ(current_environ_id)
+	var hexes: Dictionary = env.get("hexes", {})
+	if hexes.is_empty():
+		# Fallback: griglia generata se i dati non sono disponibili
+		_generate_environ_fallback()
+		return
+	for key in hexes:
+		var h: Dictionary = hexes[key]
+		var hid := int(str(key))
+		environ_grid[hid] = {
+			"terrain": h.get("terrain", "Open"),
+			"explored": false,
+			"real": h.get("real", ""),
+			"x": h.get("x", 0.0),
+			"y": h.get("y", 0.0),
+		}
+	# Esagono di atterraggio: il più vicino al centro della griglia, già esplorato.
+	landing_hex = _central_environ_hex()
+	if environ_grid.has(landing_hex):
+		environ_grid[landing_hex]["explored"] = true
+	expedition_pos = landing_hex
+	environ_changed.emit()
+
+func _pick_environ_id() -> int:
+	var n := GameData.environ_count()
+	if n <= 0:
+		return 0
+	if current_system != "" and current_system != "Sol":
+		return abs(current_system.hash()) % n + 1
+	return randi_range(1, n)
+
+func _central_environ_hex() -> int:
+	# Esagono con (col,row) più vicino al centro 3.5 / 4
+	var best := -1
+	var best_d := 1e9
+	for hid in environ_grid:
+		var col: int = hid / 10
+		var row: int = hid % 10
+		var d: float = pow(col - 3.5, 2) + pow(row - 4.0, 2)
+		if d < best_d:
+			best_d = d
+			best = hid
+	return best if best > 0 else environ_hex_id(3, 4)
+
+func _generate_environ_fallback() -> void:
 	var terrains: Array = GameData.tables.get("terrain_types", ["Open", "Rough", "Mountain", "Forest", "Desert", "Ice"])
 	for col in range(1, ENVIRON_COLS + 1):
 		for row in range(1, ENVIRON_ROWS + 1):
 			var hid := environ_hex_id(col, row)
-			var terrain: String = terrains[randi() % terrains.size()]
-			environ_grid[hid] = {"terrain": terrain, "explored": false}
-	# L'esagono di atterraggio è al centro, terreno aperto e già esplorato
-	landing_hex = environ_hex_id(3, 3)
-	environ_grid[landing_hex] = {"terrain": "Open", "explored": true}
+			environ_grid[hid] = {"terrain": terrains[randi() % terrains.size()], "explored": false}
+	landing_hex = environ_hex_id(3, 4)
+	environ_grid[landing_hex]["explored"] = true
 	expedition_pos = landing_hex
 	environ_changed.emit()
 
@@ -302,7 +351,8 @@ func move_expedition(hex_id: int) -> void:
 	add_expedition_hours(1)  # ogni esagono costa 1 ora
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
-	add_log("La spedizione entra in un esagono %s (esagono %d)." % [_terrain_it(terrain), hex_id])
+	var real_id: String = cell.get("real", str(hex_id))
+	add_log("La spedizione entra in un esagono %s (esagono %s)." % [_terrain_it(terrain), real_id])
 	environ_changed.emit()
 	# Esplora il nuovo esagono se non ancora esplorato
 	if not cell.get("explored", false):
