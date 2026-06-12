@@ -398,9 +398,19 @@ func generate_environ_at(landing_real: String) -> void:
 	landing_hex = place.get("local", _central_environ_hex()) if not place.is_empty() else _central_environ_hex()
 	if not environ_grid.has(landing_hex):
 		landing_hex = _central_environ_hex()
-	environ_grid[landing_hex]["explored"] = true
+	# L'esagono di atterraggio non è ancora esplorato: la spedizione può esplorarlo.
 	expedition_pos = landing_hex
 	environ_changed.emit()
+
+# Esplora l'esagono attualmente occupato dalla spedizione (es. l'atterraggio).
+func explore_current_hex() -> void:
+	if current_phase != Phase.EXPEDITION or not current_creature.is_empty():
+		return
+	var cell: Dictionary = environ_grid.get(expedition_pos, {})
+	if cell.get("explored", false):
+		add_log("Questo esagono è già stato esplorato.")
+		return
+	explore_environ_hex(expedition_pos, cell.get("terrain", "Open"))
 
 # Versione legacy (atterraggio al centro) mantenuta per compatibilità.
 func generate_environ(_landing: int) -> void:
@@ -448,12 +458,14 @@ func can_move_expedition(hex_id: int) -> bool:
 func move_expedition(hex_id: int) -> void:
 	if not can_move_expedition(hex_id):
 		return
-	expedition_pos = hex_id
-	add_expedition_hours(1)  # ogni esagono costa 1 ora
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
 	var real_id: String = cell.get("real", str(hex_id))
-	add_log("La spedizione entra in un esagono %s (esagono %s)." % [_terrain_it(terrain), real_id])
+	# Entrare in un esagono costa le ore del terreno (Carta 6.6, a piedi)
+	var enter_cost := GameData.terrain_enter_cost(terrain)
+	expedition_pos = hex_id
+	add_expedition_hours(enter_cost)
+	add_log("La spedizione entra in %s (esagono %s) — %d ore." % [_terrain_it(terrain), real_id, enter_cost])
 	environ_changed.emit()
 	# Esplora il nuovo esagono se non ancora esplorato
 	if not cell.get("explored", false):
@@ -461,6 +473,10 @@ func move_expedition(hex_id: int) -> void:
 
 func explore_environ_hex(hex_id: int, terrain: String) -> void:
 	environ_grid[hex_id]["explored"] = true
+	# Esplorare costa le ore del terreno (Carta 6.6)
+	var explore_cost := GameData.terrain_explore_cost(terrain)
+	add_expedition_hours(explore_cost)
+	add_log("Esplorazione di %s — %d ore." % [_terrain_it(terrain), explore_cost])
 	environ_changed.emit()
 	var die := randi_range(1, 6)
 	# Dado alto: incontro con creatura; altrimenti paragrafo di esplorazione
@@ -475,14 +491,7 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 		show_paragraph(para_num)
 
 func _terrain_it(terrain: String) -> String:
-	match terrain:
-		"Open":     return "Aperto"
-		"Rough":    return "Accidentato"
-		"Mountain": return "Montagna"
-		"Forest":   return "Foresta"
-		"Desert":   return "Deserto"
-		"Ice":      return "Ghiaccio"
-	return terrain
+	return GameData.terrain_it(terrain)
 
 # --- Combattimento / incontri (regola 8.0) -----------------------------------
 

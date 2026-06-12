@@ -555,7 +555,9 @@ func _update_action_buttons(phase: String) -> void:
 	if btn_orbit: btn_orbit.visible = (phase == "orbit")
 	if btn_land: btn_land.visible = (phase == "orbit")
 	if btn_return: btn_return.visible = (phase == "expedition" or phase == "paragraph") and not in_combat
-	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat and not on_surface
+	# "Esplora" appare quando l'esagono occupato non è ancora stato esplorato (es. atterraggio)
+	var here_unexplored := on_surface and not GameState.environ_grid.get(GameState.expedition_pos, {}).get("explored", true)
+	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat and here_unexplored
 	if btn_continue: btn_continue.visible = (phase == "paragraph") and not in_combat
 	if btn_kill: btn_kill.visible = in_combat
 	if btn_capture: btn_capture.visible = in_combat
@@ -873,26 +875,9 @@ func _on_return_to_pandora() -> void:
 	GameState.return_to_pandora()
 
 func _on_explore() -> void:
-	if GameState.current_phase != GameState.Phase.EXPEDITION:
-		return
-	if not GameState.current_creature.is_empty():
-		return
-	# Esplorazione: tira il dado, ogni esplorazione costa 2 ore
-	var die := randi_range(1, 6)
-	_set_dice_result(die)
-	GameState.add_expedition_hours(2)
-	# Con dado alto si incontra una creatura (regola 8.0), altrimenti paragrafo evento
-	if die >= 5:
-		var names := GameData.get_all_creature_names()
-		var creature: String = names[randi() % names.size()]
-		GameState.add_log("Esplorazione (dado %d): qualcosa si avvicina..." % die)
-		GameState.set_phase(GameState.Phase.EXPEDITION)
-		GameState.start_encounter(creature)
-	else:
-		var terrain := "Open"
-		var para_num := GameData.get_exploration_paragraph(terrain, die)
-		GameState.add_log("Esplorazione: dado %d → Paragrafo %03d" % [die, para_num])
-		GameState.show_paragraph(para_num)
+	# Esplora l'esagono attualmente occupato (es. quello di atterraggio), con i
+	# costi in ore del terreno (Carta 6.6) gestiti da GameState.
+	GameState.explore_current_hex()
 
 func _on_combat(mode: String) -> void:
 	if GameState.current_creature.is_empty():
@@ -940,14 +925,23 @@ func _show_expedition_panel() -> void:
 
 	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
 	if para_display:
-		var bb := "Esplora la superficie per trovare creature, artefatti e forme di vita.\n\n"
+		var cell: Dictionary = GameState.environ_grid.get(GameState.expedition_pos, {})
+		var terr_class: String = cell.get("terrain", "Open")
+		var eff := GameData.terrain_effect(terr_class)
+		var bb := "Posizione: esagono [b]%s[/b] · terreno [b]%s[/b] (entrata %d ore, esplorazione %d ore).\n\n" % [
+			cell.get("real", "?"), GameData.terrain_it(terr_class),
+			int(eff.get("enter_foot", 1)), int(eff.get("explore", 2))]
 		bb += "Ore di spedizione: [b]%d[/b]  ·  Rifornimenti: [b]%d[/b]  ·  Danni: [b]%d[/b]\n\n" % [
 			GameState.expedition_hours, GameState.expedition_supply, GameState.damage_points
 		]
 		if GameState.captured_creatures.size() > 0:
 			bb += "Creature catturate: %s\n\n" % ", ".join(GameState.captured_creatures)
-		bb += "[i]Sposta la spedizione cliccando un esagono adiacente sulla mappa di superficie "
-		bb += "(a sinistra), oppure premi \"Torna alla Pandora\".[/i]"
+		if not cell.get("explored", true):
+			bb += "[i]Premi \"Esplora\" per esplorare questo esagono, "
+			bb += "oppure spostati su un esagono adiacente sulla mappa (a sinistra).[/i]"
+		else:
+			bb += "[i]Sposta la spedizione cliccando un esagono adiacente sulla mappa di superficie "
+			bb += "(a sinistra), oppure premi \"Torna alla Pandora\".[/i]"
 		para_display.bbcode_text = bb
 
 	_update_action_buttons("expedition")
