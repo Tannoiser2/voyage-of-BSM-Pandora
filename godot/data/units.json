@@ -1,0 +1,20 @@
+{
+  "characters": {
+    "CO":   {"name": "Comandante",            "capture": 3, "kill": 3, "weight": 5, "port": 5, "speed": 8, "img": "Char_CO"},
+    "Nav":  {"name": "Navigatore",            "capture": 3, "kill": 2, "weight": 6, "port": 6, "speed": 7, "img": "Char_Nav"},
+    "SO":   {"name": "Uff. di Sicurezza",     "capture": 4, "kill": 2, "weight": 6, "port": 5, "speed": 6, "img": "Char_SO"},
+    "GSO":  {"name": "Uff. Scienze",          "capture": 3, "kill": 2, "weight": 7, "port": 6, "speed": 6, "img": "Char_GSO"},
+    "MedO": {"name": "Uff. Medico",           "capture": 3, "kill": 2, "weight": 6, "port": 5, "speed": 6, "img": "Char_MedO"},
+    "MntO": {"name": "Uff. Manutenzione",     "capture": 3, "kill": 2, "weight": 6, "port": 6, "speed": 9, "img": "Char_MntO"},
+    "WO":   {"name": "Uff. Armi",             "capture": 4, "kill": 3, "weight": 7, "port": 7, "speed": 8, "img": "Char_WO"}
+  },
+  "gravities": ["Quasi assente", "Leggera", "Terrestre", "Pesante", "Opprimente"],
+  "shuttle_capacity": {
+    "Quasi assente": 120,
+    "Leggera": 100,
+    "Terrestre": 80,
+    "Pesante": 60,
+    "Opprimente": 30
+  },
+  "max_supply": 20
+}

@@ -5,6 +5,7 @@ var interstellar: Dictionary = {}
 var tables: Dictionary = {}
 var creatures: Dictionary = {}
 var environ_maps: Dictionary = {}
+var units: Dictionary = {}
 
 func _ready() -> void:
 	_load_data()
@@ -15,6 +16,24 @@ func _load_data() -> void:
 	tables = _load_json("res://data/tables.json")
 	creatures = _load_json("res://data/creatures.json")
 	environ_maps = _load_json("res://data/environ_maps.json")
+	units = _load_json("res://data/units.json")
+
+# Statistiche di un personaggio della Pandora (regola 2.5 / 5.2)
+func get_character(key: String) -> Dictionary:
+	return units.get("characters", {}).get(key, {})
+
+func get_character_keys() -> Array:
+	return units.get("characters", {}).keys()
+
+# Capacità di porto dello shuttle in base alla gravità del pianeta (Carta 5.8)
+func shuttle_capacity_for(gravity: String) -> int:
+	return int(units.get("shuttle_capacity", {}).get(gravity, 80))
+
+func gravity_list() -> Array:
+	return units.get("gravities", ["Terrestre"])
+
+func max_supply() -> int:
+	return int(units.get("max_supply", 20))
 
 # Dati della mappa di un environ (1..8): immagine reale + geometria esagoni
 func get_environ(env_id: int) -> Dictionary:

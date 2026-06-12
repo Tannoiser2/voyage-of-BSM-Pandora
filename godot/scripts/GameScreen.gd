@@ -14,6 +14,7 @@ var log_display: RichTextLabel
 var status_display: Control
 var dice_panel: Control
 var current_para_num: int = 0
+var _prep_updating: bool = false
 
 # Fattore di scala con cui la mappa reale dell'environ viene mostrata nel pannello.
 # 1.0 = dimensione nativa del rendering; valori < 1 rimpiccioliscono. La vista è
@@ -32,6 +33,7 @@ const GRID_EVEN_OFFSET := 45.0
 
 func _ready() -> void:
 	_build_ui()
+	_build_prep_panel()
 	_connect_signals()
 	_update_display()
 	# Ripristina la visualizzazione corrente al (ri)entro nella scena
@@ -190,7 +192,7 @@ func _build_ui() -> void:
 
 	var btn_land := Button.new()
 	btn_land.name = "BtnLand"
-	btn_land.text = "Atterra (tira dado)"
+	btn_land.text = "Prepara spedizione"
 	btn_land.visible = false
 	btn_land.pressed.connect(_on_land)
 	actions_hbox.add_child(btn_land)
@@ -657,8 +659,182 @@ func _on_hex_clicked(hex_id: int) -> void:
 
 	_update_display()
 
+# --- Pannello di preparazione della spedizione (regola 5.0) ------------------
+
+func _build_prep_panel() -> void:
+	var overlay := ColorRect.new()
+	overlay.name = "PrepOverlay"
+	overlay.color = Color(0, 0, 0, 0.6)
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.visible = false
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(overlay)
+
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
+	var panel := Panel.new()
+	panel.custom_minimum_size = Vector2(560, 560)
+	center.add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_top", 16)
+	margin.add_theme_constant_override("margin_bottom", 16)
+	panel.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "Preparazione della Spedizione"
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	vbox.add_child(title)
+
+	var info := Label.new()
+	info.name = "PrepInfo"
+	info.add_theme_font_size_override("font_size", 12)
+	info.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+	vbox.add_child(info)
+
+	var hdr := Label.new()
+	hdr.text = "Squadra (almeno un personaggio):"
+	hdr.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(hdr)
+
+	for k in GameData.get_character_keys():
+		var chk := CheckBox.new()
+		chk.name = "PrepChk_%s" % k
+		chk.add_theme_font_size_override("font_size", 12)
+		chk.toggled.connect(_on_prep_unit_toggled.bind(k))
+		vbox.add_child(chk)
+
+	var sup_box := HBoxContainer.new()
+	sup_box.add_theme_constant_override("separation", 8)
+	vbox.add_child(sup_box)
+	var sup_lbl := Label.new()
+	sup_lbl.text = "Punti Rifornimento:"
+	sup_box.add_child(sup_lbl)
+	var slider := HSlider.new()
+	slider.name = "PrepSupply"
+	slider.min_value = 0
+	slider.max_value = GameData.max_supply()
+	slider.step = 1
+	slider.custom_minimum_size = Vector2(260, 0)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(_on_prep_supply_changed)
+	sup_box.add_child(slider)
+	var sup_val := Label.new()
+	sup_val.name = "PrepSupplyVal"
+	sup_val.custom_minimum_size = Vector2(28, 0)
+	sup_box.add_child(sup_val)
+
+	var load_lbl := Label.new()
+	load_lbl.name = "PrepLoad"
+	load_lbl.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(load_lbl)
+
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(spacer)
+
+	var btns := HBoxContainer.new()
+	btns.alignment = BoxContainer.ALIGNMENT_CENTER
+	btns.add_theme_constant_override("separation", 12)
+	vbox.add_child(btns)
+	var launch := Button.new()
+	launch.name = "PrepLaunch"
+	launch.text = "Lancia lo shuttle (tira dado)"
+	launch.custom_minimum_size = Vector2(0, 44)
+	launch.pressed.connect(_on_prep_launch)
+	btns.add_child(launch)
+	var cancel := Button.new()
+	cancel.name = "PrepCancel"
+	cancel.text = "Annulla"
+	cancel.custom_minimum_size = Vector2(0, 44)
+	cancel.pressed.connect(_on_prep_cancel)
+	btns.add_child(cancel)
+
+func _open_prep_panel() -> void:
+	# Inizializza la preparazione se non è ancora stata impostata per questo pianeta
+	if GameState.expedition_units.is_empty():
+		GameState.setup_orbit_planet()
+	var overlay := find_child("PrepOverlay", true, false)
+	if overlay:
+		overlay.visible = true
+		_refresh_prep_panel()
+
+func _refresh_prep_panel() -> void:
+	_prep_updating = true
+	var info := find_child("PrepInfo", true, false) as Label
+	if info:
+		info.text = "Pianeta %s · Gravità %s · Capacità shuttle %d" % [
+			GameState.current_system, GameState.planet_gravity, GameState.shuttle_capacity]
+	for k in GameData.get_character_keys():
+		var chk := find_child("PrepChk_%s" % k, true, false) as CheckBox
+		if not chk:
+			continue
+		var u := GameData.get_character(k)
+		chk.button_pressed = k in GameState.expedition_units
+		chk.text = "%s — Catt %d / Ucc %d · Peso %d · Porto %d · Vel %d" % [
+			u.get("name", k), u.get("capture", 0), u.get("kill", 0),
+			u.get("weight", 0), u.get("port", 0), u.get("speed", 0)]
+		chk.disabled = not GameState.crew.get(k, {}).get("alive", true)
+	var slider := find_child("PrepSupply", true, false) as HSlider
+	if slider:
+		slider.max_value = max(GameState.max_planned_supply(), GameState.planned_supply)
+		slider.value = GameState.planned_supply
+	var sup_val := find_child("PrepSupplyVal", true, false) as Label
+	if sup_val:
+		sup_val.text = "%d" % GameState.planned_supply
+	var load_lbl := find_child("PrepLoad", true, false) as Label
+	if load_lbl:
+		var over := GameState.total_load() > GameState.shuttle_capacity
+		load_lbl.text = "Carico: %d / %d   (unità %d + rifornimenti %d)" % [
+			GameState.total_load(), GameState.shuttle_capacity,
+			GameState.units_weight(), GameState.planned_supply]
+		load_lbl.add_theme_color_override("font_color",
+			Color(1.0, 0.4, 0.4) if over else Color(0.6, 1.0, 0.6))
+	var launch := find_child("PrepLaunch", true, false) as Button
+	if launch:
+		launch.disabled = not GameState.prep_valid()
+	_prep_updating = false
+
+func _on_prep_unit_toggled(_pressed: bool, key: String) -> void:
+	if _prep_updating:
+		return
+	GameState.toggle_expedition_unit(key)
+	_refresh_prep_panel()
+
+func _on_prep_supply_changed(value: float) -> void:
+	if _prep_updating:
+		return
+	GameState.planned_supply = clampi(int(value), 0, GameState.max_planned_supply())
+	_refresh_prep_panel()
+
+func _on_prep_cancel() -> void:
+	var overlay := find_child("PrepOverlay", true, false)
+	if overlay:
+		overlay.visible = false
+
+func _on_prep_launch() -> void:
+	if not GameState.prep_valid():
+		return
+	var overlay := find_child("PrepOverlay", true, false)
+	if overlay:
+		overlay.visible = false
+	var die := randi_range(1, 6)
+	_set_dice_result(die)
+	GameState.launch_expedition(die)
+
 func _on_enter_orbit() -> void:
 	GameState.set_phase(GameState.Phase.ORBIT)
+	GameState.setup_orbit_planet()
 	var sys := GameState.current_system
 	var para_key := str(GameState.tour_length)
 	var sys_data := GameData.get_star_system_data(sys)
@@ -671,9 +847,7 @@ func _on_enter_orbit() -> void:
 func _on_land() -> void:
 	if GameState.current_phase != GameState.Phase.ORBIT:
 		return
-	var die := randi_range(1, 6)
-	_set_dice_result(die)
-	GameState.land_on_planet(die)
+	_open_prep_panel()
 
 func _on_continue() -> void:
 	# Chiude il paragrafo corrente e torna alla fase appropriata
@@ -714,8 +888,8 @@ func _on_explore() -> void:
 func _on_combat(mode: String) -> void:
 	if GameState.current_creature.is_empty():
 		return
-	# Valore di combattimento del personaggio (semplificato per il prototipo): 3
-	var player_combat := 3
+	# Miglior valore di combattimento tra i personaggi scelti per la spedizione (5.2/8.0)
+	var player_combat := GameState.best_combat(mode)
 	GameState.resolve_combat(mode, player_combat)
 	# Aggiorna il pannello (l'incontro può essere finito)
 	if GameState.current_creature.is_empty():
