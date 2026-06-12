@@ -40,15 +40,17 @@ var current_paragraph: int = 0
 var awaiting_die_roll: bool = false
 var pending_die_purpose: String = ""
 
-# Crew (simplified)
+# Crew — ogni personaggio ha un Valore di Resistenza (Endurance) di 6 (regola 2.5).
+# I Punti Danno riducono la Resistenza; a 0 il personaggio è ucciso (8.8).
+const MAX_ENDURANCE := 6
 var crew: Dictionary = {
-	"CO":   {"name": "Comandante",           "alive": true, "wounded": false},
-	"Nav":  {"name": "Navigatore",           "alive": true, "wounded": false},
-	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "wounded": false},
-	"GSO":  {"name": "Ufficiale Scienze",    "alive": true, "wounded": false},
-	"MedO": {"name": "Ufficiale Medico",     "alive": true, "wounded": false},
-	"WO":   {"name": "Ufficiale Armi",       "alive": true, "wounded": false},
-	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "wounded": false}
+	"CO":   {"name": "Comandante",            "alive": true, "endurance": 6},
+	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 6},
+	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "endurance": 6},
+	"GSO":  {"name": "Ufficiale Scienze",     "alive": true, "endurance": 6},
+	"MedO": {"name": "Ufficiale Medico",      "alive": true, "endurance": 6},
+	"WO":   {"name": "Ufficiale Armi",        "alive": true, "endurance": 6},
+	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "endurance": 6}
 }
 
 var visited_systems: Array = []
@@ -98,6 +100,9 @@ func start_new_game(p_tour_length: int) -> void:
 	planet_attrs = {}
 	planet_gravity = "Earth like"
 	shuttle_capacity = 80
+	for k in crew:
+		crew[k]["alive"] = true
+		crew[k]["endurance"] = MAX_ENDURANCE
 
 	# Set initial VP based on tour length (from rules)
 	match tour_length:
@@ -312,6 +317,13 @@ func return_to_pandora() -> void:
 
 func _end_tour() -> void:
 	add_log("Tour completato! Calcolo Punti Vittoria...")
+	# Regola 9.2: 1 PV perso per ogni Punto Resistenza perso dai personaggi sopravvissuti.
+	var lost := 0
+	for k in crew:
+		if crew[k].get("alive", false):
+			lost += MAX_ENDURANCE - int(crew[k].get("endurance", MAX_ENDURANCE))
+	if lost > 0:
+		lose_vp(lost, "Ferite dei sopravvissuti a fine tour (%d Resistenza)" % lost)
 	show_paragraph(232)
 	set_phase(Phase.GAME_OVER)
 
@@ -550,10 +562,76 @@ func _kill_creature(name: String) -> void:
 	add_log("%s eliminata." % name)
 	_end_encounter()
 
+# I Punti Danno riducono la Resistenza dei personaggi imbarcati (8.8).
 func _apply_damage(points: int) -> void:
 	damage_points += points
-	if damage_points >= 6:
-		add_log("ATTENZIONE: danni critici alla spedizione (%d)!" % damage_points)
+	for _i in range(points):
+		var target := _pick_wound_target()
+		if target == "":
+			add_log("Nessun personaggio può assorbire altri danni!")
+			break
+		crew[target]["endurance"] = maxi(0, int(crew[target].get("endurance", MAX_ENDURANCE)) - 1)
+		add_log("%s subisce 1 Punto Danno (Resistenza %d/%d)." % [
+			crew[target]["name"], crew[target]["endurance"], MAX_ENDURANCE])
+		if crew[target]["endurance"] <= 0:
+			_kill_character(target)
+	state_updated.emit()
+
+# Sceglie il personaggio imbarcato con più Resistenza, per distribuire i danni.
+func _pick_wound_target() -> String:
+	var best := ""
+	var best_e := 0
+	for k in expedition_units:
+		if not crew.get(k, {}).get("alive", false):
+			continue
+		var e: int = int(crew[k].get("endurance", 0))
+		if e > best_e:
+			best_e = e
+			best = k
+	return best
+
+func _kill_character(key: String) -> void:
+	crew[key]["alive"] = false
+	expedition_units.erase(key)
+	lose_vp(10, "Personaggio ucciso: %s" % crew[key]["name"])
+	add_log("%s è caduto in missione." % crew[key]["name"])
+	# Spedizione senza personaggi: distrutta (regola 5.7)
+	if not has_character_selected():
+		add_log("La spedizione non ha più personaggi: è considerata distrutta. Rientro forzato.")
+		_end_encounter()
+		return_to_pandora()
+
+# Cura: l'Ufficiale Medico (Medkit) ripristina la Resistenza del personaggio più ferito.
+func can_heal() -> bool:
+	if current_phase != Phase.EXPEDITION or not current_creature.is_empty():
+		return false
+	if not ("MedO" in expedition_units and crew.get("MedO", {}).get("alive", false)):
+		return false
+	return _most_wounded() != ""
+
+func heal_wounded() -> void:
+	if not can_heal():
+		return
+	var target := _most_wounded()
+	if target == "":
+		return
+	crew[target]["endurance"] = MAX_ENDURANCE
+	add_expedition_hours(1)
+	add_log("L'Ufficiale Medico cura %s (Resistenza %d/%d)." % [
+		crew[target]["name"], crew[target]["endurance"], MAX_ENDURANCE])
+	state_updated.emit()
+
+func _most_wounded() -> String:
+	var worst := ""
+	var worst_e := MAX_ENDURANCE
+	for k in expedition_units:
+		if not crew.get(k, {}).get("alive", false):
+			continue
+		var e: int = int(crew[k].get("endurance", MAX_ENDURANCE))
+		if e < worst_e:
+			worst_e = e
+			worst = k
+	return worst
 
 func _end_encounter() -> void:
 	current_creature = ""
