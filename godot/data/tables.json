@@ -1,0 +1,44 @@
+{
+  "interstellar_events": {
+    "1": "002",
+    "2": null,
+    "3": null,
+    "4": "004",
+    "5": "005",
+    "6": "006"
+  },
+  "exploration_matrix": {
+    "Open":     ["146","147","148","149","150","151"],
+    "Rough":    ["152","153","154","155","156","157"],
+    "Mountain": ["158","159","160","161","162","163"],
+    "Forest":   ["164","165","166","167","168","169"],
+    "Desert":   ["170","171","172","173","174","175"],
+    "Ice":      ["146","148","152","158","164","170"]
+  },
+  "combat_results": {
+    "-7": "DE",
+    "-6": "DE",
+    "-5": "DE",
+    "-4": "DR",
+    "-3": "DR",
+    "-2": "DR",
+    "-1": "EX",
+    "0":  "EX",
+    "1":  "EX",
+    "2":  "AR",
+    "3":  "AR",
+    "4":  "AE",
+    "5":  "AE",
+    "6":  "AE",
+    "7":  "AE"
+  },
+  "encounter_strategy": {
+    "1": ["Attacca","Attacca","Attacca","Attacca","Attacca","Attacca"],
+    "2": ["Attacca","Attacca","Attacca","Attacca","Attacca","Fugge"],
+    "3": ["Attacca","Attacca","Attacca","Fugge","Fugge","Fugge"],
+    "4": ["Attacca","Fugge","Fugge","Fugge","Fugge","Fugge"],
+    "5": ["Fugge","Fugge","Fugge","Fugge","Fugge","Fugge"],
+    "6": ["Neutrale","Neutrale","Neutrale","Neutrale","Neutrale","Neutrale"]
+  },
+  "terrain_types": ["Open", "Rough", "Mountain", "Forest", "Desert", "Ice"]
+}
