@@ -16,6 +16,7 @@ config/icon="res://assets/icons/Icon_User.png"
 
 GameData="*res://scripts/GameData.gd"
 GameState="*res://scripts/GameState.gd"
+HexUtils="*res://scripts/HexUtils.gd"
 
 [display]
 
