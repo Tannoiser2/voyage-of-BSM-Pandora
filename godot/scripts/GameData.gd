@@ -4,6 +4,7 @@ var paragraphs: Dictionary = {}
 var interstellar: Dictionary = {}
 var tables: Dictionary = {}
 var creatures: Dictionary = {}
+var environ_maps: Dictionary = {}
 
 func _ready() -> void:
 	_load_data()
@@ -13,6 +14,14 @@ func _load_data() -> void:
 	interstellar = _load_json("res://data/interstellar.json")
 	tables = _load_json("res://data/tables.json")
 	creatures = _load_json("res://data/creatures.json")
+	environ_maps = _load_json("res://data/environ_maps.json")
+
+# Dati della mappa di un environ (1..8): immagine reale + geometria esagoni
+func get_environ(env_id: int) -> Dictionary:
+	return environ_maps.get(str(env_id), {})
+
+func environ_count() -> int:
+	return environ_maps.size()
 
 func _load_json(path: String) -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)
