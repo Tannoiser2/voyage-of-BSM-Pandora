@@ -247,6 +247,13 @@ func _build_ui() -> void:
 	btn_heal.pressed.connect(_on_heal)
 	actions_hbox.add_child(btn_heal)
 
+	var btn_repair := Button.new()
+	btn_repair.name = "BtnRepair"
+	btn_repair.text = "Ripara (Botkit/Toolkit)"
+	btn_repair.visible = false
+	btn_repair.pressed.connect(_on_repair)
+	actions_hbox.add_child(btn_repair)
+
 	# Event log
 	var log_panel := Panel.new()
 	log_panel.custom_minimum_size = Vector2(0, 150)
@@ -571,6 +578,8 @@ func _update_action_buttons(phase: String) -> void:
 	if btn_capture: btn_capture.visible = in_combat
 	if btn_flee: btn_flee.visible = in_combat
 	if btn_heal: btn_heal.visible = (phase == "expedition") and not in_combat and GameState.can_heal()
+	var btn_repair := find_child("BtnRepair", true, false)
+	if btn_repair: btn_repair.visible = (phase == "expedition") and not in_combat and GameState.can_repair()
 
 func _update_display() -> void:
 	# Update status labels
@@ -951,6 +960,10 @@ func _on_heal() -> void:
 	GameState.heal_wounded()
 	_show_expedition_panel()
 
+func _on_repair() -> void:
+	GameState.repair_gear()
+	_show_expedition_panel()
+
 func _on_encounter_started(creature_name: String) -> void:
 	var cdata := GameData.get_creature(creature_name)
 	var title_lbl := find_child("ParaTitle", true, false) as Label
@@ -1000,6 +1013,15 @@ func _show_expedition_panel() -> void:
 			crew_lines.append(tag)
 		if crew_lines.size() > 0:
 			bb += "Squadra: " + " · ".join(crew_lines) + "\n\n"
+		# Equipaggiamento imbarcato (robot/strumenti), danneggiati evidenziati (6.9)
+		var gear_lines: Array = []
+		for k in GameState.expedition_gear:
+			var gname: String = GameData.get_unit(k).get("name", k)
+			if k in GameState.damaged_gear:
+				gname = "[color=#ff8866]" + gname + " (danneggiato)[/color]"
+			gear_lines.append(gname)
+		if gear_lines.size() > 0:
+			bb += "Equipaggiamento: " + " · ".join(gear_lines) + "\n\n"
 		if GameState.captured_creatures.size() > 0:
 			bb += "Creature catturate: %s\n\n" % ", ".join(GameState.captured_creatures)
 		if not cell.get("explored", true):

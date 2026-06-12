@@ -62,6 +62,7 @@ var planet_gravity: String = "Earth like"  # gravità del pianeta in orbita
 var shuttle_capacity: int = 80             # capacità di porto dello shuttle (Carta 5.8)
 var expedition_units: Array = []           # chiavi dei personaggi scelti per la spedizione
 var expedition_gear: Array = []            # chiavi di robot/strumenti imbarcati (5.2)
+var damaged_gear: Array = []               # chiavi di robot/strumenti danneggiati (6.9)
 var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
 
 # Combattimento / incontri
@@ -98,6 +99,7 @@ func start_new_game(p_tour_length: int) -> void:
 	log_entries = []
 	expedition_units = []
 	expedition_gear = []
+	damaged_gear = []
 	planned_supply = 6
 	planet_attrs = {}
 	planet_gravity = "Earth like"
@@ -225,6 +227,7 @@ func setup_orbit_planet() -> void:
 	shuttle_capacity = GameData.shuttle_capacity_for(planet_gravity)
 	expedition_units = default_team()
 	expedition_gear = []
+	damaged_gear = []
 	planned_supply = clampi(6, 0, max_planned_supply())
 	add_log("In orbita su %s — gravità %s, atmosfera %s, capacità shuttle %d." % [
 		current_system, GameData.gravity_it(planet_gravity),
@@ -308,6 +311,8 @@ func best_combat(mode: String) -> int:
 		var v: int = int(u.get("capture", 0)) if mode == "capture" else int(u.get("kill", 0))
 		best = maxi(best, v)
 	for k in expedition_gear:
+		if k in damaged_gear:
+			continue  # robot/arma danneggiati non utilizzabili (6.9)
 		var g := GameData.get_unit(k)
 		if g.get("combat", false) or GameData.get_bot_keys().has(k):
 			var gv: int = int(g.get("capture", 0)) if mode == "capture" else int(g.get("kill", 0))
@@ -379,6 +384,7 @@ func reset_expedition_state() -> void:
 	creature_rating = 0
 	captured_creatures = []
 	damage_points = 0
+	damaged_gear = []
 	environ_grid = {}
 	expedition_pos = 0
 	landing_hex = 0
@@ -514,6 +520,7 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 	add_expedition_hours(explore_cost)
 	add_log("Esplorazione di %s — %d ore%s." % [
 		_terrain_it(terrain), explore_cost, _gear_cost_note(terrain)])
+	_consume_supply_for(terrain)
 	environ_changed.emit()
 	var die := randi_range(1, 6)
 	# Dado alto: incontro con creatura; altrimenti paragrafo di esplorazione
@@ -565,6 +572,66 @@ func _gear_cost_note(terrain: String) -> String:
 	if _gear_has("Rover") and int(GameData.terrain_effect(terrain).get("enter_rover", 0)) > 0:
 		parts.append("Rover")
 	return "" if parts.is_empty() else " (" + ", ".join(parts) + ")"
+
+# --- Controllo dei rifornimenti (regola 7.2) ---------------------------------
+
+# Esplorare un esagono consuma (o, su terreni fertili, fornisce) Rifornimenti.
+func _consume_supply_for(terrain: String) -> void:
+	var cost := int(GameData.terrain_effect(terrain).get("supply", 0))
+	if cost < 0:
+		# Terreno fertile: rifornimento, fino al massimo trasportabile
+		expedition_supply = mini(expedition_supply - cost, GameData.max_supply())
+		add_log("Il terreno fornisce %d Rifornimenti (totale %d)." % [-cost, expedition_supply])
+	elif cost > 0:
+		if expedition_supply >= cost:
+			expedition_supply -= cost
+			add_log("Consumo di %d Rifornimenti (rimasti %d)." % [cost, expedition_supply])
+		else:
+			var short := cost - expedition_supply
+			expedition_supply = 0
+			add_log("Rifornimenti esauriti (7.2): %d Punti Danno per gli stenti." % short)
+			_apply_damage(short)
+	state_updated.emit()
+
+# --- Equipaggiamento danneggiato e riparazioni (regola 6.9) ------------------
+
+func _gear_is_bot(key: String) -> bool:
+	return GameData.get_bot_keys().has(key)
+
+func _gear_active(key: String) -> bool:
+	return key in expedition_gear and not (key in damaged_gear)
+
+# Robot imbarcati e funzionanti, disponibili a fare da scudo all'equipaggio.
+func _functioning_bots() -> Array:
+	var out: Array = []
+	for k in expedition_gear:
+		if _gear_is_bot(k) and not (k in damaged_gear):
+			out.append(k)
+	return out
+
+# Riparazione in spedizione: il Botkit ripara i robot, il Toolkit gli strumenti (6.9).
+func can_repair() -> bool:
+	if current_phase != Phase.EXPEDITION or not current_creature.is_empty():
+		return false
+	return _next_repairable() != ""
+
+func _next_repairable() -> String:
+	for k in damaged_gear:
+		if _gear_is_bot(k) and _gear_active("Botkit"):
+			return k
+		if not _gear_is_bot(k) and _gear_active("Toolkit"):
+			return k
+	return ""
+
+func repair_gear() -> void:
+	var key := _next_repairable()
+	if key == "":
+		return
+	damaged_gear.erase(key)
+	add_expedition_hours(1)
+	var kit := "Botkit" if _gear_is_bot(key) else "Toolkit"
+	add_log("%s ripara %s." % [kit, GameData.get_unit(key).get("name", key)])
+	state_updated.emit()
 
 # --- Combattimento / incontri (regola 8.0) -----------------------------------
 
@@ -632,9 +699,16 @@ func _kill_creature(name: String) -> void:
 	_end_encounter()
 
 # I Punti Danno riducono la Resistenza dei personaggi imbarcati (8.8).
+# I robot funzionanti fanno da scudo: assorbono un colpo ciascuno danneggiandosi (6.9).
 func _apply_damage(points: int) -> void:
 	damage_points += points
 	for _i in range(points):
+		var bots := _functioning_bots()
+		if bots.size() > 0:
+			var bot: String = bots[0]
+			damaged_gear.append(bot)
+			add_log("%s incassa il colpo al posto dell'equipaggio: danneggiato (6.9)." % GameData.get_unit(bot).get("name", bot))
+			continue
 		var target := _pick_wound_target()
 		if target == "":
 			add_log("Nessun personaggio può assorbire altri danni!")
@@ -670,11 +744,16 @@ func _kill_character(key: String) -> void:
 		_end_encounter()
 		return_to_pandora()
 
-# Cura: l'Ufficiale Medico (Medkit) ripristina la Resistenza del personaggio più ferito.
+# Cura: l'Ufficiale Medico o un Medkit imbarcato ripristinano la Resistenza del più ferito (2.5).
+func _can_treat() -> bool:
+	if "MedO" in expedition_units and crew.get("MedO", {}).get("alive", false):
+		return true
+	return _gear_active("Medkit")
+
 func can_heal() -> bool:
 	if current_phase != Phase.EXPEDITION or not current_creature.is_empty():
 		return false
-	if not ("MedO" in expedition_units and crew.get("MedO", {}).get("alive", false)):
+	if not _can_treat():
 		return false
 	return _most_wounded() != ""
 
@@ -686,8 +765,9 @@ func heal_wounded() -> void:
 		return
 	crew[target]["endurance"] = MAX_ENDURANCE
 	add_expedition_hours(1)
-	add_log("L'Ufficiale Medico cura %s (Resistenza %d/%d)." % [
-		crew[target]["name"], crew[target]["endurance"], MAX_ENDURANCE])
+	var healer := "L'Ufficiale Medico" if ("MedO" in expedition_units and crew.get("MedO", {}).get("alive", false)) else "Il Medkit"
+	add_log("%s cura %s (Resistenza %d/%d)." % [
+		healer, crew[target]["name"], crew[target]["endurance"], MAX_ENDURANCE])
 	state_updated.emit()
 
 func _most_wounded() -> String:
