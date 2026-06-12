@@ -496,11 +496,12 @@ func move_expedition(hex_id: int) -> void:
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
 	var real_id: String = cell.get("real", str(hex_id))
-	# Entrare in un esagono costa le ore del terreno (Carta 6.6, a piedi)
-	var enter_cost := GameData.terrain_enter_cost(terrain)
+	# Entrare in un esagono costa le ore del terreno (Carta 6.6), modificate dall'equipaggiamento
+	var enter_cost := enter_cost_for(terrain)
 	expedition_pos = hex_id
 	add_expedition_hours(enter_cost)
-	add_log("La spedizione entra in %s (esagono %s) — %d ore." % [_terrain_it(terrain), real_id, enter_cost])
+	add_log("La spedizione entra in %s (esagono %s) — %d ore%s." % [
+		_terrain_it(terrain), real_id, enter_cost, _gear_cost_note(terrain)])
 	environ_changed.emit()
 	# Esplora il nuovo esagono se non ancora esplorato
 	if not cell.get("explored", false):
@@ -508,10 +509,11 @@ func move_expedition(hex_id: int) -> void:
 
 func explore_environ_hex(hex_id: int, terrain: String) -> void:
 	environ_grid[hex_id]["explored"] = true
-	# Esplorare costa le ore del terreno (Carta 6.6)
-	var explore_cost := GameData.terrain_explore_cost(terrain)
+	# Esplorare costa le ore del terreno (Carta 6.6), modificate dall'equipaggiamento
+	var explore_cost := explore_cost_for(terrain)
 	add_expedition_hours(explore_cost)
-	add_log("Esplorazione di %s — %d ore." % [_terrain_it(terrain), explore_cost])
+	add_log("Esplorazione di %s — %d ore%s." % [
+		_terrain_it(terrain), explore_cost, _gear_cost_note(terrain)])
 	environ_changed.emit()
 	var die := randi_range(1, 6)
 	# Dado alto: incontro con creatura; altrimenti paragrafo di esplorazione
@@ -527,6 +529,42 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 
 func _terrain_it(terrain: String) -> String:
 	return GameData.terrain_it(terrain)
+
+# --- Effetti dell'equipaggiamento sui costi del terreno (2.5) -----------------
+
+func _gear_has(key: String) -> bool:
+	return key in expedition_gear
+
+# Il Climbkit dimezza (per eccesso) le ore in montagna e dirupi.
+func _climbkit_applies(terrain: String) -> bool:
+	var real := GameData.terrain_real(terrain)
+	return _gear_has("Climbkit") and (real == "Mountain" or real == "Cliffs")
+
+func enter_cost_for(terrain: String) -> int:
+	var c := GameData.terrain_enter_cost(terrain)
+	# Rover: usa il costo d'ingresso con veicolo dove il terreno è percorribile
+	if _gear_has("Rover"):
+		var rc := int(GameData.terrain_effect(terrain).get("enter_rover", c))
+		if rc > 0:
+			c = rc
+	if _climbkit_applies(terrain):
+		c = maxi(1, int(ceil(c / 2.0)))
+	return c
+
+func explore_cost_for(terrain: String) -> int:
+	var c := GameData.terrain_explore_cost(terrain)
+	if _climbkit_applies(terrain):
+		c = maxi(1, int(ceil(c / 2.0)))
+	return c
+
+# Nota da appendere al log quando l'equipaggiamento riduce il costo.
+func _gear_cost_note(terrain: String) -> String:
+	var parts: Array = []
+	if _climbkit_applies(terrain):
+		parts.append("Climbkit")
+	if _gear_has("Rover") and int(GameData.terrain_effect(terrain).get("enter_rover", 0)) > 0:
+		parts.append("Rover")
+	return "" if parts.is_empty() else " (" + ", ".join(parts) + ")"
 
 # --- Combattimento / incontri (regola 8.0) -----------------------------------
 
