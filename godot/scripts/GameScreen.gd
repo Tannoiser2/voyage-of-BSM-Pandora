@@ -12,13 +12,14 @@ var dice_panel: Control
 var current_para_num: int = 0
 
 # Overlay della mappa interstellare reale (Voyage Map.jpg)
-const INTER_REGION := Rect2(0, 1335, 510, 545)
-const INTER_SCALE := 0.94
-const INTER_OFFSET := Vector2(6, 30)
-const GRID_BASE := Vector2(66, 1376)   # centro esagono 11 in pixel mappa
-const GRID_DX := 63.0
-const GRID_DY := 77.0
-const GRID_EVEN_OFFSET := 38.0
+# Coordinate ricavate per calibrazione dai cerchi dei sistemi stellari sull'originale.
+const INTER_REGION := Rect2(34, 1346, 336, 656)
+const INTER_SCALE := 1.26
+const INTER_OFFSET := Vector2(33, 36)
+const GRID_BASE := Vector2(82, 1399)   # centro esagono 11 in pixel mappa
+const GRID_DX := 78.0
+const GRID_DY := 92.0
+const GRID_EVEN_OFFSET := 45.0
 
 func _ready() -> void:
 	_build_ui()
@@ -350,9 +351,9 @@ func _build_hex_buttons() -> void:
 
 			var btn := Button.new()
 			btn.name = "Hex_%d" % hex_id
-			btn.custom_minimum_size = Vector2(52, 52)
-			btn.size = Vector2(52, 52)
-			btn.position = pos - Vector2(26, 26)
+			btn.custom_minimum_size = Vector2(70, 70)
+			btn.size = Vector2(70, 70)
+			btn.position = pos - Vector2(35, 35)
 			btn.pressed.connect(_on_hex_clicked.bind(hex_id))
 			var sys_name := GameData.get_planet_for_hex(hex_id)
 			btn.tooltip_text = sys_name if sys_name != "" else "Esagono %d" % hex_id
@@ -549,7 +550,7 @@ func _refresh_hex_buttons() -> void:
 
 			var sb := StyleBoxFlat.new()
 			sb.bg_color = Color(0, 0, 0, 0)
-			sb.set_corner_radius_all(26)
+			sb.set_corner_radius_all(35)
 			sb.set_border_width_all(3)
 			sb.border_color = Color(1, 1, 1, 0)  # invisibile di default
 
@@ -734,10 +735,10 @@ func _on_paragraph_request(para_num: int) -> void:
 	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
 	if para_display:
 		var bb := ""
-		# Illustrazione originale dell'evento (se presente)
+		# Illustrazione narrativa dell'evento (se presente)
 		var img_path := GameData.get_event_image_path(para_num)
 		if not img_path.is_empty():
-			bb += "[center][img=320]" + img_path + "[/img][/center]\n\n"
+			bb += "[center][img=360]" + img_path + "[/img][/center]\n\n"
 		bb += "[p]" + text + "[/p]"
 		para_display.bbcode_text = bb
 
