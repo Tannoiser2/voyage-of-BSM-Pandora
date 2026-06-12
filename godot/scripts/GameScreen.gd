@@ -983,10 +983,9 @@ func _show_expedition_panel() -> void:
 	if para_display:
 		var cell: Dictionary = GameState.environ_grid.get(GameState.expedition_pos, {})
 		var terr_class: String = cell.get("terrain", "Open")
-		var eff := GameData.terrain_effect(terr_class)
 		var bb := "Posizione: esagono [b]%s[/b] · terreno [b]%s[/b] (entrata %d ore, esplorazione %d ore).\n\n" % [
 			cell.get("real", "?"), GameData.terrain_it(terr_class),
-			int(eff.get("enter_foot", 1)), int(eff.get("explore", 2))]
+			GameState.enter_cost_for(terr_class), GameState.explore_cost_for(terr_class)]
 		bb += "Ore di spedizione: [b]%d[/b]  ·  Rifornimenti: [b]%d[/b]  ·  Danni: [b]%d[/b]\n\n" % [
 			GameState.expedition_hours, GameState.expedition_supply, GameState.damage_points
 		]
