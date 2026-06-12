@@ -6,6 +6,7 @@ var tables: Dictionary = {}
 var creatures: Dictionary = {}
 var environ_maps: Dictionary = {}
 var units: Dictionary = {}
+var terrain: Dictionary = {}
 
 func _ready() -> void:
 	_load_data()
@@ -17,6 +18,25 @@ func _load_data() -> void:
 	creatures = _load_json("res://data/creatures.json")
 	environ_maps = _load_json("res://data/environ_maps.json")
 	units = _load_json("res://data/units.json")
+	terrain = _load_json("res://data/terrain.json")
+
+# Mappa una classe di terreno campionata (Open/Rough/...) al tipo reale (Flat/Hill/...)
+func terrain_real(terrain_class: String) -> String:
+	return terrain.get("class_map", {}).get(terrain_class, "Flat")
+
+# Effetti del terreno (Carta 6.6) per una classe campionata.
+func terrain_effect(terrain_class: String) -> Dictionary:
+	var real := terrain_real(terrain_class)
+	return terrain.get("effects", {}).get(real, {"enter_foot": 1, "explore": 2, "supply": 0, "prohibited": false})
+
+func terrain_enter_cost(terrain_class: String) -> int:
+	return int(terrain_effect(terrain_class).get("enter_foot", 1))
+
+func terrain_explore_cost(terrain_class: String) -> int:
+	return int(terrain_effect(terrain_class).get("explore", 2))
+
+func terrain_it(terrain_class: String) -> String:
+	return terrain.get("terrain_it", {}).get(terrain_real(terrain_class), terrain_real(terrain_class))
 
 # Statistiche di un personaggio della Pandora (regola 2.5 / 5.2)
 func get_character(key: String) -> Dictionary:

@@ -1,0 +1,38 @@
+{
+  "effects": {
+    "Flat":             {"enter_foot": 1, "enter_rover": 1, "explore": 2,  "supply": 1,  "prohibited": false},
+    "Hill":             {"enter_foot": 2, "enter_rover": 1, "explore": 3,  "supply": 1,  "prohibited": false},
+    "Mountain":         {"enter_foot": 3, "enter_rover": 2, "explore": 5,  "supply": 2,  "prohibited": false},
+    "Cliffs":           {"enter_foot": 5, "enter_rover": 0, "explore": 8,  "supply": 3,  "prohibited": false},
+    "Light Vegetation": {"enter_foot": 1, "enter_rover": 1, "explore": 2,  "supply": -1, "prohibited": false},
+    "Heavy Vegetation": {"enter_foot": 2, "enter_rover": 0, "explore": 5,  "supply": -2, "prohibited": false},
+    "Cave":             {"enter_foot": 2, "enter_rover": 0, "explore": 3,  "supply": 3,  "prohibited": false},
+    "Liquid Surface":   {"enter_foot": 4, "enter_rover": 1, "explore": 5,  "supply": -1, "prohibited": false},
+    "Marsh":            {"enter_foot": 2, "enter_rover": 0, "explore": 5,  "supply": -1, "prohibited": false},
+    "Glacial Ice":      {"enter_foot": 2, "enter_rover": 0, "explore": 5,  "supply": 3,  "prohibited": false},
+    "Solid Lava":       {"enter_foot": 2, "enter_rover": 2, "explore": 4,  "supply": 4,  "prohibited": false},
+    "Alien City":       {"enter_foot": 1, "enter_rover": 1, "explore": 10, "supply": 2,  "prohibited": false}
+  },
+  "class_map": {
+    "Open": "Flat",
+    "Rough": "Hill",
+    "Mountain": "Mountain",
+    "Forest": "Heavy Vegetation",
+    "Desert": "Solid Lava",
+    "Ice": "Glacial Ice"
+  },
+  "terrain_it": {
+    "Flat": "Pianura",
+    "Hill": "Collina",
+    "Mountain": "Montagna",
+    "Cliffs": "Dirupi",
+    "Light Vegetation": "Vegetazione rada",
+    "Heavy Vegetation": "Vegetazione fitta",
+    "Cave": "Caverna",
+    "Liquid Surface": "Superficie liquida",
+    "Marsh": "Palude",
+    "Glacial Ice": "Ghiaccio",
+    "Solid Lava": "Lava solidificata",
+    "Alien City": "Citta aliena"
+  }
+}
