@@ -3,4 +3,4 @@
 /android/
 /builds/
 *.translation
-export_presets.cfg
+# export_presets.cfg viene versionato: serve all'esportazione Web per GitHub Pages

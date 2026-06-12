@@ -1,0 +1,67 @@
+name: Esporta su GitHub Pages
+
+# Esporta il gioco Godot in HTML5/Web e lo pubblica su GitHub Pages.
+on:
+  push:
+    branches:
+      - main
+      - claude/spi-game-godot-digital-fb861w
+  workflow_dispatch:
+
+# Permessi necessari per il deploy su Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Una sola pubblicazione alla volta
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: "4.4"
+  PROJECT_PATH: "godot"
+  EXPORT_NAME: "Web"
+
+jobs:
+  export-web:
+    name: Esporta build Web
+    runs-on: ubuntu-latest
+    # Immagine con Godot 4.4 + template di esportazione preinstallati
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Installa i template di esportazione
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mkdir -v -p ~/.config/godot
+          cp -v /root/.local/share/godot/export_templates/* ~/.local/share/godot/export_templates/ || true
+
+      - name: Esporta build Web
+        run: |
+          mkdir -v -p build/web
+          cd $PROJECT_PATH
+          # Reimporta gli asset, poi esporta in modalità release
+          godot --headless --import || true
+          godot --headless --export-release "$EXPORT_NAME" ../build/web/index.html
+
+      - name: Carica artefatto per Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    name: Pubblica su Pages
+    needs: export-web
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy su GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
