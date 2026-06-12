@@ -8,13 +8,33 @@
     "MntO": {"name": "Uff. Manutenzione",     "capture": 3, "kill": 2, "weight": 6, "port": 6, "speed": 9, "img": "Char_MntO"},
     "WO":   {"name": "Uff. Armi",             "capture": 4, "kill": 3, "weight": 7, "port": 7, "speed": 8, "img": "Char_WO"}
   },
-  "gravities": ["Quasi assente", "Leggera", "Terrestre", "Pesante", "Opprimente"],
   "shuttle_capacity": {
-    "Quasi assente": 120,
-    "Leggera": 100,
-    "Terrestre": 80,
-    "Pesante": 60,
-    "Opprimente": 30
+    "Near weightless": 120,
+    "Light": 100,
+    "Earth like": 80,
+    "Heavy": 60,
+    "Oppressive": 30
+  },
+  "gravity_it": {
+    "Near weightless": "Quasi assente",
+    "Light": "Leggera",
+    "Earth like": "Terrestre",
+    "Heavy": "Pesante",
+    "Oppressive": "Opprimente"
+  },
+  "atmosphere_it": {
+    "Normal": "Normale",
+    "Thin": "Rarefatta",
+    "Poison": "Velenosa",
+    "Corrosive": "Corrosiva",
+    "None": "Assente"
+  },
+  "atmosphere_note": {
+    "Normal": "",
+    "Thin": "Atmosfera rarefatta: i personaggi indossano un respiratore (Porto -1).",
+    "Poison": "Atmosfera velenosa: ogni personaggio deve indossare un enviorig.",
+    "Corrosive": "Atmosfera corrosiva: ogni personaggio deve indossare un armorig.",
+    "None": "Nessuna atmosfera: ogni personaggio deve indossare un enviorig."
   },
   "max_supply": 20
 }

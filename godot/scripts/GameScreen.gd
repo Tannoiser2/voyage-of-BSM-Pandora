@@ -700,6 +700,8 @@ func _build_prep_panel() -> void:
 	info.name = "PrepInfo"
 	info.add_theme_font_size_override("font_size", 12)
 	info.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.custom_minimum_size = Vector2(520, 0)
 	vbox.add_child(info)
 
 	var hdr := Label.new()
@@ -773,8 +775,15 @@ func _refresh_prep_panel() -> void:
 	_prep_updating = true
 	var info := find_child("PrepInfo", true, false) as Label
 	if info:
-		info.text = "Pianeta %s · Gravità %s · Capacità shuttle %d" % [
-			GameState.current_system, GameState.planet_gravity, GameState.shuttle_capacity]
+		var atmo: String = GameState.planet_attrs.get("atmosphere", "Normal")
+		var hydro: int = int(GameState.planet_attrs.get("hydro", 0))
+		var txt := "Pianeta %s · Gravità %s · Atmosfera %s · Idro %d%% · Capacità shuttle %d" % [
+			GameState.current_system, GameData.gravity_it(GameState.planet_gravity),
+			GameData.atmosphere_it(atmo), hydro, GameState.shuttle_capacity]
+		var note := GameData.atmosphere_note(atmo)
+		if note != "":
+			txt += "\n⚠ " + note
+		info.text = txt
 	for k in GameData.get_character_keys():
 		var chk := find_child("PrepChk_%s" % k, true, false) as CheckBox
 		if not chk:

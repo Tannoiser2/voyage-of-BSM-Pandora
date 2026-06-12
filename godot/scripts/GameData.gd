@@ -29,11 +29,37 @@ func get_character_keys() -> Array:
 func shuttle_capacity_for(gravity: String) -> int:
 	return int(units.get("shuttle_capacity", {}).get(gravity, 80))
 
+func gravity_it(gravity: String) -> String:
+	return units.get("gravity_it", {}).get(gravity, gravity)
+
+func atmosphere_it(atmosphere: String) -> String:
+	return units.get("atmosphere_it", {}).get(atmosphere, atmosphere)
+
+func atmosphere_note(atmosphere: String) -> String:
+	return units.get("atmosphere_note", {}).get(atmosphere, "")
+
 func gravity_list() -> Array:
-	return units.get("gravities", ["Terrestre"])
+	return units.get("gravity_it", {}).keys()
 
 func max_supply() -> int:
 	return int(units.get("max_supply", 20))
+
+# Attributi del pianeta in orbita (gravità, atmosfera, idro, geologia, lsv, atterraggi)
+func get_planet_attributes(system: String, tour_length: int) -> Dictionary:
+	var sys := get_star_system_data(system)
+	var para_str: String = sys.get("planet_para", {}).get(str(tour_length), "")
+	if para_str.is_empty():
+		return {}
+	return get_paragraph(para_str.to_int()).get("planet", {})
+
+# Mappa un esagono globale (es. "1502") all'environ e all'esagono locale che lo contengono.
+func find_environ_hex(real_id: String) -> Dictionary:
+	for env_id in environ_maps:
+		var hexes: Dictionary = environ_maps[env_id].get("hexes", {})
+		for local_id in hexes:
+			if hexes[local_id].get("real", "") == real_id:
+				return {"env": int(env_id), "local": int(local_id)}
+	return {}
 
 # Dati della mappa di un environ (1..8): immagine reale + geometria esagoni
 func get_environ(env_id: int) -> Dictionary:
