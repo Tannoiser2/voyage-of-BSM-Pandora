@@ -14,8 +14,10 @@ func _ready() -> void:
 	_build_ui()
 	_connect_signals()
 	_update_display()
-	# Ripristina la visualizzazione del paragrafo corrente (es. al rientro nella scena)
-	if GameState.current_paragraph > 0 and GameState.current_phase == GameState.Phase.PARAGRAPH:
+	# Ripristina la visualizzazione corrente al (ri)entro nella scena
+	if not GameState.current_creature.is_empty():
+		_on_encounter_started(GameState.current_creature)
+	elif GameState.current_paragraph > 0 and GameState.current_phase == GameState.Phase.PARAGRAPH:
 		_on_paragraph_request(GameState.current_paragraph)
 	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
@@ -141,6 +143,28 @@ func _build_ui() -> void:
 	btn_explore.visible = false
 	btn_explore.pressed.connect(_on_explore)
 	actions_hbox.add_child(btn_explore)
+
+	# Pulsanti di combattimento (visibili durante un incontro)
+	var btn_kill := Button.new()
+	btn_kill.name = "BtnKill"
+	btn_kill.text = "Uccidi"
+	btn_kill.visible = false
+	btn_kill.pressed.connect(_on_combat.bind("kill"))
+	actions_hbox.add_child(btn_kill)
+
+	var btn_capture := Button.new()
+	btn_capture.name = "BtnCapture"
+	btn_capture.text = "Cattura"
+	btn_capture.visible = false
+	btn_capture.pressed.connect(_on_combat.bind("capture"))
+	actions_hbox.add_child(btn_capture)
+
+	var btn_flee := Button.new()
+	btn_flee.name = "BtnFlee"
+	btn_flee.text = "Fuggi"
+	btn_flee.visible = false
+	btn_flee.pressed.connect(_on_flee)
+	actions_hbox.add_child(btn_flee)
 
 	# Event log
 	var log_panel := Panel.new()
@@ -311,6 +335,8 @@ func _connect_signals() -> void:
 	GameState.state_updated.connect(_update_display)
 	GameState.paragraph_request.connect(_on_paragraph_request)
 	GameState.message_posted.connect(_on_message)
+	GameState.encounter_started.connect(_on_encounter_started)
+	GameState.encounter_ended.connect(_on_encounter_ended)
 
 func _on_phase_changed(phase: String) -> void:
 	_update_display()
@@ -321,11 +347,19 @@ func _update_action_buttons(phase: String) -> void:
 	var btn_land := find_child("BtnLand", true, false)
 	var btn_return := find_child("BtnReturn", true, false)
 	var btn_explore := find_child("BtnExplore", true, false)
+	var btn_kill := find_child("BtnKill", true, false)
+	var btn_capture := find_child("BtnCapture", true, false)
+	var btn_flee := find_child("BtnFlee", true, false)
+
+	var in_combat := not GameState.current_creature.is_empty()
 
 	if btn_orbit: btn_orbit.visible = (phase == "orbit")
 	if btn_land: btn_land.visible = (phase == "orbit")
-	if btn_return: btn_return.visible = (phase == "expedition" or phase == "paragraph")
-	if btn_explore: btn_explore.visible = (phase == "expedition")
+	if btn_return: btn_return.visible = (phase == "expedition" or phase == "paragraph") and not in_combat
+	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat
+	if btn_kill: btn_kill.visible = in_combat
+	if btn_capture: btn_capture.visible = in_combat
+	if btn_flee: btn_flee.visible = in_combat
 
 func _update_display() -> void:
 	# Update status labels
@@ -433,15 +467,81 @@ func _on_return_to_pandora() -> void:
 func _on_explore() -> void:
 	if GameState.current_phase != GameState.Phase.EXPEDITION:
 		return
-	# Simple exploration: roll die, pick terrain from planet, get paragraph
+	if not GameState.current_creature.is_empty():
+		return
+	# Esplorazione: tira il dado, ogni esplorazione costa 2 ore
 	var die := randi_range(1, 6)
 	_set_dice_result(die)
-	# For now use "Open" terrain as default; real game uses terrain from hex
-	var terrain := "Open"
-	var para_num := GameData.get_exploration_paragraph(terrain, die)
-	GameState.add_expedition_hours(2)  # each explore costs 2 hours
-	GameState.add_log("Esplorazione: dado %d → Paragrafo %03d" % [die, para_num])
-	GameState.show_paragraph(para_num)
+	GameState.add_expedition_hours(2)
+	# Con dado alto si incontra una creatura (regola 8.0), altrimenti paragrafo evento
+	if die >= 5:
+		var names := GameData.get_all_creature_names()
+		var creature: String = names[randi() % names.size()]
+		GameState.add_log("Esplorazione (dado %d): qualcosa si avvicina..." % die)
+		GameState.set_phase(GameState.Phase.EXPEDITION)
+		GameState.start_encounter(creature)
+	else:
+		var terrain := "Open"
+		var para_num := GameData.get_exploration_paragraph(terrain, die)
+		GameState.add_log("Esplorazione: dado %d → Paragrafo %03d" % [die, para_num])
+		GameState.show_paragraph(para_num)
+
+func _on_combat(mode: String) -> void:
+	if GameState.current_creature.is_empty():
+		return
+	# Valore di combattimento del personaggio (semplificato per il prototipo): 3
+	var player_combat := 3
+	GameState.resolve_combat(mode, player_combat)
+	# Aggiorna il pannello (l'incontro può essere finito)
+	if GameState.current_creature.is_empty():
+		_show_expedition_panel()
+	else:
+		_on_encounter_started(GameState.current_creature)
+
+func _on_flee() -> void:
+	GameState.flee_encounter()
+	_show_expedition_panel()
+
+func _on_encounter_started(creature_name: String) -> void:
+	var cdata := GameData.get_creature(creature_name)
+	var title_lbl := find_child("ParaTitle", true, false) as Label
+	if title_lbl: title_lbl.text = "Incontro: %s" % creature_name
+
+	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
+	if para_display:
+		var bb := ""
+		var tex_path := "res://assets/creatures/%s.png" % cdata.get("img", "")
+		if ResourceLoader.exists(tex_path):
+			bb += "[center][img=160]" + tex_path + "[/img][/center]\n\n"
+		bb += "[center][b]%s[/b][/center]\n\n" % creature_name
+		bb += "Valutazione di combattimento per questo esagono: [b]%d[/b]\n\n" % GameState.creature_rating
+		bb += "Modificatori — Intelligenza: %d · Combattimento: %d · Aggressività: %d · Velocità: %d\n\n" % [
+			cdata.get("intel", 0), cdata.get("combat", 0), cdata.get("aggression", 0), cdata.get("speed", 0)
+		]
+		bb += "[i]Scegli: Uccidi, Cattura (per PV extra) o Fuggi.[/i]"
+		para_display.bbcode_text = bb
+
+	_update_action_buttons("expedition")
+
+func _on_encounter_ended() -> void:
+	_show_expedition_panel()
+
+func _show_expedition_panel() -> void:
+	var title_lbl := find_child("ParaTitle", true, false) as Label
+	if title_lbl: title_lbl.text = "— Spedizione su %s —" % GameState.current_planet
+
+	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
+	if para_display:
+		var bb := "Esplora la superficie per trovare creature, artefatti e forme di vita.\n\n"
+		bb += "Ore di spedizione: [b]%d[/b]  ·  Rifornimenti: [b]%d[/b]  ·  Danni: [b]%d[/b]\n\n" % [
+			GameState.expedition_hours, GameState.expedition_supply, GameState.damage_points
+		]
+		if GameState.captured_creatures.size() > 0:
+			bb += "Creature catturate: %s\n\n" % ", ".join(GameState.captured_creatures)
+		bb += "[i]Premi \"Esplora\" per continuare, oppure \"Torna alla Pandora\".[/i]"
+		para_display.bbcode_text = bb
+
+	_update_action_buttons("expedition")
 
 func _on_roll_dice() -> void:
 	var die := randi_range(1, 6)
@@ -468,7 +568,13 @@ func _on_paragraph_request(para_num: int) -> void:
 
 	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
 	if para_display:
-		para_display.bbcode_text = "[p]" + text + "[/p]"
+		var bb := ""
+		# Illustrazione originale dell'evento (se presente)
+		var img_path := GameData.get_event_image_path(para_num)
+		if not img_path.is_empty():
+			bb += "[center][img=320]" + img_path + "[/img][/center]\n\n"
+		bb += "[p]" + text + "[/p]"
+		para_display.bbcode_text = bb
 
 	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 

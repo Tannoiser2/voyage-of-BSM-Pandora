@@ -3,6 +3,7 @@ extends Node
 var paragraphs: Dictionary = {}
 var interstellar: Dictionary = {}
 var tables: Dictionary = {}
+var creatures: Dictionary = {}
 
 func _ready() -> void:
 	_load_data()
@@ -11,6 +12,7 @@ func _load_data() -> void:
 	paragraphs = _load_json("res://data/paragrafi_it.json")
 	interstellar = _load_json("res://data/interstellar.json")
 	tables = _load_json("res://data/tables.json")
+	creatures = _load_json("res://data/creatures.json")
 
 func _load_json(path: String) -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -90,3 +92,45 @@ func get_interstellar_event_para(die: int) -> int:
 	if val == null or val == "":
 		return 0
 	return str(val).to_int()
+
+# --- Immagini evento ---------------------------------------------------------
+
+func get_event_image_path(para_num: int) -> String:
+	# Restituisce il percorso dell'illustrazione originale del paragrafo, se esiste
+	var path := "res://assets/events/Event_%03d.jpg" % para_num
+	if ResourceLoader.exists(path):
+		return path
+	return ""
+
+func load_event_texture(para_num: int) -> Texture2D:
+	var path := get_event_image_path(para_num)
+	if path.is_empty():
+		return null
+	return load(path) as Texture2D
+
+# --- Creature ----------------------------------------------------------------
+
+func get_creature(name: String) -> Dictionary:
+	return creatures.get("creatures", {}).get(name, {})
+
+func get_all_creature_names() -> Array:
+	return creatures.get("creatures", {}).keys()
+
+func get_creature_texture(name: String) -> Texture2D:
+	var data := get_creature(name)
+	var img_name: String = data.get("img", "")
+	if img_name.is_empty():
+		return null
+	var path := "res://assets/creatures/%s.png" % img_name
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return null
+
+# Valutazione di combattimento della creatura per un esagono (regola 8.4):
+# 2d6 + Modificatore di Combattimento. Restituisce il totale.
+func roll_creature_combat_rating(name: String) -> int:
+	var data := get_creature(name)
+	var modifier: int = data.get("combat", 0)
+	var d1 := randi_range(1, 6)
+	var d2 := randi_range(1, 6)
+	return d1 + d2 + modifier

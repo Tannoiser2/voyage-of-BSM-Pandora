@@ -4,6 +4,9 @@ signal phase_changed(new_phase: String)
 signal state_updated
 signal paragraph_request(para_num: int)
 signal message_posted(msg: String)
+signal encounter_started(creature_name: String)
+signal encounter_ended
+signal combat_resolved(result: String, detail: String)
 
 enum Phase {
 	MAIN_MENU,
@@ -50,6 +53,12 @@ var crew: Dictionary = {
 
 var visited_systems: Array = []
 var log_entries: Array = []
+
+# Combattimento / incontri
+var current_creature: String = ""
+var creature_rating: int = 0          # valutazione della creatura per l'esagono (8.4)
+var damage_points: int = 0            # danni accumulati dalla spedizione
+var captured_creatures: Array = []    # creature catturate vive (PV extra)
 
 func _ready() -> void:
 	pass
@@ -168,6 +177,7 @@ func land_on_planet(die_result: int) -> void:
 	expedition_hours = 0
 	expedition_supply = shuttle_supply  # bring supplies from shuttle
 	shuttle_supply = 0
+	reset_expedition_state()
 
 	add_log("Atterraggio su %s. Dado: %d → Paragrafo %03d" % [current_system, die_result, landing_para])
 	set_phase(Phase.EXPEDITION)
@@ -184,8 +194,14 @@ func return_to_pandora() -> void:
 	if current_phase == Phase.EXPEDITION or current_phase == Phase.PARAGRAPH:
 		shuttle_supply += expedition_supply
 		expedition_supply = 0
+		# Assegna i PV per le creature catturate riportate sulla Pandora (8.0/9.0)
+		if captured_creatures.size() > 0:
+			for cname in captured_creatures:
+				gain_vp(2, "Creatura catturata: %s" % cname)
+			captured_creatures = []
 		add_log("Ritorno alla Pandora da %s." % current_planet)
 		current_planet = ""
+		current_creature = ""
 		set_phase(Phase.ORBIT)
 		# If at Sol, go to game over
 		if current_system == "Sol":
@@ -219,3 +235,88 @@ func use_expedition_supply(amount: int) -> bool:
 		return true
 	add_log("Rifornimenti insufficienti!")
 	return false
+
+func reset_expedition_state() -> void:
+	current_creature = ""
+	creature_rating = 0
+	captured_creatures = []
+	damage_points = 0
+
+# --- Combattimento / incontri (regola 8.0) -----------------------------------
+
+func start_encounter(creature_name: String) -> void:
+	if not GameData.get_creature(creature_name):
+		add_log("Creatura sconosciuta: %s" % creature_name)
+		return
+	current_creature = creature_name
+	# Determina la valutazione della creatura per l'esagono (8.4): 2d6 + Mod. Combattimento
+	creature_rating = GameData.roll_creature_combat_rating(creature_name)
+	add_log("Incontro con %s! Valutazione di combattimento: %d" % [creature_name, creature_rating])
+	encounter_started.emit(creature_name)
+	state_updated.emit()
+
+# Risolve un round di combattimento.
+# mode: "kill" (uccisione) o "capture" (cattura)
+# player_combat: valore di combattimento del personaggio/strumento usato
+func resolve_combat(mode: String, player_combat: int) -> void:
+	if current_creature.is_empty():
+		return
+	var player_total := player_combat + randi_range(1, 6)
+	var differential := player_total - creature_rating
+	var result := GameData.get_combat_result(differential)
+	var detail := "%s: %d (val.%d +1d6) vs creatura %d → diff %+d → %s" % [
+		mode, player_total, player_combat, creature_rating, differential, result
+	]
+	add_log(detail)
+
+	match result:
+		"AE":  # l'attaccante elimina/cattura il difensore
+			if mode == "capture":
+				_capture_creature(current_creature)
+			else:
+				_kill_creature(current_creature)
+		"AR":  # l'attaccante ripiega
+			add_log("La creatura resiste; la spedizione ripiega di un esagono.")
+		"EX":  # scambio: danni a entrambi
+			_apply_damage(1)
+			add_log("Scambio di colpi: 1 Punto Danno alla spedizione.")
+		"DR":  # il difensore (creatura) ripiega/fugge
+			add_log("%s fugge." % current_creature)
+			_end_encounter()
+		"DE":  # il difensore elimina l'attaccante
+			_apply_damage(2)
+			add_log("La creatura ha la meglio: 2 Punti Danno alla spedizione!")
+
+	combat_resolved.emit(result, detail)
+	state_updated.emit()
+
+func _capture_creature(name: String) -> void:
+	captured_creatures.append(name)
+	add_log("%s catturata viva! (riportala alla Pandora per i PV)" % name)
+	_end_encounter()
+
+func _kill_creature(name: String) -> void:
+	add_log("%s eliminata." % name)
+	_end_encounter()
+
+func _apply_damage(points: int) -> void:
+	damage_points += points
+	if damage_points >= 6:
+		add_log("ATTENZIONE: danni critici alla spedizione (%d)!" % damage_points)
+
+func _end_encounter() -> void:
+	current_creature = ""
+	creature_rating = 0
+	encounter_ended.emit()
+	set_phase(Phase.EXPEDITION)
+
+func flee_encounter() -> void:
+	if current_creature.is_empty():
+		return
+	add_log("La spedizione fugge da %s." % current_creature)
+	# Fuga: la creatura può infliggere danni se più veloce
+	var cdata := GameData.get_creature(current_creature)
+	if cdata.get("speed", 0) >= 2 and randi_range(1, 6) <= cdata.get("aggression", 0):
+		_apply_damage(1)
+		add_log("%s insegue: 1 Punto Danno durante la fuga." % current_creature)
+	_end_encounter()
