@@ -571,7 +571,8 @@ func _update_action_buttons(phase: String) -> void:
 	if btn_land: btn_land.visible = (phase == "orbit")
 	if btn_return: btn_return.visible = (phase == "expedition" or phase == "paragraph") and not in_combat
 	# "Esplora" appare quando l'esagono occupato non è ancora stato esplorato (es. atterraggio)
-	var here_unexplored := on_surface and not GameState.environ_grid.get(GameState.expedition_pos, {}).get("explored", true)
+	var here_explored: bool = GameState.environ_grid.get(GameState.expedition_pos, {}).get("explored", true)
+	var here_unexplored: bool = on_surface and not here_explored
 	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat and here_unexplored
 	if btn_continue: btn_continue.visible = (phase == "paragraph") and not in_combat
 	if btn_kill: btn_kill.visible = in_combat
