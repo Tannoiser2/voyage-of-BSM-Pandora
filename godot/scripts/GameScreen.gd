@@ -4,6 +4,7 @@ var left_panel: Panel
 var center_panel: Panel
 var right_panel: Panel
 var interstellar_display: Control
+var environ_display: Control
 var paragraph_display: Control
 var log_display: RichTextLabel
 var status_display: Control
@@ -57,6 +58,22 @@ func _build_ui() -> void:
 
 	# Draw hex buttons
 	_build_hex_buttons()
+
+	# Environ (superficie planetaria) — sovrapposto, nascosto finché non si sbarca
+	environ_display = Control.new()
+	environ_display.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	environ_display.visible = false
+	left_panel.add_child(environ_display)
+
+	var env_title := Label.new()
+	env_title.name = "EnvironTitle"
+	env_title.text = "Superficie Planetaria"
+	env_title.position = Vector2(10, 5)
+	env_title.add_theme_font_size_override("font_size", 13)
+	env_title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
+	environ_display.add_child(env_title)
+
+	_build_environ_buttons()
 
 	# CENTER PANEL - Log + Paragraph
 	var center_vbox := VBoxContainer.new()
@@ -129,6 +146,13 @@ func _build_ui() -> void:
 	btn_land.visible = false
 	btn_land.pressed.connect(_on_land)
 	actions_hbox.add_child(btn_land)
+
+	var btn_continue := Button.new()
+	btn_continue.name = "BtnContinue"
+	btn_continue.text = "Continua"
+	btn_continue.visible = false
+	btn_continue.pressed.connect(_on_continue)
+	actions_hbox.add_child(btn_continue)
 
 	var btn_return := Button.new()
 	btn_return.name = "BtnReturn"
@@ -330,6 +354,86 @@ func _hex_to_screen_pos(hex_id: int) -> Vector2:
 		y += 41.0  # stagger even columns
 	return Vector2(x, y)
 
+# --- Environ (superficie planetaria) -----------------------------------------
+
+const TERRAIN_COLORS := {
+	"Open":     Color(0.55, 0.62, 0.45),
+	"Rough":    Color(0.55, 0.45, 0.35),
+	"Mountain": Color(0.45, 0.42, 0.40),
+	"Forest":   Color(0.25, 0.45, 0.28),
+	"Desert":   Color(0.75, 0.65, 0.40),
+	"Ice":      Color(0.70, 0.80, 0.88),
+}
+
+func _build_environ_buttons() -> void:
+	for col in range(1, GameState.ENVIRON_COLS + 1):
+		for row in range(1, GameState.ENVIRON_ROWS + 1):
+			var hex_id := col * 10 + row
+			var pos := _environ_to_screen_pos(hex_id)
+			var btn := Button.new()
+			btn.name = "Env_%d" % hex_id
+			btn.custom_minimum_size = Vector2(70, 70)
+			btn.size = Vector2(70, 70)
+			btn.position = pos - Vector2(35, 35)
+			btn.pressed.connect(_on_environ_hex_clicked.bind(hex_id))
+			environ_display.add_child(btn)
+
+func _environ_to_screen_pos(hex_id: int) -> Vector2:
+	var col := hex_id / 10
+	var row := hex_id % 10
+	var x := 90.0 + (col - 1) * 88.0
+	var y := 95.0 + (row - 1) * 78.0
+	if col % 2 == 0:
+		y += 39.0
+	return Vector2(x, y)
+
+func _refresh_environ_buttons() -> void:
+	for col in range(1, GameState.ENVIRON_COLS + 1):
+		for row in range(1, GameState.ENVIRON_ROWS + 1):
+			var hex_id := col * 10 + row
+			var btn := find_child("Env_%d" % hex_id, true, false) as Button
+			if not btn: continue
+			var cell: Dictionary = GameState.environ_grid.get(hex_id, {})
+			var terrain: String = cell.get("terrain", "Open")
+			var explored: bool = cell.get("explored", false)
+			var base: Color = TERRAIN_COLORS.get(terrain, Color(0.5, 0.5, 0.5))
+
+			if hex_id == GameState.expedition_pos:
+				btn.text = "◉"
+				btn.modulate = Color(1.0, 1.0, 1.0)
+				base = Color(0.3, 0.8, 1.0)
+			elif explored:
+				btn.text = terrain.substr(0, 3)
+				btn.modulate = Color(1.0, 1.0, 1.0)
+			elif GameState.can_move_expedition(hex_id):
+				btn.text = "?"
+				btn.modulate = Color(1.0, 1.0, 1.0)
+			else:
+				btn.text = ""
+				btn.modulate = Color(0.6, 0.6, 0.6)
+
+			var sb := StyleBoxFlat.new()
+			sb.bg_color = base
+			sb.set_corner_radius_all(6)
+			btn.add_theme_stylebox_override("normal", sb)
+			btn.add_theme_stylebox_override("hover", sb)
+			btn.add_theme_stylebox_override("pressed", sb)
+			btn.disabled = not (GameState.can_move_expedition(hex_id) or hex_id == GameState.expedition_pos)
+
+func _on_environ_hex_clicked(hex_id: int) -> void:
+	if GameState.can_move_expedition(hex_id):
+		GameState.move_expedition(hex_id)
+
+func _update_left_panel_mode() -> void:
+	var on_surface := GameState.current_phase == GameState.Phase.EXPEDITION \
+		or (GameState.current_phase == GameState.Phase.PARAGRAPH and GameState.expedition_pos > 0) \
+		or not GameState.current_creature.is_empty()
+	if interstellar_display: interstellar_display.visible = not on_surface
+	if environ_display:
+		environ_display.visible = on_surface
+		if on_surface:
+			_refresh_environ_buttons()
+
 func _connect_signals() -> void:
 	GameState.phase_changed.connect(_on_phase_changed)
 	GameState.state_updated.connect(_update_display)
@@ -337,6 +441,10 @@ func _connect_signals() -> void:
 	GameState.message_posted.connect(_on_message)
 	GameState.encounter_started.connect(_on_encounter_started)
 	GameState.encounter_ended.connect(_on_encounter_ended)
+	GameState.environ_changed.connect(_on_environ_changed)
+
+func _on_environ_changed() -> void:
+	_update_left_panel_mode()
 
 func _on_phase_changed(phase: String) -> void:
 	_update_display()
@@ -347,16 +455,19 @@ func _update_action_buttons(phase: String) -> void:
 	var btn_land := find_child("BtnLand", true, false)
 	var btn_return := find_child("BtnReturn", true, false)
 	var btn_explore := find_child("BtnExplore", true, false)
+	var btn_continue := find_child("BtnContinue", true, false)
 	var btn_kill := find_child("BtnKill", true, false)
 	var btn_capture := find_child("BtnCapture", true, false)
 	var btn_flee := find_child("BtnFlee", true, false)
 
 	var in_combat := not GameState.current_creature.is_empty()
+	var on_surface := GameState.expedition_pos > 0
 
 	if btn_orbit: btn_orbit.visible = (phase == "orbit")
 	if btn_land: btn_land.visible = (phase == "orbit")
 	if btn_return: btn_return.visible = (phase == "expedition" or phase == "paragraph") and not in_combat
-	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat
+	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat and not on_surface
+	if btn_continue: btn_continue.visible = (phase == "paragraph") and not in_combat
 	if btn_kill: btn_kill.visible = in_combat
 	if btn_capture: btn_capture.visible = in_combat
 	if btn_flee: btn_flee.visible = in_combat
@@ -398,8 +509,9 @@ func _update_display() -> void:
 		}
 		lbl_phase.text = "Fase: %s" % phase_it.get(GameState.phase_name(GameState.current_phase), "—")
 
-	# Refresh hex buttons
+	# Refresh hex buttons and panel mode
 	_refresh_hex_buttons()
+	_update_left_panel_mode()
 
 func _refresh_hex_buttons() -> void:
 	for col in range(1, 5):
@@ -460,6 +572,17 @@ func _on_land() -> void:
 	var die := randi_range(1, 6)
 	_set_dice_result(die)
 	GameState.land_on_planet(die)
+
+func _on_continue() -> void:
+	# Chiude il paragrafo corrente e torna alla fase appropriata
+	GameState.current_paragraph = 0
+	if GameState.expedition_pos > 0:
+		GameState.set_phase(GameState.Phase.EXPEDITION)
+		_show_expedition_panel()
+	elif GameState.current_system != "" and GameState.current_system != "Sol":
+		GameState.set_phase(GameState.Phase.ORBIT)
+	else:
+		GameState.set_phase(GameState.Phase.INTERSTELLAR)
 
 func _on_return_to_pandora() -> void:
 	GameState.return_to_pandora()
@@ -538,7 +661,8 @@ func _show_expedition_panel() -> void:
 		]
 		if GameState.captured_creatures.size() > 0:
 			bb += "Creature catturate: %s\n\n" % ", ".join(GameState.captured_creatures)
-		bb += "[i]Premi \"Esplora\" per continuare, oppure \"Torna alla Pandora\".[/i]"
+		bb += "[i]Sposta la spedizione cliccando un esagono adiacente sulla mappa di superficie "
+		bb += "(a sinistra), oppure premi \"Torna alla Pandora\".[/i]"
 		para_display.bbcode_text = bb
 
 	_update_action_buttons("expedition")

@@ -60,6 +60,14 @@ var creature_rating: int = 0          # valutazione della creatura per l'esagono
 var damage_points: int = 0            # danni accumulati dalla spedizione
 var captured_creatures: Array = []    # creature catturate vive (PV extra)
 
+# Superficie planetaria (environ) — regola 6.0
+const ENVIRON_COLS := 5
+const ENVIRON_ROWS := 5
+var environ_grid: Dictionary = {}     # hex_id -> {"terrain": String, "explored": bool}
+var expedition_pos: int = 0           # esagono attuale della spedizione (0 = non sbarcata)
+var landing_hex: int = 0
+signal environ_changed
+
 func _ready() -> void:
 	pass
 
@@ -178,6 +186,7 @@ func land_on_planet(die_result: int) -> void:
 	expedition_supply = shuttle_supply  # bring supplies from shuttle
 	shuttle_supply = 0
 	reset_expedition_state()
+	generate_environ(landing_para)
 
 	add_log("Atterraggio su %s. Dado: %d → Paragrafo %03d" % [current_system, die_result, landing_para])
 	set_phase(Phase.EXPEDITION)
@@ -241,6 +250,88 @@ func reset_expedition_state() -> void:
 	creature_rating = 0
 	captured_creatures = []
 	damage_points = 0
+	environ_grid = {}
+	expedition_pos = 0
+	landing_hex = 0
+
+# --- Superficie planetaria (environ) -----------------------------------------
+
+func environ_hex_id(col: int, row: int) -> int:
+	return col * 10 + row
+
+func environ_neighbors(hex_id: int) -> Array:
+	# Adiacenza esagonale a colonne sfalsate (come la mappa interstellare)
+	var col := hex_id / 10
+	var row := hex_id % 10
+	var result: Array = []
+	var candidates: Array = [[col, row - 1], [col, row + 1]]
+	if col % 2 == 1:
+		candidates += [[col - 1, row - 1], [col - 1, row], [col + 1, row - 1], [col + 1, row]]
+	else:
+		candidates += [[col - 1, row], [col - 1, row + 1], [col + 1, row], [col + 1, row + 1]]
+	for c in candidates:
+		if c[0] >= 1 and c[0] <= ENVIRON_COLS and c[1] >= 1 and c[1] <= ENVIRON_ROWS:
+			result.append(environ_hex_id(c[0], c[1]))
+	return result
+
+func generate_environ(landing: int) -> void:
+	environ_grid = {}
+	var terrains: Array = GameData.tables.get("terrain_types", ["Open", "Rough", "Mountain", "Forest", "Desert", "Ice"])
+	for col in range(1, ENVIRON_COLS + 1):
+		for row in range(1, ENVIRON_ROWS + 1):
+			var hid := environ_hex_id(col, row)
+			var terrain: String = terrains[randi() % terrains.size()]
+			environ_grid[hid] = {"terrain": terrain, "explored": false}
+	# L'esagono di atterraggio è al centro, terreno aperto e già esplorato
+	landing_hex = environ_hex_id(3, 3)
+	environ_grid[landing_hex] = {"terrain": "Open", "explored": true}
+	expedition_pos = landing_hex
+	environ_changed.emit()
+
+func can_move_expedition(hex_id: int) -> bool:
+	if current_phase != Phase.EXPEDITION:
+		return false
+	if not current_creature.is_empty():
+		return false
+	return hex_id in environ_neighbors(expedition_pos)
+
+func move_expedition(hex_id: int) -> void:
+	if not can_move_expedition(hex_id):
+		return
+	expedition_pos = hex_id
+	add_expedition_hours(1)  # ogni esagono costa 1 ora
+	var cell: Dictionary = environ_grid.get(hex_id, {})
+	var terrain: String = cell.get("terrain", "Open")
+	add_log("La spedizione entra in un esagono %s (esagono %d)." % [_terrain_it(terrain), hex_id])
+	environ_changed.emit()
+	# Esplora il nuovo esagono se non ancora esplorato
+	if not cell.get("explored", false):
+		explore_environ_hex(hex_id, terrain)
+
+func explore_environ_hex(hex_id: int, terrain: String) -> void:
+	environ_grid[hex_id]["explored"] = true
+	environ_changed.emit()
+	var die := randi_range(1, 6)
+	# Dado alto: incontro con creatura; altrimenti paragrafo di esplorazione
+	if die >= 5:
+		var names := GameData.get_all_creature_names()
+		var creature: String = names[randi() % names.size()]
+		add_log("Esplorazione (%s, dado %d): incontro!" % [_terrain_it(terrain), die])
+		start_encounter(creature)
+	else:
+		var para_num := GameData.get_exploration_paragraph(terrain, die)
+		add_log("Esplorazione (%s, dado %d) → Paragrafo %03d" % [_terrain_it(terrain), die, para_num])
+		show_paragraph(para_num)
+
+func _terrain_it(terrain: String) -> String:
+	match terrain:
+		"Open":     return "Aperto"
+		"Rough":    return "Accidentato"
+		"Mountain": return "Montagna"
+		"Forest":   return "Foresta"
+		"Desert":   return "Deserto"
+		"Ice":      return "Ghiaccio"
+	return terrain
 
 # --- Combattimento / incontri (regola 8.0) -----------------------------------
 
