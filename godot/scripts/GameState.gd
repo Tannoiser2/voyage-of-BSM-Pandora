@@ -104,6 +104,7 @@ func start_new_game(p_tour_length: int) -> void:
 	planet_attrs = {}
 	planet_gravity = "Earth like"
 	shuttle_capacity = 80
+	reset_expedition_state()
 	for k in crew:
 		crew[k]["alive"] = true
 		crew[k]["endurance"] = MAX_ENDURANCE
@@ -225,7 +226,12 @@ func land_on_planet(die_result: int) -> void:
 	var landing_real := ""   # esagono di atterraggio globale (es. "1502")
 	for entry in landings:
 		var dice_range: Array = entry.get("die", [])
-		if die_result in dice_range:
+		var matched := false
+		for dval in dice_range:
+			if int(dval) == die_result:
+				matched = true
+				break
+		if matched:
 			landing_para = entry.get("para", "114").to_int()
 			landing_real = entry.get("hex", "")
 			break
