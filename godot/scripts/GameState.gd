@@ -180,10 +180,34 @@ func resolve_interstellar_event(die: int) -> void:
 	else:
 		add_log("Nessun evento interstellare (dado: %d)." % die)
 		if current_system != "" and current_system != "Sol":
-			set_phase(Phase.ORBIT)
+			enter_orbit()
+
+# Ingresso in orbita: prepara gli attributi del pianeta e mostra il paragrafo
+# che lo descrive (Tabella Pianeti, 5.0). Il giocatore decide se esplorare.
+func enter_orbit() -> void:
+	set_phase(Phase.ORBIT)
+	setup_orbit_planet()
+	var para := GameData.get_planet_paragraph(current_system, tour_length)
+	if para > 0:
+		show_paragraph(para)
+
+# Il giocatore sceglie di non esplorare: la Pandora lascia l'orbita (5.0).
+func leave_orbit() -> void:
+	add_log("La Pandora lascia l'orbita di %s senza esplorare." % current_system)
+	set_phase(Phase.INTERSTELLAR)
+
+# Vero quando il giocatore è in orbita e deve ancora decidere se esplorare.
+func is_orbit_decision() -> bool:
+	if expedition_pos != 0 or current_planet != "":
+		return false
+	if current_system == "" or current_system == "Sol":
+		return false
+	return current_phase == Phase.ORBIT or current_phase == Phase.PARAGRAPH
 
 func land_on_planet(die_result: int) -> void:
-	if current_phase != Phase.ORBIT:
+	# Si sbarca solo dalla decisione in orbita (la fase può essere ORBIT o il
+	# paragrafo del pianeta), e mai due volte.
+	if current_planet != "" or expedition_pos != 0:
 		return
 	var sys := GameData.get_star_system_data(current_system)
 	var para_key := str(tour_length)

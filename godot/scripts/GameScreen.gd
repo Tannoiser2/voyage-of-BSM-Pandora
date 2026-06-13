@@ -115,6 +115,9 @@ func _build_ui() -> void:
 	env_map.name = "EnvMap"
 	env_map.position = Vector2.ZERO
 	env_map.stretch_mode = TextureRect.STRETCH_SCALE
+	# IGNORE_SIZE: la TextureRect rispetta la .size impostata (scala) invece di
+	# usare la dimensione nativa della texture — così mappa e bottoni combaciano.
+	env_map.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	env_canvas.add_child(env_map)
 
 	var env_title := Label.new()
@@ -209,19 +212,19 @@ func _build_ui() -> void:
 	actions_hbox.add_theme_constant_override("separation", 8)
 	center_vbox.add_child(actions_hbox)
 
-	var btn_orbit := Button.new()
-	btn_orbit.name = "BtnOrbit"
-	btn_orbit.text = "Entra in Orbita"
-	btn_orbit.visible = false
-	btn_orbit.pressed.connect(_on_enter_orbit)
-	actions_hbox.add_child(btn_orbit)
-
 	var btn_land := Button.new()
 	btn_land.name = "BtnLand"
-	btn_land.text = "Prepara spedizione"
+	btn_land.text = "🛬 Esplora il pianeta"
 	btn_land.visible = false
 	btn_land.pressed.connect(_on_land)
 	actions_hbox.add_child(btn_land)
+
+	var btn_orbit := Button.new()
+	btn_orbit.name = "BtnOrbit"
+	btn_orbit.text = "➡ Riparti (non esplorare)"
+	btn_orbit.visible = false
+	btn_orbit.pressed.connect(_on_leave_orbit)
+	actions_hbox.add_child(btn_orbit)
 
 	var btn_continue := Button.new()
 	btn_continue.name = "BtnContinue"
@@ -660,15 +663,20 @@ func _update_action_buttons(phase: String) -> void:
 
 	var in_combat := not GameState.current_creature.is_empty()
 	var on_surface := GameState.expedition_pos > 0
+	var orbit_decision := GameState.is_orbit_decision() and not in_combat
 
-	if btn_orbit: btn_orbit.visible = (phase == "orbit")
-	if btn_land: btn_land.visible = (phase == "orbit")
-	if btn_return: btn_return.visible = (phase == "expedition" or phase == "paragraph") and not in_combat
+	# In orbita: scelta netta esplora/riparti
+	if btn_land: btn_land.visible = orbit_decision      # "Esplora il pianeta"
+	if btn_orbit: btn_orbit.visible = orbit_decision    # "Riparti (non esplorare)"
+	# "Torna alla Pandora" solo se sbarcati
+	if btn_return: btn_return.visible = on_surface and not in_combat
 	# "Esplora" appare quando l'esagono occupato non è ancora stato esplorato (es. atterraggio)
 	var here_explored: bool = GameState.environ_grid.get(GameState.expedition_pos, {}).get("explored", true)
 	var here_unexplored: bool = on_surface and not here_explored
 	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat and here_unexplored
-	if btn_continue: btn_continue.visible = (phase == "paragraph") and not in_combat
+	# "Continua" solo per i paragrafi senza scelte e fuori dalla decisione in orbita
+	var has_choices: bool = choices_box != null and choices_box.get_child_count() > 0
+	if btn_continue: btn_continue.visible = (phase == "paragraph") and not in_combat and not orbit_decision and not has_choices
 	if btn_kill: btn_kill.visible = in_combat
 	if btn_capture: btn_capture.visible = in_combat
 	if btn_flee: btn_flee.visible = in_combat
@@ -722,12 +730,12 @@ func _update_display() -> void:
 		var hint := ""
 		if not s.current_creature.is_empty():
 			hint = "Incontro in corso: scegli Uccidi, Cattura o Fuggi."
+		elif s.is_orbit_decision():
+			hint = "Esamina il pianeta, poi decidi: «Esplora il pianeta» (prepara la squadra) o «Riparti»."
 		elif phase == "interstellar":
 			hint = "Scegli un sistema raggiungibile sulla mappa per spostare la Pandora."
-		elif phase == "orbit":
-			hint = "Esamina il pianeta, poi prepara la spedizione."
-		elif phase == "expedition":
-			hint = "Muoviti sulla mappa o esplora l'esagono; segui i paragrafi."
+		elif s.expedition_pos > 0 and phase != "paragraph":
+			hint = "Muoviti su un esagono adiacente oppure esplora l'esagono attuale."
 		elif phase == "paragraph":
 			hint = "Leggi e scegli un rimando, oppure premi Continua."
 		lbl_hint.text = hint
@@ -779,19 +787,14 @@ func _draw_interstellar() -> void:
 func _on_hex_clicked(hex_id: int) -> void:
 	if GameState.current_phase != GameState.Phase.INTERSTELLAR:
 		return
-	var sys_name := GameData.get_planet_for_hex(hex_id)
-	var dist := GameData.get_hex_distance(GameState.pandora_hex, hex_id)
-
 	if not GameState.can_move_to(hex_id):
+		var dist := GameData.get_hex_distance(GameState.pandora_hex, hex_id)
 		_post_message("Troppo lontano! Distanza: %d mesi, disponibili: %d" % [dist, GameState.months_remaining()])
 		return
 
-	# Confirm and move
+	# Muove la Pandora; all'arrivo su un sistema parte il tiro evento (4.2),
+	# poi l'ingresso in orbita col paragrafo del pianeta è automatico.
 	GameState.move_pandora_to(hex_id)
-
-	if sys_name != "" and sys_name != "Sol":
-		_update_action_buttons("orbit")
-
 	_update_display()
 
 # --- Pannello di preparazione della spedizione (regola 5.0) ------------------
@@ -1041,20 +1044,12 @@ func _on_prep_launch() -> void:
 	_set_dice_result(die)
 	GameState.launch_expedition(die)
 
-func _on_enter_orbit() -> void:
-	GameState.set_phase(GameState.Phase.ORBIT)
-	GameState.setup_orbit_planet()
-	var sys := GameState.current_system
-	var para_key := str(GameState.tour_length)
-	var sys_data := GameData.get_star_system_data(sys)
-	var planet_para_str: String = sys_data.get("planet_para", {}).get(para_key, "")
-	if planet_para_str != "":
-		var para_num := planet_para_str.to_int()
-		GameState.show_paragraph(para_num)
-		_update_action_buttons("orbit")
+func _on_leave_orbit() -> void:
+	GameState.leave_orbit()
 
 func _on_land() -> void:
-	if GameState.current_phase != GameState.Phase.ORBIT:
+	# "Esplora il pianeta": apre la preparazione della spedizione (5.0)
+	if not GameState.is_orbit_decision():
 		return
 	_open_prep_panel()
 
@@ -1064,8 +1059,9 @@ func _on_continue() -> void:
 	if GameState.expedition_pos > 0:
 		GameState.set_phase(GameState.Phase.EXPEDITION)
 		_show_expedition_panel()
-	elif GameState.current_system != "" and GameState.current_system != "Sol":
-		GameState.set_phase(GameState.Phase.ORBIT)
+	elif GameState.current_system != "" and GameState.current_system != "Sol" and GameState.current_planet == "":
+		# Dopo un evento interstellare: entra in orbita e mostra il pianeta (decisione)
+		GameState.enter_orbit()
 	else:
 		GameState.set_phase(GameState.Phase.INTERSTELLAR)
 
@@ -1214,11 +1210,17 @@ func _on_paragraph_request(para_num: int) -> void:
 			var img_path := GameData.get_event_image_path(para_num)
 			if not img_path.is_empty():
 				bb += "[center][img=360]" + img_path + "[/img][/center]\n\n"
-		bb += "[p]" + _linkify(text) + "[/p]"
+		# In orbita i rimandi del paragrafo (opzioni d'atterraggio) non sono cliccabili:
+		# l'atterraggio si determina col tiro alla preparazione (5.4).
+		if GameState.is_orbit_decision():
+			bb += "[p]" + text + "[/p]"
+		else:
+			bb += "[p]" + _linkify(text) + "[/p]"
 		para_display.bbcode_text = bb
 
-	# Durante un incontro i comandi di combattimento sostituiscono le scelte testuali
-	if is_creature_here:
+	# Durante un incontro i comandi di combattimento sostituiscono le scelte; in orbita
+	# la decisione è esplora/riparti (l'atterraggio si determina col tiro, 5.4).
+	if is_creature_here or GameState.is_orbit_decision():
 		_clear_choices()
 	else:
 		_build_choices(para_num)
