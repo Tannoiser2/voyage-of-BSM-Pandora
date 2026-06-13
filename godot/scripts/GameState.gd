@@ -7,6 +7,7 @@ signal message_posted(msg: String)
 signal encounter_started(creature_name: String)
 signal encounter_ended
 signal combat_resolved(result: String, detail: String)
+signal game_saved
 
 enum Phase {
 	MAIN_MENU,
@@ -59,6 +60,7 @@ var crew: Dictionary = {
 
 var visited_systems: Array = []
 var log_entries: Array = []
+var vp_ledger: Array = []   # storico delle variazioni di PV {amount, reason} per il riepilogo finale
 
 # Preparazione della spedizione (regola 5.0)
 var planet_attrs: Dictionary = {}          # attributi reali del pianeta in orbita
@@ -101,6 +103,7 @@ func start_new_game(p_tour_length: int) -> void:
 	current_planet = ""
 	visited_systems = []
 	log_entries = []
+	vp_ledger = []
 	expedition_units = []
 	expedition_gear = []
 	damaged_gear = []
@@ -118,14 +121,136 @@ func start_new_game(p_tour_length: int) -> void:
 		10: victory_points = 10
 		20: victory_points = 20
 		30: victory_points = 30
+	vp_ledger.append({"amount": victory_points, "reason": "Punti Vittoria iniziali (tour %d mesi)" % tour_length})
 
 	set_phase(Phase.INTERSTELLAR)
 	add_log("Nuovo viaggio iniziato. Tour: %d mesi. Pandora in orbita attorno a Sol." % tour_length)
+
+# --- Salvataggio / caricamento della partita -------------------------------
+const SAVE_PATH := "user://savegame.json"
+const SAVE_VERSION := 1
+
+func has_save() -> bool:
+	return FileAccess.file_exists(SAVE_PATH)
+
+# Serializza l'intero stato di gioco su disco (user://). Restituisce true se ok.
+# Con silent=true non scrive nel diario né emette il suono (usato per l'autosave).
+func save_game(silent := false) -> bool:
+	var d := {
+		"version": SAVE_VERSION,
+		"saved_at": Time.get_datetime_string_from_system(),
+		"tour_length": tour_length, "tour_set": tour_set,
+		"tour_months_used": tour_months_used, "expedition_hours": expedition_hours,
+		"shuttle_supply": shuttle_supply, "expedition_supply": expedition_supply,
+		"victory_points": victory_points,
+		"pandora_hex": pandora_hex, "current_system": current_system, "current_planet": current_planet,
+		"current_phase": int(current_phase), "current_paragraph": current_paragraph,
+		"awaiting_die_roll": awaiting_die_roll, "pending_die_purpose": pending_die_purpose,
+		"manual_dice": manual_dice,
+		"crew": crew, "visited_systems": visited_systems, "log_entries": log_entries,
+		"vp_ledger": vp_ledger,
+		"planet_attrs": planet_attrs, "planet_gravity": planet_gravity,
+		"shuttle_capacity": shuttle_capacity, "expedition_units": expedition_units,
+		"expedition_gear": expedition_gear, "damaged_gear": damaged_gear,
+		"planned_supply": planned_supply,
+		"current_creature": current_creature, "creature_rating": creature_rating,
+		"damage_points": damage_points, "captured_creatures": captured_creatures,
+		"creature_attr_cache": creature_attr_cache,
+		"pending_combat_shift": pending_combat_shift, "pending_no_capture": pending_no_capture,
+		"pending_kill_as_capture": pending_kill_as_capture,
+		"encounter_outcome_text": encounter_outcome_text,
+		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
+		"landing_hex": landing_hex, "current_environ_id": current_environ_id,
+	}
+	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if f == null:
+		add_log("Errore: impossibile salvare la partita.")
+		return false
+	f.store_string(JSON.stringify(d, "\t"))
+	f.close()
+	if not silent:
+		add_log("Partita salvata.")
+		game_saved.emit()
+	return true
+
+# Ricarica lo stato dal file di salvataggio. I numeri JSON tornano come float,
+# quindi i campi interi sono riconvertiti; le chiavi di environ_grid (id esagono)
+# tornano stringa e vanno riportate a intero.
+func load_game() -> bool:
+	if not has_save():
+		return false
+	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if f == null:
+		return false
+	var txt := f.get_as_text()
+	f.close()
+	var data: Variant = JSON.parse_string(txt)
+	if typeof(data) != TYPE_DICTIONARY:
+		return false
+	var d: Dictionary = data
+	tour_length = int(d.get("tour_length", 20))
+	tour_set = str(d.get("tour_set", "20"))
+	tour_months_used = int(d.get("tour_months_used", 0))
+	expedition_hours = int(d.get("expedition_hours", 0))
+	shuttle_supply = int(d.get("shuttle_supply", 6))
+	expedition_supply = int(d.get("expedition_supply", 0))
+	victory_points = int(d.get("victory_points", 0))
+	pandora_hex = int(d.get("pandora_hex", 46))
+	current_system = str(d.get("current_system", "Sol"))
+	current_planet = str(d.get("current_planet", ""))
+	current_phase = int(d.get("current_phase", Phase.INTERSTELLAR))
+	current_paragraph = int(d.get("current_paragraph", 0))
+	awaiting_die_roll = bool(d.get("awaiting_die_roll", false))
+	pending_die_purpose = str(d.get("pending_die_purpose", ""))
+	manual_dice = bool(d.get("manual_dice", false))
+	var cr: Variant = d.get("crew", {})
+	if typeof(cr) == TYPE_DICTIONARY:
+		for k in cr:
+			if crew.has(k):
+				crew[k]["alive"] = bool(cr[k].get("alive", true))
+				crew[k]["endurance"] = int(cr[k].get("endurance", MAX_ENDURANCE))
+	visited_systems = d.get("visited_systems", [])
+	log_entries = d.get("log_entries", [])
+	vp_ledger = d.get("vp_ledger", [])
+	planet_attrs = d.get("planet_attrs", {})
+	planet_gravity = str(d.get("planet_gravity", "Earth like"))
+	shuttle_capacity = int(d.get("shuttle_capacity", 80))
+	expedition_units = d.get("expedition_units", [])
+	expedition_gear = d.get("expedition_gear", [])
+	damaged_gear = d.get("damaged_gear", [])
+	planned_supply = int(d.get("planned_supply", 6))
+	current_creature = str(d.get("current_creature", ""))
+	creature_rating = int(d.get("creature_rating", 0))
+	damage_points = int(d.get("damage_points", 0))
+	captured_creatures = d.get("captured_creatures", [])
+	creature_attr_cache = {}
+	var cac: Variant = d.get("creature_attr_cache", {})
+	if typeof(cac) == TYPE_DICTIONARY:
+		for k in cac:
+			creature_attr_cache[k] = int(cac[k])
+	pending_combat_shift = int(d.get("pending_combat_shift", 0))
+	pending_no_capture = bool(d.get("pending_no_capture", false))
+	pending_kill_as_capture = bool(d.get("pending_kill_as_capture", false))
+	encounter_outcome_text = str(d.get("encounter_outcome_text", ""))
+	environ_grid = {}
+	var eg: Variant = d.get("environ_grid", {})
+	if typeof(eg) == TYPE_DICTIONARY:
+		for k in eg:
+			environ_grid[int(k)] = eg[k]
+	expedition_pos = int(d.get("expedition_pos", 0))
+	landing_hex = int(d.get("landing_hex", 0))
+	current_environ_id = int(d.get("current_environ_id", 0))
+	add_log("Partita caricata.")
+	return true
 
 func set_phase(p: Phase) -> void:
 	current_phase = p
 	phase_changed.emit(phase_name(p))
 	state_updated.emit()
+	# Salvataggio automatico a ogni transizione di gioco significativa, così il
+	# progresso non si perde. Le fasi di menu/setup non vengono salvate.
+	if p != Phase.MAIN_MENU and p != Phase.SETUP:
+		save_game(true)
 
 func phase_name(p: Phase) -> String:
 	match p:
@@ -357,6 +482,18 @@ func best_combat(mode: String) -> int:
 			var gv: int = int(g.get("capture", 0)) if mode == "capture" else int(g.get("kill", 0))
 			best = maxi(best, gv)
 	return best if best > 0 else 3
+
+# Distribuzione degli esiti di combattimento per la modalità scelta (8.5):
+# per ciascun risultato del dado (1-6) calcola il differenziale e il risultato
+# sulla Tabella, restituendo {codice_risultato: conteggio_su_6}.
+func combat_odds(mode: String) -> Dictionary:
+	var pc := best_combat(mode)
+	var dist := {}
+	for die in range(1, 7):
+		var diff := pc + die - creature_rating + pending_combat_shift
+		var res := GameData.get_combat_result(diff)
+		dist[res] = int(dist.get(res, 0)) + 1
+	return dist
 
 func show_paragraph(para_num: int) -> void:
 	current_paragraph = para_num
@@ -593,11 +730,13 @@ func _end_tour() -> void:
 
 func gain_vp(amount: int, reason: String) -> void:
 	victory_points += amount
+	vp_ledger.append({"amount": amount, "reason": reason})
 	add_log("VP +%d: %s (totale: %d)" % [amount, reason, victory_points])
 	state_updated.emit()
 
 func lose_vp(amount: int, reason: String) -> void:
 	victory_points -= amount
+	vp_ledger.append({"amount": -amount, "reason": reason})
 	add_log("VP -%d: %s (totale: %d)" % [amount, reason, victory_points])
 	state_updated.emit()
 

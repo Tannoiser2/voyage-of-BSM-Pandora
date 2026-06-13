@@ -34,6 +34,22 @@ func _ready() -> void:
 	var sep := HSeparator.new()
 	vbox.add_child(sep)
 
+	# Continua: visibile solo se esiste un salvataggio su disco.
+	if GameState.has_save():
+		var continue_btn := Button.new()
+		continue_btn.text = "▶ Continua partita"
+		continue_btn.custom_minimum_size = Vector2(200, 50)
+		continue_btn.add_theme_color_override("font_color", Color(0.6, 1.0, 0.6))
+		continue_btn.pressed.connect(_on_continue)
+		vbox.add_child(continue_btn)
+
+		var nuovo_label := Label.new()
+		nuovo_label.text = "— oppure nuova partita —"
+		nuovo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		nuovo_label.add_theme_font_size_override("font_size", 12)
+		nuovo_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+		vbox.add_child(nuovo_label)
+
 	var tour_label := Label.new()
 	tour_label.text = "Durata del Tour:"
 	tour_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -57,3 +73,7 @@ func _ready() -> void:
 func _on_tour_selected(tour_length: int) -> void:
 	GameState.start_new_game(tour_length)
 	get_tree().change_scene_to_file("res://scenes/GameScreen.tscn")
+
+func _on_continue() -> void:
+	if GameState.load_game():
+		get_tree().change_scene_to_file("res://scenes/GameScreen.tscn")
