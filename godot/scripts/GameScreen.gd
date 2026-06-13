@@ -262,9 +262,23 @@ func _build_ui() -> void:
 	btn_capture.pressed.connect(_on_combat.bind("capture"))
 	actions_hbox.add_child(btn_capture)
 
+	var btn_comm := Button.new()
+	btn_comm.name = "BtnComm"
+	btn_comm.text = "💬 Comunica"
+	btn_comm.visible = false
+	btn_comm.pressed.connect(_on_strategy.bind("communicate"))
+	actions_hbox.add_child(btn_comm)
+
+	var btn_strat := Button.new()
+	btn_strat.name = "BtnStrat"
+	btn_strat.text = "🎯 Cattura/Uccidi"
+	btn_strat.visible = false
+	btn_strat.pressed.connect(_on_strategy.bind("capture_kill"))
+	actions_hbox.add_child(btn_strat)
+
 	var btn_flee := Button.new()
 	btn_flee.name = "BtnFlee"
-	btn_flee.text = "Fuggi"
+	btn_flee.text = "🏃 Fuggi"
 	btn_flee.visible = false
 	btn_flee.pressed.connect(_on_flee)
 	actions_hbox.add_child(btn_flee)
@@ -659,30 +673,43 @@ func _update_action_buttons(phase: String) -> void:
 	var btn_kill := find_child("BtnKill", true, false)
 	var btn_capture := find_child("BtnCapture", true, false)
 	var btn_flee := find_child("BtnFlee", true, false)
+	var btn_comm := find_child("BtnComm", true, false)
+	var btn_strat := find_child("BtnStrat", true, false)
 	var btn_heal := find_child("BtnHeal", true, false)
 
-	var in_combat := not GameState.current_creature.is_empty()
+	var creature_active := not GameState.current_creature.is_empty()
 	var on_surface := GameState.expedition_pos > 0
-	var orbit_decision := GameState.is_orbit_decision() and not in_combat
+	var orbit_decision := GameState.is_orbit_decision() and not creature_active
+	# Incontro iniziale (paragrafo della creatura) → si dichiara la strategia (8.2)
+	var initial_creature := creature_active and GameData.creature_for_paragraph(current_para_num) == GameState.current_creature
+	# Paragrafo-esito che richiede combattimento (8.5)
+	var para_low := GameData.get_paragraph_text(current_para_num).to_lower()
+	var combat_outcome := creature_active and not initial_creature and ("combattiment" in para_low)
+	var encounter_busy := initial_creature or combat_outcome
 
 	# In orbita: scelta netta esplora/riparti
 	if btn_land: btn_land.visible = orbit_decision      # "Esplora il pianeta"
 	if btn_orbit: btn_orbit.visible = orbit_decision    # "Riparti (non esplorare)"
-	# "Torna alla Pandora" solo se sbarcati
-	if btn_return: btn_return.visible = on_surface and not in_combat
+	# "Torna alla Pandora" solo se sbarcati e fuori da un incontro attivo
+	if btn_return: btn_return.visible = on_surface and not encounter_busy
 	# "Esplora" appare quando l'esagono occupato non è ancora stato esplorato (es. atterraggio)
 	var here_explored: bool = GameState.environ_grid.get(GameState.expedition_pos, {}).get("explored", true)
 	var here_unexplored: bool = on_surface and not here_explored
-	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat and here_unexplored
-	# "Continua" solo per i paragrafi senza scelte e fuori dalla decisione in orbita
+	if btn_explore: btn_explore.visible = (phase == "expedition") and not creature_active and here_unexplored
+	# Strategia d'incontro (8.2) sul paragrafo iniziale della creatura
+	if btn_comm: btn_comm.visible = initial_creature
+	if btn_strat: btn_strat.visible = initial_creature
+	# Risoluzione del combattimento (8.5) sui paragrafi-esito di combattimento
+	if btn_kill: btn_kill.visible = combat_outcome
+	if btn_capture: btn_capture.visible = combat_outcome
+	# Fuggi: strategia all'inizio, oppure ritirata durante il combattimento
+	if btn_flee: btn_flee.visible = initial_creature or combat_outcome
+	# "Continua" per i paragrafi senza scelte, fuori da orbita e da incontro attivo
 	var has_choices: bool = choices_box != null and choices_box.get_child_count() > 0
-	if btn_continue: btn_continue.visible = (phase == "paragraph") and not in_combat and not orbit_decision and not has_choices
-	if btn_kill: btn_kill.visible = in_combat
-	if btn_capture: btn_capture.visible = in_combat
-	if btn_flee: btn_flee.visible = in_combat
-	if btn_heal: btn_heal.visible = (phase == "expedition") and not in_combat and GameState.can_heal()
+	if btn_continue: btn_continue.visible = (phase == "paragraph") and not orbit_decision and not has_choices and not encounter_busy
+	if btn_heal: btn_heal.visible = (phase == "expedition") and not creature_active and GameState.can_heal()
 	var btn_repair := find_child("BtnRepair", true, false)
-	if btn_repair: btn_repair.visible = (phase == "expedition") and not in_combat and GameState.can_repair()
+	if btn_repair: btn_repair.visible = (phase == "expedition") and not creature_active and GameState.can_repair()
 
 func _update_display() -> void:
 	# Update status labels
@@ -1053,10 +1080,16 @@ func _on_land() -> void:
 		return
 	_open_prep_panel()
 
+func _on_strategy(strategy: String) -> void:
+	GameState.choose_encounter_strategy(strategy)
+
 func _on_continue() -> void:
 	# Chiude il paragrafo corrente e torna alla fase appropriata
 	GameState.current_paragraph = 0
 	if GameState.expedition_pos > 0:
+		# Un eventuale incontro è concluso (esito narrativo risolto)
+		GameState.current_creature = ""
+		GameState.creature_rating = 0
 		GameState.set_phase(GameState.Phase.EXPEDITION)
 		_show_expedition_panel()
 	elif GameState.current_system != "" and GameState.current_system != "Sol" and GameState.current_planet == "":
@@ -1086,8 +1119,12 @@ func _on_combat(mode: String) -> void:
 		_on_encounter_started(GameState.current_creature)
 
 func _on_flee() -> void:
-	GameState.flee_encounter()
-	_show_expedition_panel()
+	# All'inizio dell'incontro «Fuggi» è una strategia (8.2); durante il combattimento è una ritirata.
+	if not GameState.current_creature.is_empty() and GameData.creature_for_paragraph(current_para_num) == GameState.current_creature:
+		GameState.choose_encounter_strategy("flee")
+	else:
+		GameState.flee_encounter()
+		_show_expedition_panel()
 
 func _on_heal() -> void:
 	GameState.heal_wounded()

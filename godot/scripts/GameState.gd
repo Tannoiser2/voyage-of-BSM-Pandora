@@ -674,6 +674,27 @@ func repair_gear() -> void:
 
 # --- Combattimento / incontri (regola 8.0) -----------------------------------
 
+# Strategia d'Incontro (8.2): il giocatore dichiara la strategia; si tira 1d6
+# modificato dai modificatori della creatura e si va al paragrafo esito.
+func choose_encounter_strategy(strategy: String) -> void:
+	if current_creature.is_empty():
+		return
+	var c := GameData.get_creature(current_creature)
+	var intel := int(c.get("intel", 0))
+	var aggr := int(c.get("aggression", 0))
+	var modifier := 0
+	match strategy:
+		"communicate": modifier = intel - abs(aggr)
+		"capture_kill": modifier = intel + aggr
+		"flee": modifier = aggr
+	var roll := randi_range(1, 6)
+	var die := roll + modifier
+	var para := GameData.encounter_strategy_para(die, strategy)
+	var sname: String = {"communicate": "Comunica", "capture_kill": "Cattura/Uccidi", "flee": "Fuggi"}.get(strategy, strategy)
+	add_log("Strategia «%s»: dado %d %+d = %d → Paragrafo %03d." % [sname, roll, modifier, die, para])
+	if para > 0:
+		show_paragraph(para)
+
 func start_encounter(creature_name: String) -> void:
 	if not GameData.get_creature(creature_name):
 		add_log("Creatura sconosciuta: %s" % creature_name)
