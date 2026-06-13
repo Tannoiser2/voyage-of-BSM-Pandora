@@ -340,6 +340,22 @@ func _build_ui() -> void:
 	right_vbox.add_child(crew_grid)
 	_build_crew_counters(crew_grid)
 
+	# Segnalini di robot/strumenti imbarcati (compaiono in spedizione)
+	var gear_title := Label.new()
+	gear_title.name = "GearTitle"
+	gear_title.text = "Equipaggiamento"
+	gear_title.add_theme_font_size_override("font_size", 13)
+	gear_title.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	gear_title.visible = false
+	right_vbox.add_child(gear_title)
+
+	var gear_grid := GridContainer.new()
+	gear_grid.name = "GearCounters"
+	gear_grid.columns = 4
+	gear_grid.add_theme_constant_override("h_separation", 6)
+	gear_grid.add_theme_constant_override("v_separation", 6)
+	right_vbox.add_child(gear_grid)
+
 	var sep2 := HSeparator.new()
 	right_vbox.add_child(sep2)
 
@@ -497,6 +513,43 @@ func _refresh_crew_counters() -> void:
 				hp.add_theme_color_override("font_color",
 					Color(1, 0.7, 0.5) if e < GameState.MAX_ENDURANCE else Color(0.7, 0.9, 0.7))
 
+# Segnalini dei robot/strumenti imbarcati (mostrati durante la spedizione).
+func _refresh_gear_counters() -> void:
+	var grid := find_child("GearCounters", true, false) as GridContainer
+	var title := find_child("GearTitle", true, false) as Label
+	if not grid:
+		return
+	for c in grid.get_children():
+		grid.remove_child(c)
+		c.free()
+	var show := GameState.expedition_pos > 0 and GameState.expedition_gear.size() > 0
+	if title: title.visible = show
+	if not show:
+		return
+	for k in GameState.expedition_gear:
+		var u := GameData.get_unit(k)
+		var folder := "bots" if GameData.get_bot_keys().has(k) else "tools"
+		var box := VBoxContainer.new()
+		box.tooltip_text = u.get("name", k)
+		box.add_theme_constant_override("separation", 0)
+		var tex := TextureRect.new()
+		var path := "res://assets/%s/%s.png" % [folder, u.get("img", "")]
+		if ResourceLoader.exists(path):
+			tex.texture = load(path)
+		tex.custom_minimum_size = Vector2(46, 46)
+		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		var damaged: bool = k in GameState.damaged_gear
+		tex.modulate = Color(0.5, 0.3, 0.3, 0.7) if damaged else Color(1, 1, 1)
+		box.add_child(tex)
+		var lb := Label.new()
+		lb.text = "guasto" if damaged else u.get("name", k)
+		lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lb.add_theme_font_size_override("font_size", 8)
+		lb.add_theme_color_override("font_color", Color(1, 0.5, 0.5) if damaged else Color(0.8, 0.85, 0.9))
+		box.add_child(lb)
+		grid.add_child(box)
+
 func _build_hex_buttons() -> void:
 	for col in range(1, 5):
 		var max_row := 7 if col % 2 == 1 else 6
@@ -585,6 +638,7 @@ func _refresh_environ_buttons() -> void:
 		var explored: bool = GameState.environ_grid[hex_id].get("explored", false)
 		var is_pos: bool = (hex_id == GameState.expedition_pos)
 		var reachable: bool = GameState.can_move_expedition(hex_id)
+		var hasty: bool = GameState.can_hasty_move(hex_id)
 
 		var fill := Color(0, 0, 0, 0)
 		var border := Color(0, 0, 0, 0)
@@ -601,6 +655,10 @@ func _refresh_environ_buttons() -> void:
 			fill = Color(1.0, 1.0, 1.0, 0.16)
 			border = Color(1.0, 0.95, 0.5, 0.9)
 			bw = 3
+		elif hasty:
+			# Raggiungibile con movimento affrettato (6.3): contorno tenue
+			border = Color(0.6, 0.7, 1.0, 0.35)
+			bw = 1
 		elif explored:
 			border = Color(0.4, 1.0, 0.5, 0.5)
 			bw = 2
@@ -617,8 +675,11 @@ func _refresh_environ_buttons() -> void:
 		btn.add_theme_stylebox_override("pressed", sb)
 		btn.add_theme_stylebox_override("focus", sb)
 		btn.add_theme_stylebox_override("disabled", sb)
-		btn.disabled = not (reachable or is_pos)
-		btn.mouse_filter = Control.MOUSE_FILTER_STOP if (reachable or is_pos) else Control.MOUSE_FILTER_IGNORE
+		var clickable := reachable or hasty
+		btn.disabled = not clickable
+		btn.mouse_filter = Control.MOUSE_FILTER_STOP if clickable else Control.MOUSE_FILTER_IGNORE
+		if hasty and not reachable:
+			btn.tooltip_text = "Movimento affrettato (6.3)"
 
 func _center_on_expedition() -> void:
 	if not env_scroll:
@@ -630,7 +691,9 @@ func _center_on_expedition() -> void:
 
 func _on_environ_hex_clicked(hex_id: int) -> void:
 	if GameState.can_move_expedition(hex_id):
-		GameState.move_expedition(hex_id)
+		GameState.move_expedition(hex_id)            # mossa normale (adiacente)
+	elif GameState.can_hasty_move(hex_id):
+		GameState.hasty_move_to(hex_id)              # movimento affrettato (6.3)
 
 func _update_left_panel_mode() -> void:
 	var on_surface := GameState.current_phase == GameState.Phase.EXPEDITION \
@@ -770,6 +833,7 @@ func _update_display() -> void:
 	# Refresh hex buttons and panel mode
 	_refresh_hex_buttons()
 	_refresh_crew_counters()
+	_refresh_gear_counters()
 	_update_left_panel_mode()
 
 func _refresh_hex_buttons() -> void:

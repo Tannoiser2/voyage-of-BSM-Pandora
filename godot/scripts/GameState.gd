@@ -537,6 +537,56 @@ func can_move_expedition(hex_id: int) -> bool:
 		return false
 	return hex_id in environ_neighbors(expedition_pos)
 
+# Movimento affrettato (6.3): si può andare in QUALSIASI esagono dell'area pagando
+# la somma delle ore d'ingresso lungo il percorso più economico; poi si consulta
+# la Matrice di Esplorazione (6.4).
+func can_hasty_move(hex_id: int) -> bool:
+	if current_phase != Phase.EXPEDITION or not current_creature.is_empty():
+		return false
+	return environ_grid.has(hex_id) and hex_id != expedition_pos and not (hex_id in environ_neighbors(expedition_pos))
+
+func hasty_move_to(hex_id: int) -> void:
+	if not can_hasty_move(hex_id):
+		return
+	var cost := _hasty_path_cost(expedition_pos, hex_id)
+	var cell: Dictionary = environ_grid.get(hex_id, {})
+	var terrain: String = cell.get("terrain", "Open")
+	expedition_pos = hex_id
+	add_expedition_hours(cost)
+	add_log("Movimento affrettato fino a %s — %d ore." % [cell.get("real", str(hex_id)), cost])
+	environ_changed.emit()
+	# Dopo la mossa si consulta comunque la Matrice di Esplorazione (6.4)
+	if not cell.get("explored", false):
+		explore_environ_hex(hex_id, terrain)
+	else:
+		var die := randi_range(1, 6)
+		show_paragraph(GameData.get_exploration_paragraph(terrain, die))
+
+# Costo minimo (in ore d'ingresso) del percorso fra due esagoni dell'area (Dijkstra).
+func _hasty_path_cost(from_hex: int, to_hex: int) -> int:
+	var dist := {from_hex: 0}
+	var queue := [from_hex]
+	while queue.size() > 0:
+		# estrai il nodo con costo minimo
+		var bi := 0
+		for i in range(1, queue.size()):
+			if dist[queue[i]] < dist[queue[bi]]:
+				bi = i
+		var cur: int = queue[bi]
+		queue.remove_at(bi)
+		if cur == to_hex:
+			return dist[cur]
+		for nb in environ_neighbors(cur):
+			if not environ_grid.has(nb):
+				continue
+			var nterr: String = environ_grid[nb].get("terrain", "Open")
+			var nd: int = dist[cur] + enter_cost_for(nterr)
+			if not dist.has(nb) or nd < dist[nb]:
+				dist[nb] = nd
+				if not (nb in queue):
+					queue.append(nb)
+	return dist.get(to_hex, 99)
+
 func move_expedition(hex_id: int) -> void:
 	if not can_move_expedition(hex_id):
 		return
