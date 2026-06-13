@@ -241,6 +241,17 @@ func get_creature(name: String) -> Dictionary:
 func get_all_creature_names() -> Array:
 	return creatures.get("creatures", {}).keys()
 
+# Creatura il cui paragrafo d'incontro (retro del segnalino, 2.6) è dato. "" se nessuna.
+func creature_for_paragraph(para: int) -> String:
+	for name in creatures.get("creatures", {}):
+		if int(creatures["creatures"][name].get("para", -1)) == para:
+			return name
+	return ""
+
+# Valore in Punti Vittoria extra di una creatura catturata (9.1).
+func creature_vp(name: String) -> int:
+	return int(get_creature(name).get("vp", 0))
+
 func get_creature_texture(name: String) -> Texture2D:
 	var data := get_creature(name)
 	var img_name: String = data.get("img", "")

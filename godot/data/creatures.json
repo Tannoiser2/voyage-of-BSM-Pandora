@@ -1,45 +1,362 @@
 {
-  "_note": "Modificatori della creatura nell'ordine del counter: Intelligenza, Combattimento, Aggressività, Velocità (vedi regola 3.5). Sono usati per determinare la valutazione della creatura per esagono (8.4).",
-  "_labels": ["intel", "combat", "aggression", "speed"],
-  "creatures": {
-    "Abomnid":     {"intel": 1, "combat": 3, "aggression": 2, "speed": 3, "img": "Creature_Abomnid"},
-    "Aenon":       {"intel": 2, "combat": 2, "aggression": 0, "speed": 3, "img": "Creature_Aenon"},
-    "Allidon":     {"intel": 1, "combat": 1, "aggression": 1, "speed": 3, "img": "Creature_Allidon"},
-    "Aquan":       {"intel": 1, "combat": 1, "aggression": 0, "speed": 3, "img": "Creature_Aquan"},
-    "Aracat":      {"intel": 0, "combat": 2, "aggression": 2, "speed": 3, "img": "Creature_Aracat"},
-    "Armeetle":    {"intel": 1, "combat": 1, "aggression": 1, "speed": 2, "img": "Creature_Armeetle"},
-    "Bisape":      {"intel": 3, "combat": 3, "aggression": 3, "speed": 3, "img": "Creature_Bisape"},
-    "Bubbler":     {"intel": 0, "combat": 0, "aggression": 1, "speed": 3, "img": "Creature_Bubbler"},
-    "Crusher":     {"intel": 1, "combat": 3, "aggression": 1, "speed": 1, "img": "Creature_Crusher"},
-    "Curder":      {"intel": 0, "combat": 1, "aggression": 1, "speed": 1, "img": "Creature_Curder"},
-    "Decapus":     {"intel": 2, "combat": 3, "aggression": 1, "speed": 3, "img": "Creature_Decapus"},
-    "Docidon":     {"intel": 2, "combat": 2, "aggression": 2, "speed": 2, "img": "Creature_Docidon"},
-    "Drada":       {"intel": 3, "combat": 1, "aggression": 1, "speed": 3, "img": "Creature_Drada"},
-    "Draloid":     {"intel": 0, "combat": 3, "aggression": 1, "speed": 1, "img": "Creature_Draloid"},
-    "Eleboid":     {"intel": 0, "combat": 1, "aggression": 0, "speed": 0, "img": "Creature_Eleboid"},
-    "Erequito":    {"intel": 2, "combat": 1, "aggression": 1, "speed": 1, "img": "Creature_Erequito"},
-    "Fastitomite": {"intel": 1, "combat": 1, "aggression": 2, "speed": 3, "img": "Creature_Fastitomite"},
-    "Florist":     {"intel": 3, "combat": 3, "aggression": 3, "speed": 3, "img": "Creature_Florist"},
-    "Folisaur":    {"intel": 2, "combat": 2, "aggression": 2, "speed": 1, "img": "Creature_Folisaur"},
-    "Garbrist":    {"intel": 1, "combat": 2, "aggression": 3, "speed": 0, "img": "Creature_Garbrist"},
-    "Glassman":    {"intel": 2, "combat": 1, "aggression": 2, "speed": 2, "img": "Creature_Glassman"},
-    "Glosper":     {"intel": 2, "combat": 3, "aggression": 1, "speed": 1, "img": "Creature_Glosper"},
-    "Ironhorn":    {"intel": 1, "combat": 0, "aggression": 1, "speed": 1, "img": "Creature_Ironhorn"},
-    "Ivy Five":    {"intel": 2, "combat": 2, "aggression": 3, "speed": 3, "img": "Creature_Ivy Five"},
-    "Mirror Fly":  {"intel": 2, "combat": 3, "aggression": 0, "speed": 1, "img": "Creature_Mirror Fly"},
-    "Monoke":      {"intel": 1, "combat": 1, "aggression": 2, "speed": 1, "img": "Creature_Monoke"},
-    "Nessie":      {"intel": 0, "combat": 3, "aggression": 0, "speed": 3, "img": "Creature_Nessie"},
-    "Ornifly":     {"intel": 2, "combat": 2, "aggression": 2, "speed": 3, "img": "Creature_Ornifly"},
-    "Paraboid":    {"intel": 0, "combat": 0, "aggression": 0, "speed": 2, "img": "Creature_Paraboid"},
-    "Promite":     {"intel": 2, "combat": 2, "aggression": 2, "speed": 3, "img": "Creature_Promite"},
-    "Radrod":      {"intel": 2, "combat": 2, "aggression": 2, "speed": 3, "img": "Creature_Radrod"},
-    "Reeler":      {"intel": 1, "combat": 2, "aggression": 3, "speed": 3, "img": "Creature_Reeler"},
-    "Scorsaur":    {"intel": 0, "combat": 1, "aggression": 1, "speed": 1, "img": "Creature_Scorsaur"},
-    "Sholf":       {"intel": 2, "combat": 3, "aggression": 0, "speed": 2, "img": "Creature_Sholf"},
-    "Snoup":       {"intel": 2, "combat": 1, "aggression": 1, "speed": 3, "img": "Creature_Snoup"},
-    "Spiker":      {"intel": 3, "combat": 2, "aggression": 2, "speed": 2, "img": "Creature_Spiker"},
-    "Unithalo":    {"intel": 1, "combat": 1, "aggression": 2, "speed": 0, "img": "Creature_Unithalo"},
-    "Ursamax":     {"intel": 2, "combat": 3, "aggression": 2, "speed": 1, "img": "Creature_Ursamax"},
-    "X-Wasp":      {"intel": 3, "combat": 1, "aggression": 1, "speed": 2, "img": "Creature_X-Wasp"}
+ "_note": "Modificatori della creatura nell'ordine del counter: Intelligenza, Combattimento, Aggressività, Velocità (vedi regola 3.5). Sono usati per determinare la valutazione della creatura per esagono (8.4).",
+ "_labels": [
+  "intel",
+  "combat",
+  "aggression",
+  "speed"
+ ],
+ "creatures": {
+  "Abomnid": {
+   "intel": 1,
+   "combat": 3,
+   "aggression": 2,
+   "speed": 3,
+   "img": "Creature_Abomnid",
+   "para": 41,
+   "vp": 0
+  },
+  "Aenon": {
+   "intel": 2,
+   "combat": 2,
+   "aggression": 0,
+   "speed": 3,
+   "img": "Creature_Aenon",
+   "para": 156,
+   "vp": 2
+  },
+  "Allidon": {
+   "intel": 1,
+   "combat": 1,
+   "aggression": 1,
+   "speed": 3,
+   "img": "Creature_Allidon",
+   "para": 39,
+   "vp": 0
+  },
+  "Aquan": {
+   "intel": 1,
+   "combat": 1,
+   "aggression": 0,
+   "speed": 3,
+   "img": "Creature_Aquan",
+   "para": 75,
+   "vp": 2
+  },
+  "Aracat": {
+   "intel": 0,
+   "combat": 2,
+   "aggression": 2,
+   "speed": 3,
+   "img": "Creature_Aracat",
+   "para": 54,
+   "vp": 2
+  },
+  "Armeetle": {
+   "intel": 1,
+   "combat": 1,
+   "aggression": 1,
+   "speed": 2,
+   "img": "Creature_Armeetle",
+   "para": 45,
+   "vp": 0
+  },
+  "Bisape": {
+   "intel": 3,
+   "combat": 3,
+   "aggression": 3,
+   "speed": 3,
+   "img": "Creature_Bisape",
+   "para": 149,
+   "vp": 5
+  },
+  "Bubbler": {
+   "intel": 0,
+   "combat": 0,
+   "aggression": 1,
+   "speed": 3,
+   "img": "Creature_Bubbler",
+   "para": 153,
+   "vp": 0
+  },
+  "Crusher": {
+   "intel": 1,
+   "combat": 3,
+   "aggression": 1,
+   "speed": 1,
+   "img": "Creature_Crusher",
+   "para": 43,
+   "vp": 0
+  },
+  "Curder": {
+   "intel": 0,
+   "combat": 1,
+   "aggression": 1,
+   "speed": 1,
+   "img": "Creature_Curder",
+   "para": 35,
+   "vp": 0
+  },
+  "Decapus": {
+   "intel": 2,
+   "combat": 3,
+   "aggression": 1,
+   "speed": 3,
+   "img": "Creature_Decapus",
+   "para": 142,
+   "vp": 0
+  },
+  "Docidon": {
+   "intel": 2,
+   "combat": 2,
+   "aggression": 2,
+   "speed": 2,
+   "img": "Creature_Docidon",
+   "para": 3,
+   "vp": 0
+  },
+  "Drada": {
+   "intel": 3,
+   "combat": 1,
+   "aggression": 1,
+   "speed": 3,
+   "img": "Creature_Drada",
+   "para": 7,
+   "vp": 5
+  },
+  "Draloid": {
+   "intel": 0,
+   "combat": 3,
+   "aggression": 1,
+   "speed": 1,
+   "img": "Creature_Draloid",
+   "para": 162,
+   "vp": 0
+  },
+  "Eleboid": {
+   "intel": 0,
+   "combat": 1,
+   "aggression": 0,
+   "speed": 0,
+   "img": "Creature_Eleboid",
+   "para": 57,
+   "vp": 2
+  },
+  "Erequito": {
+   "intel": 2,
+   "combat": 1,
+   "aggression": 1,
+   "speed": 1,
+   "img": "Creature_Erequito",
+   "para": 145,
+   "vp": 0
+  },
+  "Fastitomite": {
+   "intel": 1,
+   "combat": 1,
+   "aggression": 2,
+   "speed": 3,
+   "img": "Creature_Fastitomite",
+   "para": 9,
+   "vp": 0
+  },
+  "Florist": {
+   "intel": 3,
+   "combat": 3,
+   "aggression": 3,
+   "speed": 3,
+   "img": "Creature_Florist",
+   "para": 33,
+   "vp": 3
+  },
+  "Folisaur": {
+   "intel": 2,
+   "combat": 2,
+   "aggression": 2,
+   "speed": 1,
+   "img": "Creature_Folisaur",
+   "para": 27,
+   "vp": 0
+  },
+  "Garbrist": {
+   "intel": 1,
+   "combat": 2,
+   "aggression": 3,
+   "speed": 0,
+   "img": "Creature_Garbrist",
+   "para": 77,
+   "vp": 0
+  },
+  "Glassman": {
+   "intel": 2,
+   "combat": 1,
+   "aggression": 2,
+   "speed": 2,
+   "img": "Creature_Glassman",
+   "para": 69,
+   "vp": 3
+  },
+  "Glosper": {
+   "intel": 2,
+   "combat": 3,
+   "aggression": 1,
+   "speed": 1,
+   "img": "Creature_Glosper",
+   "para": 179,
+   "vp": 0
+  },
+  "Ironhorn": {
+   "intel": 1,
+   "combat": 0,
+   "aggression": 1,
+   "speed": 1,
+   "img": "Creature_Ironhorn",
+   "para": 167,
+   "vp": 2
+  },
+  "Ivy Five": {
+   "intel": 2,
+   "combat": 2,
+   "aggression": 3,
+   "speed": 3,
+   "img": "Creature_Ivy Five",
+   "para": 29,
+   "vp": 3
+  },
+  "Mirror Fly": {
+   "intel": 2,
+   "combat": 3,
+   "aggression": 0,
+   "speed": 1,
+   "img": "Creature_Mirror Fly",
+   "para": 159,
+   "vp": 0
+  },
+  "Monoke": {
+   "intel": 1,
+   "combat": 1,
+   "aggression": 2,
+   "speed": 1,
+   "img": "Creature_Monoke",
+   "para": 170,
+   "vp": 0
+  },
+  "Nessie": {
+   "intel": 0,
+   "combat": 3,
+   "aggression": 0,
+   "speed": 3,
+   "img": "Creature_Nessie",
+   "para": 63,
+   "vp": 4
+  },
+  "Ornifly": {
+   "intel": 2,
+   "combat": 2,
+   "aggression": 2,
+   "speed": 3,
+   "img": "Creature_Ornifly",
+   "para": 48,
+   "vp": 0
+  },
+  "Paraboid": {
+   "intel": 0,
+   "combat": 0,
+   "aggression": 0,
+   "speed": 2,
+   "img": "Creature_Paraboid",
+   "para": 51,
+   "vp": 0
+  },
+  "Promite": {
+   "intel": 2,
+   "combat": 2,
+   "aggression": 2,
+   "speed": 3,
+   "img": "Creature_Promite",
+   "para": 147,
+   "vp": 0
+  },
+  "Radrod": {
+   "intel": 2,
+   "combat": 2,
+   "aggression": 2,
+   "speed": 3,
+   "img": "Creature_Radrod",
+   "para": 181,
+   "vp": 0
+  },
+  "Reeler": {
+   "intel": 1,
+   "combat": 2,
+   "aggression": 3,
+   "speed": 3,
+   "img": "Creature_Reeler",
+   "para": 208,
+   "vp": 0
+  },
+  "Scorsaur": {
+   "intel": 0,
+   "combat": 1,
+   "aggression": 1,
+   "speed": 1,
+   "img": "Creature_Scorsaur",
+   "para": 60,
+   "vp": 0
+  },
+  "Sholf": {
+   "intel": 2,
+   "combat": 3,
+   "aggression": 0,
+   "speed": 2,
+   "img": "Creature_Sholf",
+   "para": 79,
+   "vp": 0
+  },
+  "Snoup": {
+   "intel": 2,
+   "combat": 1,
+   "aggression": 1,
+   "speed": 3,
+   "img": "Creature_Snoup",
+   "para": 37,
+   "vp": 0
+  },
+  "Spiker": {
+   "intel": 3,
+   "combat": 2,
+   "aggression": 2,
+   "speed": 2,
+   "img": "Creature_Spiker",
+   "para": 31,
+   "vp": 0
+  },
+  "Unithalo": {
+   "intel": 1,
+   "combat": 1,
+   "aggression": 2,
+   "speed": 0,
+   "img": "Creature_Unithalo",
+   "para": 72,
+   "vp": 3
+  },
+  "Ursamax": {
+   "intel": 2,
+   "combat": 3,
+   "aggression": 2,
+   "speed": 1,
+   "img": "Creature_Ursamax",
+   "para": 151,
+   "vp": 2
+  },
+  "X-Wasp": {
+   "intel": 3,
+   "combat": 1,
+   "aggression": 1,
+   "speed": 2,
+   "img": "Creature_X-Wasp",
+   "para": 5,
+   "vp": 2
   }
+ }
 }
