@@ -1637,6 +1637,32 @@ func _creature_combat_summary() -> String:
 		GameState.expedition_max_speed(), GameState.expedition_min_speed()]
 	return s
 
+# Anteprima delle probabilità d'esito del combattimento (8.5): per Uccidi e
+# Cattura mostra la percentuale di ciascun risultato della Tabella sul tiro 1d6.
+func _combat_odds_box() -> String:
+	if GameState.current_creature.is_empty():
+		return ""
+	var labels := {
+		"AE": "successo",
+		"DR": "la creatura fugge",
+		"AR": "ripieghi di 1 esagono",
+		"EX": "scambio (−1 Resistenza)",
+		"DE": "la creatura prevale (−2 Resistenza)",
+	}
+	var order := ["AE", "DR", "AR", "EX", "DE"]
+	var s := "\n\n[color=#88ccff]Probabilità d'esito (tiro 1d6):[/color]"
+	for mode in [["kill", "Uccidi"], ["capture", "Cattura"]]:
+		if mode[0] == "capture" and GameState.pending_no_capture:
+			continue
+		var dist: Dictionary = GameState.combat_odds(mode[0])
+		var parts: Array = []
+		for code in order:
+			if dist.has(code):
+				var pct := int(round(float(dist[code]) * 100.0 / 6.0))
+				parts.append("%s %d%%" % [labels.get(code, code), pct])
+		s += "\n[b]%s[/b]: %s" % [mode[1], " · ".join(parts)]
+	return s
+
 func _on_paragraph_request(para_num: int) -> void:
 	_play("page")
 	_flash_paragraph()
@@ -1676,6 +1702,10 @@ func _on_paragraph_request(para_num: int) -> void:
 			bb += "\n\n[color=#ffd24d]➡ %s[/color]" % GameState.encounter_outcome_text
 		elif not GameState.current_creature.is_empty() and not is_creature_here:
 			bb += _computed_values_box(text)
+		# Anteprima probabilità sui paragrafi-esito che richiedono combattimento (8.5).
+		if not GameState.current_creature.is_empty() and not is_creature_here \
+				and "combattiment" in text.to_lower():
+			bb += _combat_odds_box()
 		para_display.bbcode_text = bb
 
 	# Durante un incontro i comandi di combattimento sostituiscono le scelte; in orbita

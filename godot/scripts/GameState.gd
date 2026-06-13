@@ -131,7 +131,8 @@ func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 
 # Serializza l'intero stato di gioco su disco (user://). Restituisce true se ok.
-func save_game() -> bool:
+# Con silent=true non scrive nel diario né emette il suono (usato per l'autosave).
+func save_game(silent := false) -> bool:
 	var d := {
 		"version": SAVE_VERSION,
 		"saved_at": Time.get_datetime_string_from_system(),
@@ -163,8 +164,9 @@ func save_game() -> bool:
 		return false
 	f.store_string(JSON.stringify(d, "\t"))
 	f.close()
-	add_log("Partita salvata.")
-	game_saved.emit()
+	if not silent:
+		add_log("Partita salvata.")
+		game_saved.emit()
 	return true
 
 # Ricarica lo stato dal file di salvataggio. I numeri JSON tornano come float,
@@ -240,6 +242,10 @@ func set_phase(p: Phase) -> void:
 	current_phase = p
 	phase_changed.emit(phase_name(p))
 	state_updated.emit()
+	# Salvataggio automatico a ogni transizione di gioco significativa, così il
+	# progresso non si perde. Le fasi di menu/setup non vengono salvate.
+	if p != Phase.MAIN_MENU and p != Phase.SETUP:
+		save_game(true)
 
 func phase_name(p: Phase) -> String:
 	match p:
@@ -471,6 +477,18 @@ func best_combat(mode: String) -> int:
 			var gv: int = int(g.get("capture", 0)) if mode == "capture" else int(g.get("kill", 0))
 			best = maxi(best, gv)
 	return best if best > 0 else 3
+
+# Distribuzione degli esiti di combattimento per la modalità scelta (8.5):
+# per ciascun risultato del dado (1-6) calcola il differenziale e il risultato
+# sulla Tabella, restituendo {codice_risultato: conteggio_su_6}.
+func combat_odds(mode: String) -> Dictionary:
+	var pc := best_combat(mode)
+	var dist := {}
+	for die in range(1, 7):
+		var diff := pc + die - creature_rating + pending_combat_shift
+		var res := GameData.get_combat_result(diff)
+		dist[res] = int(dist.get(res, 0)) + 1
+	return dist
 
 func show_paragraph(para_num: int) -> void:
 	current_paragraph = para_num
