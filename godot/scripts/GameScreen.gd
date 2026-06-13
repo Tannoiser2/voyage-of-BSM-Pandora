@@ -327,6 +327,21 @@ func _build_ui() -> void:
 
 	_build_status_rows(status_display)
 
+	# Segnalini dell'equipaggio (token originali + Resistenza)
+	var crew_title := Label.new()
+	crew_title.text = "Equipaggio"
+	crew_title.add_theme_font_size_override("font_size", 13)
+	crew_title.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	right_vbox.add_child(crew_title)
+
+	var crew_grid := GridContainer.new()
+	crew_grid.name = "CrewCounters"
+	crew_grid.columns = 4
+	crew_grid.add_theme_constant_override("h_separation", 6)
+	crew_grid.add_theme_constant_override("v_separation", 6)
+	right_vbox.add_child(crew_grid)
+	_build_crew_counters(crew_grid)
+
 	var sep2 := HSeparator.new()
 	right_vbox.add_child(sep2)
 
@@ -401,6 +416,62 @@ func _build_status_rows(parent: Control) -> void:
 		lbl.add_theme_font_size_override("font_size", 13)
 		lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
 		parent.add_child(lbl)
+
+# Segnalini dell'equipaggio: token originale + Resistenza, colorati per stato.
+func _build_crew_counters(parent: Control) -> void:
+	for key in GameData.get_character_keys():
+		var u := GameData.get_character(key)
+		var box := VBoxContainer.new()
+		box.name = "Crew_%s" % key
+		box.add_theme_constant_override("separation", 0)
+		box.tooltip_text = u.get("name", key)
+		var tex := TextureRect.new()
+		tex.name = "Tok"
+		var path := "res://assets/characters/%s.png" % u.get("img", "")
+		if ResourceLoader.exists(path):
+			tex.texture = load(path)
+		tex.custom_minimum_size = Vector2(52, 52)
+		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		box.add_child(tex)
+		var hp := Label.new()
+		hp.name = "HP"
+		hp.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hp.add_theme_font_size_override("font_size", 11)
+		box.add_child(hp)
+		parent.add_child(box)
+
+func _refresh_crew_counters() -> void:
+	var grid := find_child("CrewCounters", true, false)
+	if not grid:
+		return
+	for key in GameData.get_character_keys():
+		var box := grid.find_child("Crew_%s" % key, false, false)
+		if not box:
+			continue
+		var c: Dictionary = GameState.crew.get(key, {})
+		var alive: bool = c.get("alive", true)
+		var e: int = int(c.get("endurance", GameState.MAX_ENDURANCE))
+		var onboard: bool = key in GameState.expedition_units
+		var tex := box.get_node_or_null("Tok") as TextureRect
+		var hp := box.get_node_or_null("HP") as Label
+		if tex:
+			if not alive:
+				tex.modulate = Color(0.35, 0.2, 0.2, 0.6)
+			elif e < GameState.MAX_ENDURANCE:
+				tex.modulate = Color(1.0, 0.75, 0.55)
+			elif onboard:
+				tex.modulate = Color(1, 1, 1)
+			else:
+				tex.modulate = Color(0.7, 0.7, 0.7)
+		if hp:
+			if not alive:
+				hp.text = "✖"
+				hp.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
+			else:
+				hp.text = "%d/%d" % [e, GameState.MAX_ENDURANCE]
+				hp.add_theme_color_override("font_color",
+					Color(1, 0.7, 0.5) if e < GameState.MAX_ENDURANCE else Color(0.7, 0.9, 0.7))
 
 func _build_hex_buttons() -> void:
 	for col in range(1, 5):
@@ -637,6 +708,7 @@ func _update_display() -> void:
 
 	# Refresh hex buttons and panel mode
 	_refresh_hex_buttons()
+	_refresh_crew_counters()
 	_update_left_panel_mode()
 
 func _refresh_hex_buttons() -> void:
