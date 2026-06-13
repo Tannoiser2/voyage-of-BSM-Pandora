@@ -206,6 +206,15 @@ func get_exploration_paragraph(terrain: String, die: int) -> int:
 		return row[die - 1].to_int()
 	return 146
 
+# Matrice di Esplorazione reale (6.4): 1° dado = colonna, 2° dado = riga → paragrafo.
+func get_exploration_2d6(first_die: int, second_die: int) -> int:
+	var m: Array = tables.get("exploration_2d6", [])
+	var r := clampi(second_die, 1, 6) - 1
+	var c := clampi(first_die, 1, 6) - 1
+	if r < m.size() and c < m[r].size():
+		return int(m[r][c])
+	return 146
+
 func get_combat_result(differential: int) -> String:
 	var clamped := clampi(differential, -7, 7)
 	var results: Dictionary = tables.get("combat_results", {})

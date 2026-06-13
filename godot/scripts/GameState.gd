@@ -559,8 +559,7 @@ func hasty_move_to(hex_id: int) -> void:
 	if not cell.get("explored", false):
 		explore_environ_hex(hex_id, terrain)
 	else:
-		var die := randi_range(1, 6)
-		show_paragraph(GameData.get_exploration_paragraph(terrain, die))
+		show_paragraph(GameData.get_exploration_2d6(randi_range(1, 6), randi_range(1, 6)))
 
 # Costo minimo (in ore d'ingresso) del percorso fra due esagoni dell'area (Dijkstra).
 func _hasty_path_cost(from_hex: int, to_hex: int) -> int:
@@ -615,12 +614,12 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 		_terrain_it(terrain), explore_cost, _gear_cost_note(terrain)])
 	_consume_supply_for(terrain)
 	environ_changed.emit()
-	# Esplorazione subordinata al libro-gioco (6.4): tira il dado e consulta la
-	# Matrice di Esplorazione → vai al paragrafo indicato. Da lì le scelte del
-	# paragrafo guidano l'incontro (e l'eventuale combattimento) coi rimandi ¶NNN.
-	var die := randi_range(1, 6)
-	var para_num := GameData.get_exploration_paragraph(terrain, die)
-	add_log("Esplorazione (%s, dado %d) → Matrice di Esplorazione → Paragrafo %03d" % [_terrain_it(terrain), die, para_num])
+	# Esplorazione subordinata al libro-gioco (6.4): Matrice di Esplorazione reale.
+	# Si tira il 1° dado (colonna) e il 2° dado (riga) → paragrafo dell'incontro.
+	var d1 := randi_range(1, 6)
+	var d2 := randi_range(1, 6)
+	var para_num := GameData.get_exploration_2d6(d1, d2)
+	add_log("Esplorazione (%s) — Matrice di Esplorazione dadi %d/%d → Paragrafo %03d" % [_terrain_it(terrain), d1, d2, para_num])
 	show_paragraph(para_num)
 
 func _terrain_it(terrain: String) -> String:
