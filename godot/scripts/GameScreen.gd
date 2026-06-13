@@ -388,6 +388,14 @@ func _build_ui() -> void:
 	roll_btn.pressed.connect(_on_roll_dice)
 	dice_panel.add_child(roll_btn)
 
+	var manual_chk := CheckButton.new()
+	manual_chk.name = "ManualDiceChk"
+	manual_chk.text = "Tiri manuali"
+	manual_chk.button_pressed = GameState.manual_dice
+	manual_chk.tooltip_text = "Se attivo, tiri tu i dadi dove la regola lo prevede; altrimenti li tira il sistema."
+	manual_chk.toggled.connect(func(on): GameState.manual_dice = on)
+	dice_panel.add_child(manual_chk)
+
 	var dice_hint := Label.new()
 	dice_hint.name = "DiceHint"
 	dice_hint.text = ""
@@ -735,6 +743,7 @@ func _connect_signals() -> void:
 	GameState.encounter_started.connect(_on_encounter_started)
 	GameState.encounter_ended.connect(_on_encounter_ended)
 	GameState.environ_changed.connect(_on_environ_changed)
+	GameState.die_rolled.connect(_on_die_rolled)
 
 func _on_environ_changed() -> void:
 	_update_left_panel_mode()
@@ -1285,6 +1294,10 @@ func _show_expedition_panel() -> void:
 		para_display.bbcode_text = bb
 
 	_update_action_buttons("expedition")
+
+func _on_die_rolled(value: int, _purpose: String) -> void:
+	# Mostra il risultato dei tiri automatici gestiti dal sistema
+	_set_dice_result(value)
 
 func _on_roll_dice() -> void:
 	var die := randi_range(1, 6)
