@@ -7,6 +7,7 @@ var creatures: Dictionary = {}
 var environ_maps: Dictionary = {}
 var units: Dictionary = {}
 var terrain: Dictionary = {}
+var paragraph_logic: Dictionary = {}
 
 func _ready() -> void:
 	_load_data()
@@ -19,6 +20,11 @@ func _load_data() -> void:
 	environ_maps = _load_json("res://data/environ_maps.json")
 	units = _load_json("res://data/units.json")
 	terrain = _load_json("res://data/terrain.json")
+	paragraph_logic = _load_json("res://data/paragraph_logic.json")
+
+# Regole di ramo codificate per un paragrafo d'incontro (8.2/8.5). [] se assenti.
+func get_paragraph_logic(para: int) -> Array:
+	return paragraph_logic.get("%03d" % para, [])
 
 # Mappa una classe di terreno campionata (Open/Rough/...) al tipo reale (Flat/Hill/...)
 func terrain_real(terrain_class: String) -> String:

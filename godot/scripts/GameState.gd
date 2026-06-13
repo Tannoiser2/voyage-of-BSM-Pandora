@@ -360,6 +360,7 @@ func best_combat(mode: String) -> int:
 
 func show_paragraph(para_num: int) -> void:
 	current_paragraph = para_num
+	encounter_outcome_text = ""
 	# Se il paragrafo è l'incontro di una creatura (retro del segnalino, 2.6) e la
 	# spedizione è sulla superficie, prepara l'incontro: i comandi di combattimento
 	# compaiono sopra al testo del paragrafo (le meccaniche seguono il libro-gioco).
@@ -367,6 +368,10 @@ func show_paragraph(para_num: int) -> void:
 		var creature := GameData.creature_for_paragraph(para_num)
 		if creature != "":
 			_begin_creature(creature)
+	# Esito d'incontro: se siamo in un incontro e il paragrafo ha rami codificati,
+	# il sistema li risolve coi Valori calcolati (8.2/8.5).
+	if not current_creature.is_empty() and not GameData.get_paragraph_logic(para_num).is_empty():
+		resolve_encounter_outcome(para_num)
 	set_phase(Phase.PARAGRAPH)
 	paragraph_request.emit(para_num)
 	state_updated.emit()
@@ -375,6 +380,11 @@ func show_paragraph(para_num: int) -> void:
 # memorizzati come da regola (una volta determinati restano fissi).
 var creature_attr_cache: Dictionary = {}
 const RATING_TABLE := {2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11: 9}
+# Modificatori di combattimento impostati dai rami dei paragrafi (8.5)
+var pending_combat_shift: int = 0      # colonne a sinistra (+) sulla tabella combattimento
+var pending_no_capture: bool = false   # cattura non permessa
+var pending_kill_as_capture: bool = false  # i risultati di uccisione contano come cattura
+var encounter_outcome_text: String = ""    # esito risolto dal sistema, per la UI
 
 # Calcola (e memorizza) il Valore di un attributo della creatura (8.4):
 # tabella[2d6 + modificatore]. attr: "intel"|"combat"|"aggression"|"speed".
@@ -407,12 +417,145 @@ func expedition_min_speed() -> int:
 		worst = mini(worst, int(GameData.get_character(k).get("speed", 99)))
 	return worst if worst < 99 else 0
 
+# --- Interprete dei rami dei paragrafi d'incontro (8.2/8.5) -------------------
+
+# Risolve il paragrafo d'incontro coi Valori calcolati: applica gli esiti
+# terminali (fuga/cattura/...) o imposta i modificatori di combattimento.
+func resolve_encounter_outcome(para: int) -> void:
+	encounter_outcome_text = ""
+	pending_combat_shift = 0
+	pending_no_capture = false
+	pending_kill_as_capture = false
+	if current_creature.is_empty():
+		return
+	for rule in GameData.get_paragraph_logic(para):
+		if _cond_holds(rule.get("cond", [])):
+			_apply_act(rule.get("act", {}))
+			return
+
+func _cond_holds(conds: Array) -> bool:
+	for c in conds:
+		var lhs: int = _attr_or_mod(str(c[0]))
+		var rhs: int = _rhs_value(c[2])
+		match str(c[1]):
+			"<=": if not (lhs <= rhs): return false
+			">=": if not (lhs >= rhs): return false
+			"<":  if not (lhs < rhs): return false
+			">":  if not (lhs > rhs): return false
+			"==": if not (lhs == rhs): return false
+	return true
+
+func _attr_or_mod(key: String) -> int:
+	var c := GameData.get_creature(current_creature)
+	match key:
+		"aggression", "speed", "intel", "combat": return creature_attr(key)
+		"aggr_mod": return int(c.get("aggression", 0))
+		"intel_mod": return int(c.get("intel", 0))
+		"speed_mod": return int(c.get("speed", 0))
+	return 0
+
+func _rhs_value(rhs) -> int:
+	if typeof(rhs) == TYPE_STRING:
+		match rhs:
+			"max_spd": return expedition_max_speed()
+			"min_spd": return expedition_min_speed()
+			"max_spd_plus1": return expedition_max_speed() + 1
+			"min_spd_plus1": return expedition_min_speed() + 1
+		return 0
+	return int(rhs)
+
+func _apply_act(act: Dictionary) -> void:
+	var t: String = str(act.get("type", ""))
+	match t:
+		"flee":
+			var h: int = int(act.get("hours", 0)) if typeof(act.get("hours", 0)) != TYPE_STRING else 0
+			if h > 0: add_expedition_hours(h)
+			encounter_outcome_text = "La creatura fugge: scegli un'altra azione."
+			_clear_encounter_state()
+		"leave":
+			var h2: int = int(act.get("hours", 0))
+			if h2 > 0: add_expedition_hours(h2)
+			encounter_outcome_text = "La creatura non vi segue: scegli un'altra azione."
+			_clear_encounter_state()
+		"capture":
+			if str(act.get("hours", "")) == "sum_pos_mods": add_expedition_hours(_sum_pos_mods())
+			var nm := current_creature
+			captured_creatures.append(nm)
+			encounter_outcome_text = "%s catturata! Riportala alla Pandora per i PV." % nm
+			_clear_encounter_state()
+		"attack_flee":
+			var res := int(act.get("resistance", 0))
+			encounter_outcome_text = "La creatura attacca: %d Punti Resistenza persi, poi fugge." % res
+			_apply_damage(res)
+			_clear_encounter_state()
+		"release":
+			var vp := int(act.get("vp", 0))
+			if act.has("vp_holographer") and _gear_has("Holographer"): vp += int(act["vp_holographer"])
+			if act.has("vp_gso") and ("GSO" in expedition_units): vp += int(act["vp_gso"])
+			var h3: int = int(act.get("hours", 0))
+			if h3 > 0: add_expedition_hours(h3)
+			gain_vp(vp, "Vita intelligente studiata: %s" % current_creature)
+			encounter_outcome_text = "Vita senziente protetta: niente combattimento. +%d PV. Scegli un'azione." % vp
+			_clear_encounter_state()
+		"combat", "restrategy":
+			if act.has("hours_if_co_gso"):
+				var inteam: bool = ("CO" in expedition_units) or ("GSO" in expedition_units)
+				add_expedition_hours(int(act["hours_if_co_gso"]) if inteam else int(act.get("hours_else", 0)))
+			pending_combat_shift = _compute_shift(act)
+			pending_no_capture = bool(act.get("no_capture", false))
+			pending_kill_as_capture = bool(act.get("kill_as_capture", false))
+			var parts: Array = []
+			if pending_combat_shift > 0: parts.append("sposta %d col. a sinistra" % pending_combat_shift)
+			elif pending_combat_shift < 0: parts.append("sposta %d col. a destra" % (-pending_combat_shift))
+			if pending_no_capture: parts.append("nessuna cattura")
+			if pending_kill_as_capture: parts.append("uccisione conta come cattura")
+			if bool(act.get("resistance_only", false)): parts.append("danni come Resistenza")
+			encounter_outcome_text = "Conduci il combattimento" + ("" if parts.is_empty() else " (" + ", ".join(parts) + ")") + "."
+
+func _clear_encounter_state() -> void:
+	current_creature = ""
+	creature_rating = 0
+	creature_attr_cache = {}
+
+func _sum_pos_mods() -> int:
+	var c := GameData.get_creature(current_creature)
+	var s := 0
+	for a in ["intel", "combat", "aggression", "speed"]:
+		var v := int(c.get(a, 0))
+		if v > 0: s += v
+	return s
+
+func _compute_shift(act: Dictionary) -> int:
+	if act.has("shift_sum_mods"):
+		var c := GameData.get_creature(current_creature)
+		var s := int(c.get("intel", 0)) + int(c.get("aggression", 0)) + int(c.get("speed", 0))
+		return 2 if s > 0 else (-2 if s < 0 else 0)
+	if act.has("shift_right_neg_intel"):
+		var im := int(GameData.get_creature(current_creature).get("intel", 0))
+		return im if im < 0 else 0
+	if act.has("shift_if_intel23"):
+		var im2 := int(GameData.get_creature(current_creature).get("intel", 0))
+		return int(act["shift_if_intel23"]) if (im2 == 2 or im2 == 3) else 0
+	if act.has("shift_left_max_mods"):
+		var best := 0
+		for k in act["shift_left_max_mods"]:
+			best = maxi(best, _attr_or_mod(str(k)))
+		return best
+	if act.has("shift_if_gso"):
+		var has_sci: bool = ("GSO" in expedition_units) or ("Specibot" in expedition_gear)
+		return int(act["shift_if_gso"]) if has_sci else int(act.get("shift", 0))
+	return int(act.get("shift", 0))
+
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
 func _begin_creature(name: String) -> void:
 	if GameData.get_creature(name).is_empty():
 		return
 	current_creature = name
 	creature_attr_cache = {}
+	pending_combat_shift = 0
+	pending_no_capture = false
+	pending_kill_as_capture = false
+	encounter_outcome_text = ""
 	creature_rating = GameData.roll_creature_combat_rating(name)
 	add_log("Incontro con %s! Valutazione di combattimento per l'esagono: %d." % [name, creature_rating])
 
@@ -822,16 +965,18 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 	if current_creature.is_empty():
 		return
 	var player_total := player_combat + randi_range(1, 6)
-	var differential := player_total - creature_rating
+	# Spostamento di colonne dai rami del paragrafo (8.5): a sinistra = a favore.
+	var differential := player_total - creature_rating + pending_combat_shift
 	var result := GameData.get_combat_result(differential)
-	var detail := "%s: %d (val.%d +1d6) vs creatura %d → diff %+d → %s" % [
-		mode, player_total, player_combat, creature_rating, differential, result
+	var shift_txt := (" [%+d col.]" % pending_combat_shift) if pending_combat_shift != 0 else ""
+	var detail := "%s: %d (val.%d +1d6) vs creatura %d → diff %+d%s → %s" % [
+		mode, player_total, player_combat, creature_rating, differential, shift_txt, result
 	]
 	add_log(detail)
 
 	match result:
 		"AE":  # l'attaccante elimina/cattura il difensore
-			if mode == "capture":
+			if mode == "capture" or pending_kill_as_capture:
 				_capture_creature(current_creature)
 			else:
 				_kill_creature(current_creature)
@@ -946,6 +1091,10 @@ func _most_wounded() -> String:
 func _end_encounter() -> void:
 	current_creature = ""
 	creature_rating = 0
+	creature_attr_cache = {}
+	pending_combat_shift = 0
+	pending_no_capture = false
+	pending_kill_as_capture = false
 	encounter_ended.emit()
 	set_phase(Phase.EXPEDITION)
 
