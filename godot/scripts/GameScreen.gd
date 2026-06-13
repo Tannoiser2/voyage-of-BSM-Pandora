@@ -1148,17 +1148,32 @@ func _on_paragraph_request(para_num: int) -> void:
 	var title_lbl := find_child("ParaTitle", true, false) as Label
 	if title_lbl: title_lbl.text = "Paragrafo %03d" % para_num
 
+	# Questo paragrafo è l'incontro di una creatura attualmente in corso?
+	var creature := GameData.creature_for_paragraph(para_num)
+	var is_creature_here := creature != "" and creature == GameState.current_creature
+
 	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
 	if para_display:
 		var bb := ""
-		# Illustrazione narrativa dell'evento (se presente)
-		var img_path := GameData.get_event_image_path(para_num)
-		if not img_path.is_empty():
-			bb += "[center][img=360]" + img_path + "[/img][/center]\n\n"
+		if is_creature_here:
+			# Segnalino originale della creatura + valutazione, sopra al testo
+			var cpath := "res://assets/creatures/%s.png" % GameData.get_creature(creature).get("img", "")
+			if ResourceLoader.exists(cpath):
+				bb += "[center][img=150]" + cpath + "[/img][/center]\n"
+			bb += "[center][b]%s[/b] — valutazione di combattimento: [b]%d[/b][/center]\n\n" % [creature, GameState.creature_rating]
+		else:
+			# Illustrazione narrativa dell'evento (se presente)
+			var img_path := GameData.get_event_image_path(para_num)
+			if not img_path.is_empty():
+				bb += "[center][img=360]" + img_path + "[/img][/center]\n\n"
 		bb += "[p]" + _linkify(text) + "[/p]"
 		para_display.bbcode_text = bb
 
-	_build_choices(para_num)
+	# Durante un incontro i comandi di combattimento sostituiscono le scelte testuali
+	if is_creature_here:
+		_clear_choices()
+	else:
+		_build_choices(para_num)
 	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
 # Trasforma i rimandi ¶NNN del testo in link cliccabili.

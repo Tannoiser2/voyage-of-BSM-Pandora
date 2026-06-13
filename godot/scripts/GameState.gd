@@ -321,9 +321,24 @@ func best_combat(mode: String) -> int:
 
 func show_paragraph(para_num: int) -> void:
 	current_paragraph = para_num
+	# Se il paragrafo è l'incontro di una creatura (retro del segnalino, 2.6) e la
+	# spedizione è sulla superficie, prepara l'incontro: i comandi di combattimento
+	# compaiono sopra al testo del paragrafo (le meccaniche seguono il libro-gioco).
+	if current_creature.is_empty() and expedition_pos > 0:
+		var creature := GameData.creature_for_paragraph(para_num)
+		if creature != "":
+			_begin_creature(creature)
 	set_phase(Phase.PARAGRAPH)
 	paragraph_request.emit(para_num)
 	state_updated.emit()
+
+# Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
+func _begin_creature(name: String) -> void:
+	if GameData.get_creature(name).is_empty():
+		return
+	current_creature = name
+	creature_rating = GameData.roll_creature_combat_rating(name)
+	add_log("Incontro con %s! Valutazione di combattimento per l'esagono: %d." % [name, creature_rating])
 
 func return_to_pandora() -> void:
 	# Return from expedition to orbit
@@ -333,7 +348,9 @@ func return_to_pandora() -> void:
 		# Assegna i PV per le creature catturate riportate sulla Pandora (8.0/9.0)
 		if captured_creatures.size() > 0:
 			for cname in captured_creatures:
-				gain_vp(2, "Creatura catturata: %s" % cname)
+				# 1 PV per creatura riportata + eventuali PV extra del segnalino (9.1)
+				var vp := 1 + GameData.creature_vp(cname)
+				gain_vp(vp, "Creatura riportata viva: %s" % cname)
 			captured_creatures = []
 		add_log("Ritorno alla Pandora da %s." % current_planet)
 		current_planet = ""
@@ -524,17 +541,13 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 		_terrain_it(terrain), explore_cost, _gear_cost_note(terrain)])
 	_consume_supply_for(terrain)
 	environ_changed.emit()
+	# Esplorazione subordinata al libro-gioco (6.4): tira il dado e consulta la
+	# Matrice di Esplorazione → vai al paragrafo indicato. Da lì le scelte del
+	# paragrafo guidano l'incontro (e l'eventuale combattimento) coi rimandi ¶NNN.
 	var die := randi_range(1, 6)
-	# Dado alto: incontro con creatura; altrimenti paragrafo di esplorazione
-	if die >= 5:
-		var names := GameData.get_all_creature_names()
-		var creature: String = names[randi() % names.size()]
-		add_log("Esplorazione (%s, dado %d): incontro!" % [_terrain_it(terrain), die])
-		start_encounter(creature)
-	else:
-		var para_num := GameData.get_exploration_paragraph(terrain, die)
-		add_log("Esplorazione (%s, dado %d) → Paragrafo %03d" % [_terrain_it(terrain), die, para_num])
-		show_paragraph(para_num)
+	var para_num := GameData.get_exploration_paragraph(terrain, die)
+	add_log("Esplorazione (%s, dado %d) → Matrice di Esplorazione → Paragrafo %03d" % [_terrain_it(terrain), die, para_num])
+	show_paragraph(para_num)
 
 func _terrain_it(terrain: String) -> String:
 	return GameData.terrain_it(terrain)
