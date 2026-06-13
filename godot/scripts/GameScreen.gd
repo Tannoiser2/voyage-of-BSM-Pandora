@@ -856,21 +856,11 @@ func _build_prep_panel() -> void:
 		chk.toggled.connect(_on_prep_unit_toggled.bind(k))
 		list_vbox.add_child(chk)
 
-	_add_prep_section(list_vbox, "Robot:")
-	for k in GameData.get_bot_keys():
-		var bchk := CheckBox.new()
-		bchk.name = "PrepGear_%s" % k
-		bchk.add_theme_font_size_override("font_size", 12)
-		bchk.toggled.connect(_on_prep_gear_toggled.bind(k))
-		list_vbox.add_child(bchk)
+	_add_prep_section(list_vbox, "Robot (clicca per imbarcare):")
+	_build_gear_grid(list_vbox, GameData.get_bot_keys(), "bots")
 
-	_add_prep_section(list_vbox, "Strumenti:")
-	for k in GameData.get_tool_keys():
-		var tchk := CheckBox.new()
-		tchk.name = "PrepGear_%s" % k
-		tchk.add_theme_font_size_override("font_size", 12)
-		tchk.toggled.connect(_on_prep_gear_toggled.bind(k))
-		list_vbox.add_child(tchk)
+	_add_prep_section(list_vbox, "Strumenti (clicca per imbarcare):")
+	_build_gear_grid(list_vbox, GameData.get_tool_keys(), "tools")
 
 	var sup_box := HBoxContainer.new()
 	sup_box.add_theme_constant_override("separation", 8)
@@ -921,6 +911,44 @@ func _add_prep_section(parent: Control, title: String) -> void:
 	lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
 	parent.add_child(lbl)
 
+# Griglia di caselle-segnalino (token originale + nome/peso) per robot/strumenti.
+func _build_gear_grid(parent: Control, keys: Array, folder: String) -> void:
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 6)
+	grid.add_theme_constant_override("v_separation", 6)
+	parent.add_child(grid)
+	for k in keys:
+		var u := GameData.get_unit(k)
+		var btn := Button.new()
+		btn.name = "PrepGear_%s" % k
+		btn.toggle_mode = true
+		btn.custom_minimum_size = Vector2(104, 92)
+		btn.tooltip_text = "%s — %s (Peso %d)" % [u.get("name", k), u.get("desc", ""), int(u.get("weight", 0))]
+		btn.toggled.connect(_on_prep_gear_toggled.bind(k))
+		var v := VBoxContainer.new()
+		v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_theme_constant_override("separation", 1)
+		var tr := TextureRect.new()
+		var path := "res://assets/%s/%s.png" % [folder, u.get("img", "")]
+		if ResourceLoader.exists(path):
+			tr.texture = load(path)
+		tr.custom_minimum_size = Vector2(0, 50)
+		tr.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(tr)
+		var lb := Label.new()
+		lb.text = "%s\n%dkg" % [u.get("name", k), int(u.get("weight", 0))]
+		lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lb.autowrap_mode = TextServer.AUTOWRAP_WORD
+		lb.add_theme_font_size_override("font_size", 9)
+		lb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(lb)
+		btn.add_child(v)
+		grid.add_child(btn)
+
 func _open_prep_panel() -> void:
 	# Inizializza la preparazione se non è ancora stata impostata per questo pianeta
 	if GameState.expedition_units.is_empty():
@@ -953,19 +981,13 @@ func _refresh_prep_panel() -> void:
 			u.get("name", k), u.get("capture", 0), u.get("kill", 0),
 			u.get("weight", 0), u.get("port", 0), u.get("speed", 0)]
 		chk.disabled = not GameState.crew.get(k, {}).get("alive", true)
-	# Robot e strumenti imbarcabili
+	# Robot e strumenti imbarcabili (caselle-segnalino)
 	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
-		var gchk := find_child("PrepGear_%s" % k, true, false) as CheckBox
-		if not gchk:
+		var gbtn := find_child("PrepGear_%s" % k, true, false) as Button
+		if not gbtn:
 			continue
-		var g := GameData.get_unit(k)
-		gchk.button_pressed = k in GameState.expedition_gear
-		var line := "%s — Peso %d" % [g.get("name", k), int(g.get("weight", 0))]
-		if g.get("combat", false) or GameData.get_bot_keys().has(k):
-			line += " · Catt %d / Ucc %d" % [int(g.get("capture", 0)), int(g.get("kill", 0))]
-		if g.has("desc") and g.get("desc", "") != "":
-			line += " · " + str(g.get("desc"))
-		gchk.text = line
+		gbtn.button_pressed = k in GameState.expedition_gear
+		gbtn.modulate = Color(1, 1, 1) if k in GameState.expedition_gear else Color(0.72, 0.72, 0.72)
 	var slider := find_child("PrepSupply", true, false) as HSlider
 	if slider:
 		slider.max_value = max(GameState.max_planned_supply(), GameState.planned_supply)
