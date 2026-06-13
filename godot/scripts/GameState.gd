@@ -39,6 +39,10 @@ var current_phase: Phase = Phase.MAIN_MENU
 var current_paragraph: int = 0
 var awaiting_die_roll: bool = false
 var pending_die_purpose: String = ""
+# Se false, il sistema tira automaticamente tutti i dadi; se true, è il
+# giocatore a tirare (pulsante TIRA DADO) dove la regola lo prevede.
+var manual_dice: bool = false
+signal die_rolled(value: int, purpose: String)
 
 # Crew — ogni personaggio ha un Valore di Resistenza (Endurance) di 6 (regola 2.5).
 # I Punti Danno riducono la Resistenza; a 0 il personaggio è ucciso (8.8).
@@ -159,10 +163,15 @@ func move_pandora_to(hex_id: int) -> void:
 	if sys_name != "":
 		current_system = sys_name
 		add_log("Pandora arriva a %s. Mesi usati: %d/%d." % [sys_name, tour_months_used, tour_length])
-		# Check for interstellar event (rule 4.2)
-		pending_die_purpose = "interstellar_event"
-		awaiting_die_roll = true
-		message_posted.emit("Tira un dado per evento interstellare (regola 4.2).")
+		# Evento interstellare (4.2): tiro manuale del giocatore o automatico.
+		if manual_dice:
+			pending_die_purpose = "interstellar_event"
+			awaiting_die_roll = true
+			message_posted.emit("Tira un dado per evento interstellare (regola 4.2).")
+		else:
+			var d := randi_range(1, 6)
+			die_rolled.emit(d, "interstellar_event")
+			resolve_interstellar_event(d)
 	else:
 		current_system = ""
 		add_log("Pandora si muove all'esagono %d. Mesi usati: %d/%d." % [hex_id, tour_months_used, tour_length])
