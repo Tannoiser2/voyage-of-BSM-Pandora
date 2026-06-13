@@ -5,6 +5,8 @@ var center_panel: Panel
 var right_panel: Panel
 var interstellar_display: Control
 var environ_display: Control
+var prep_display: Control
+var _prep_open: bool = false
 var env_canvas: Control
 var env_map: TextureRect
 var env_loaded_id: int = 0
@@ -29,7 +31,6 @@ const GRID_EVEN_OFFSET := 45.0
 
 func _ready() -> void:
 	_build_ui()
-	_build_prep_panel()
 	_connect_signals()
 	_update_display()
 	# Ripristina la visualizzazione corrente al (ri)entro nella scena
@@ -131,6 +132,9 @@ func _build_ui() -> void:
 	env_title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
 	env_title.z_index = 10
 	environ_display.add_child(env_title)
+
+	# Preparazione spedizione (drag-and-drop), sul pannello sinistro durante l'orbita
+	_build_prep_display(left_panel)
 
 	# CENTER PANEL - Log + Paragraph
 	var center_vbox := VBoxContainer.new()
@@ -726,7 +730,11 @@ func _update_left_panel_mode() -> void:
 	var on_surface := GameState.current_phase == GameState.Phase.EXPEDITION \
 		or (GameState.current_phase == GameState.Phase.PARAGRAPH and GameState.expedition_pos > 0) \
 		or not GameState.current_creature.is_empty()
-	if interstellar_display: interstellar_display.visible = not on_surface
+	# Durante la preparazione la sinistra mostra la squadra (drag-and-drop)
+	if _prep_open and on_surface:
+		_prep_open = false
+	if prep_display: prep_display.visible = _prep_open and not on_surface
+	if interstellar_display: interstellar_display.visible = not on_surface and not _prep_open
 	if environ_display:
 		environ_display.visible = on_surface
 		if on_surface:
@@ -913,7 +921,223 @@ func _on_hex_clicked(hex_id: int) -> void:
 	GameState.move_pandora_to(hex_id)
 	_update_display()
 
-# --- Pannello di preparazione della spedizione (regola 5.0) ------------------
+# --- Preparazione spedizione drag-and-drop (pannello sinistro) ---------------
+
+func _build_prep_display(parent: Control) -> void:
+	prep_display = Control.new()
+	prep_display.name = "PrepDisplay"
+	prep_display.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	prep_display.visible = false
+	parent.add_child(prep_display)
+
+	var vbox := VBoxContainer.new()
+	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 8; vbox.offset_top = 8; vbox.offset_right = -8; vbox.offset_bottom = -8
+	vbox.add_theme_constant_override("separation", 6)
+	prep_display.add_child(vbox)
+
+	var title := Label.new()
+	title.text = "Preparazione della Spedizione"
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	vbox.add_child(title)
+
+	var info := Label.new()
+	info.name = "PrepDispInfo"
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.add_theme_font_size_override("font_size", 11)
+	info.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+	vbox.add_child(info)
+
+	var rlbl := Label.new()
+	rlbl.text = "Disponibili (trascina o clicca per imbarcare):"
+	rlbl.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(rlbl)
+
+	var rscroll := ScrollContainer.new()
+	rscroll.custom_minimum_size = Vector2(0, 230)
+	rscroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vbox.add_child(rscroll)
+	var roster := GridContainer.new()
+	roster.name = "PrepRoster"
+	roster.columns = 4
+	roster.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	roster.add_theme_constant_override("h_separation", 4)
+	roster.add_theme_constant_override("v_separation", 4)
+	rscroll.add_child(roster)
+	# Il roster accetta il rilascio per RIMUOVERE dalla squadra
+	rscroll.set_drag_forwarding(Callable(), _prep_can_drop.bind("roster"), _prep_drop.bind("roster"))
+
+	var tlbl := Label.new()
+	tlbl.text = "Squadra di esplorazione:"
+	tlbl.add_theme_font_size_override("font_size", 12)
+	tlbl.add_theme_color_override("font_color", Color(0.7, 1.0, 0.7))
+	vbox.add_child(tlbl)
+
+	var team_zone := PanelContainer.new()
+	team_zone.name = "PrepTeamZone"
+	team_zone.custom_minimum_size = Vector2(0, 130)
+	vbox.add_child(team_zone)
+	team_zone.set_drag_forwarding(Callable(), _prep_can_drop.bind("team"), _prep_drop.bind("team"))
+	var team := GridContainer.new()
+	team.name = "PrepTeam"
+	team.columns = 4
+	team.add_theme_constant_override("h_separation", 4)
+	team.add_theme_constant_override("v_separation", 4)
+	team_zone.add_child(team)
+
+	var load_lbl := Label.new()
+	load_lbl.name = "PrepDispLoad"
+	load_lbl.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(load_lbl)
+
+	var sup_box := HBoxContainer.new()
+	vbox.add_child(sup_box)
+	var sup_lbl := Label.new()
+	sup_lbl.text = "Rifornimenti:"
+	sup_box.add_child(sup_lbl)
+	var slider := HSlider.new()
+	slider.name = "PrepDispSupply"
+	slider.min_value = 0
+	slider.max_value = GameData.max_supply()
+	slider.step = 1
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value_changed.connect(_on_prep_supply_changed)
+	sup_box.add_child(slider)
+	var sval := Label.new()
+	sval.name = "PrepDispSupplyVal"
+	sval.custom_minimum_size = Vector2(28, 0)
+	sup_box.add_child(sval)
+
+	var btns := HBoxContainer.new()
+	btns.alignment = BoxContainer.ALIGNMENT_CENTER
+	btns.add_theme_constant_override("separation", 10)
+	vbox.add_child(btns)
+	var launch := Button.new()
+	launch.name = "PrepDispLaunch"
+	launch.text = "🚀 Lancia lo shuttle"
+	launch.custom_minimum_size = Vector2(0, 42)
+	launch.pressed.connect(_on_prep_launch)
+	btns.add_child(launch)
+	var cancel := Button.new()
+	cancel.text = "Annulla"
+	cancel.custom_minimum_size = Vector2(0, 42)
+	cancel.pressed.connect(_on_prep_cancel)
+	btns.add_child(cancel)
+
+func _unit_token_path(key: String) -> String:
+	var u := GameData.get_unit(key)
+	var folder := "characters"
+	if GameData.get_bot_keys().has(key): folder = "bots"
+	elif GameData.get_tool_keys().has(key): folder = "tools"
+	return "res://assets/%s/%s.png" % [folder, u.get("img", "")]
+
+func _make_prep_tile(key: String, in_team: bool) -> Button:
+	var u := GameData.get_unit(key)
+	var btn := Button.new()
+	btn.custom_minimum_size = Vector2(96, 58)
+	btn.tooltip_text = "%s — Peso %d" % [u.get("name", key), int(u.get("weight", 0))]
+	var v := VBoxContainer.new()
+	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_theme_constant_override("separation", 0)
+	var tex := TextureRect.new()
+	var path := _unit_token_path(key)
+	if ResourceLoader.exists(path): tex.texture = load(path)
+	tex.custom_minimum_size = Vector2(0, 34)
+	tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(tex)
+	var lb := Label.new()
+	lb.text = "%s · %dkg" % [u.get("name", key), int(u.get("weight", 0))]
+	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lb.add_theme_font_size_override("font_size", 8)
+	lb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(lb)
+	btn.add_child(v)
+	# Click: imbarca/sbarca; Drag: sposta fra roster e squadra
+	btn.pressed.connect(_prep_toggle.bind(key))
+	btn.set_drag_forwarding(_prep_get_drag.bind(key, btn), Callable(), Callable())
+	return btn
+
+func _prep_get_drag(at_position: Vector2, key: String, tile: Button) -> Variant:
+	var prev := TextureRect.new()
+	var path := _unit_token_path(key)
+	if ResourceLoader.exists(path): prev.texture = load(path)
+	prev.custom_minimum_size = Vector2(48, 48)
+	prev.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	prev.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tile.set_drag_preview(prev)
+	return {"key": key}
+
+func _prep_can_drop(_at: Vector2, data: Variant, zone: String) -> bool:
+	if typeof(data) != TYPE_DICTIONARY or not data.has("key"):
+		return false
+	var key: String = data["key"]
+	var in_team: bool = key in GameState.expedition_units or key in GameState.expedition_gear
+	return (zone == "team" and not in_team) or (zone == "roster" and in_team)
+
+func _prep_drop(_at: Vector2, data: Variant, _zone: String) -> void:
+	if typeof(data) == TYPE_DICTIONARY and data.has("key"):
+		_prep_toggle(data["key"])
+
+func _prep_toggle(key: String) -> void:
+	if GameData.get_character_keys().has(key):
+		GameState.toggle_expedition_unit(key)
+	else:
+		GameState.toggle_gear_unit(key)
+	_refresh_prep_display()
+
+func _open_prep_display() -> void:
+	if GameState.expedition_units.is_empty():
+		GameState.setup_orbit_planet()
+	_refresh_prep_display()
+
+func _refresh_prep_display() -> void:
+	if not prep_display:
+		return
+	_prep_updating = true
+	var info := find_child("PrepDispInfo", true, false) as Label
+	if info:
+		var atmo: String = GameState.planet_attrs.get("atmosphere", "Normal")
+		var txt := "%s · Gravità %s · Atmosfera %s · Capacità shuttle %d" % [
+			GameState.current_system, GameData.gravity_it(GameState.planet_gravity),
+			GameData.atmosphere_it(atmo), GameState.shuttle_capacity]
+		var note := GameData.atmosphere_note(atmo)
+		if note != "": txt += "\n⚠ " + note
+		info.text = txt
+	var roster := find_child("PrepRoster", true, false) as GridContainer
+	var team := find_child("PrepTeam", true, false) as GridContainer
+	if roster and team:
+		for c in roster.get_children(): roster.remove_child(c); c.free()
+		for c in team.get_children(): team.remove_child(c); c.free()
+		# Squadra
+		for k in GameState.expedition_units + GameState.expedition_gear:
+			team.add_child(_make_prep_tile(k, true))
+		# Disponibili: personaggi vivi non imbarcati + gear non imbarcato
+		for k in GameData.get_character_keys():
+			if GameState.crew.get(k, {}).get("alive", true) and not (k in GameState.expedition_units):
+				roster.add_child(_make_prep_tile(k, false))
+		for k in GameData.get_bot_keys() + GameData.get_tool_keys():
+			if not (k in GameState.expedition_gear):
+				roster.add_child(_make_prep_tile(k, false))
+	var slider := find_child("PrepDispSupply", true, false) as HSlider
+	if slider:
+		slider.max_value = max(GameState.max_planned_supply(), GameState.planned_supply)
+		slider.value = GameState.planned_supply
+	var sval := find_child("PrepDispSupplyVal", true, false) as Label
+	if sval: sval.text = "%d" % GameState.planned_supply
+	var load_lbl := find_child("PrepDispLoad", true, false) as Label
+	if load_lbl:
+		var over := GameState.total_load() > GameState.shuttle_capacity
+		load_lbl.text = "Carico: %d / %d   ·   serve almeno 1 personaggio" % [GameState.total_load(), GameState.shuttle_capacity]
+		load_lbl.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if over else Color(0.6, 1, 0.6))
+	var launch := find_child("PrepDispLaunch", true, false) as Button
+	if launch: launch.disabled = not GameState.prep_valid()
+	_prep_updating = false
+
+# --- Pannello di preparazione della spedizione (vecchio overlay, non più usato) ---
 
 func _build_prep_panel() -> void:
 	var overlay := ColorRect.new()
@@ -1146,16 +1370,13 @@ func _on_prep_supply_changed(value: float) -> void:
 	_refresh_prep_panel()
 
 func _on_prep_cancel() -> void:
-	var overlay := find_child("PrepOverlay", true, false)
-	if overlay:
-		overlay.visible = false
+	_prep_open = false
+	_update_left_panel_mode()
 
 func _on_prep_launch() -> void:
 	if not GameState.prep_valid():
 		return
-	var overlay := find_child("PrepOverlay", true, false)
-	if overlay:
-		overlay.visible = false
+	_prep_open = false
 	var die := randi_range(1, 6)
 	_set_dice_result(die)
 	GameState.launch_expedition(die)
@@ -1164,10 +1385,12 @@ func _on_leave_orbit() -> void:
 	GameState.leave_orbit()
 
 func _on_land() -> void:
-	# "Esplora il pianeta": apre la preparazione della spedizione (5.0)
+	# "Esplora il pianeta": apre la preparazione (squadra drag-and-drop a sinistra)
 	if not GameState.is_orbit_decision():
 		return
-	_open_prep_panel()
+	_prep_open = true
+	_open_prep_display()
+	_update_left_panel_mode()
 
 func _on_strategy(strategy: String) -> void:
 	GameState.choose_encounter_strategy(strategy)
