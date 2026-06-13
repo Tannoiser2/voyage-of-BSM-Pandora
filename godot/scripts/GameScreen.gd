@@ -133,13 +133,22 @@ func _build_ui() -> void:
 	center_vbox.add_theme_constant_override("separation", 4)
 	hbox.add_child(center_vbox)
 
-	# Phase label
+	# Banner di fase/contesto (cosa stai facendo, dove)
 	var phase_label := Label.new()
 	phase_label.name = "PhaseLabel"
-	phase_label.text = "Fase: Interstellare"
-	phase_label.add_theme_font_size_override("font_size", 12)
-	phase_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
+	phase_label.text = "Viaggio Interstellare"
+	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	phase_label.add_theme_font_size_override("font_size", 18)
+	phase_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	center_vbox.add_child(phase_label)
+
+	var hint_label := Label.new()
+	hint_label.name = "HintLabel"
+	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint_label.add_theme_font_size_override("font_size", 12)
+	hint_label.add_theme_color_override("font_color", Color(0.65, 0.8, 1.0))
+	center_vbox.add_child(hint_label)
 
 	# Paragraph display
 	center_panel = Panel.new()
@@ -173,8 +182,9 @@ func _build_ui() -> void:
 	paragraph_display.fit_content = true
 	paragraph_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	paragraph_display.text = "[i]Scegli la durata del tour e avvia una nuova partita.[/i]"
-	paragraph_display.add_theme_font_size_override("normal_font_size", 15)
-	paragraph_display.add_theme_color_override("default_color", Color(0.9, 0.9, 0.85))
+	paragraph_display.add_theme_font_size_override("normal_font_size", 16)
+	paragraph_display.add_theme_constant_override("line_separation", 4)
+	paragraph_display.add_theme_color_override("default_color", Color(0.92, 0.92, 0.88))
 	paragraph_display.meta_clicked.connect(_on_meta_clicked)
 	scroll.add_child(paragraph_display)
 
@@ -270,40 +280,11 @@ func _build_ui() -> void:
 	btn_repair.pressed.connect(_on_repair)
 	actions_hbox.add_child(btn_repair)
 
-	# Event log
-	var log_panel := Panel.new()
-	log_panel.custom_minimum_size = Vector2(0, 150)
-	center_vbox.add_child(log_panel)
-
-	var log_vbox := VBoxContainer.new()
-	log_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	log_vbox.offset_left = 4; log_vbox.offset_top = 4
-	log_vbox.offset_right = -4; log_vbox.offset_bottom = -4
-	log_panel.add_child(log_vbox)
-
-	var log_title := Label.new()
-	log_title.text = "Registro di Bordo"
-	log_title.add_theme_font_size_override("font_size", 12)
-	log_title.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
-	log_vbox.add_child(log_title)
-
-	var log_scroll := ScrollContainer.new()
-	log_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	log_vbox.add_child(log_scroll)
-
-	log_display = RichTextLabel.new()
-	log_display.name = "LogDisplay"
-	log_display.bbcode_enabled = true
-	log_display.fit_content = false
-	log_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	log_display.custom_minimum_size = Vector2(0, 100)
-	log_display.add_theme_font_size_override("normal_font_size", 12)
-	log_display.add_theme_color_override("default_color", Color(0.8, 0.9, 0.8))
-	log_scroll.add_child(log_display)
+	# (Il Registro di Bordo è nel pannello destro, in basso.)
 
 	# RIGHT PANEL - Status + Dice
 	right_panel = Panel.new()
-	right_panel.custom_minimum_size = Vector2(290, 0)
+	right_panel.custom_minimum_size = Vector2(330, 0)
 	right_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hbox.add_child(right_panel)
 
@@ -400,6 +381,32 @@ func _build_ui() -> void:
 	tour_label2.add_theme_font_size_override("font_size", 13)
 	tour_label2.add_theme_color_override("font_color", Color(0.8, 0.8, 1.0))
 	info_vbox.add_child(tour_label2)
+
+	var sep4 := HSeparator.new()
+	right_vbox.add_child(sep4)
+
+	# Registro di Bordo (in fondo allo stato, occupa lo spazio rimanente)
+	var log_title := Label.new()
+	log_title.text = "Registro di Bordo"
+	log_title.add_theme_font_size_override("font_size", 13)
+	log_title.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
+	right_vbox.add_child(log_title)
+
+	var log_scroll := ScrollContainer.new()
+	log_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	log_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_vbox.add_child(log_scroll)
+
+	log_display = RichTextLabel.new()
+	log_display.name = "LogDisplay"
+	log_display.bbcode_enabled = true
+	log_display.fit_content = false
+	log_display.scroll_following = true
+	log_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	log_display.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	log_display.add_theme_font_size_override("normal_font_size", 12)
+	log_display.add_theme_color_override("default_color", Color(0.8, 0.9, 0.8))
+	log_scroll.add_child(log_display)
 
 func _build_status_rows(parent: Control) -> void:
 	var rows := [
@@ -694,6 +701,7 @@ func _update_display() -> void:
 	var lbl_tour := find_child("TourLabel", true, false) as Label
 	if lbl_tour: lbl_tour.text = "Tour: %d mesi (posizione esagono %d)" % [s.tour_length, s.pandora_hex]
 
+	var phase := GameState.phase_name(GameState.current_phase)
 	var lbl_phase := find_child("PhaseLabel", true, false) as Label
 	if lbl_phase:
 		var phase_it := {
@@ -704,7 +712,25 @@ func _update_display() -> void:
 			"paragraph":    "Evento",
 			"game_over":    "Fine del Tour"
 		}
-		lbl_phase.text = "Fase: %s" % phase_it.get(GameState.phase_name(GameState.current_phase), "—")
+		var title: String = phase_it.get(phase, "—")
+		if phase == "orbit" or phase == "expedition":
+			title += " — " + s.current_system
+		lbl_phase.text = title
+
+	var lbl_hint := find_child("HintLabel", true, false) as Label
+	if lbl_hint:
+		var hint := ""
+		if not s.current_creature.is_empty():
+			hint = "Incontro in corso: scegli Uccidi, Cattura o Fuggi."
+		elif phase == "interstellar":
+			hint = "Scegli un sistema raggiungibile sulla mappa per spostare la Pandora."
+		elif phase == "orbit":
+			hint = "Esamina il pianeta, poi prepara la spedizione."
+		elif phase == "expedition":
+			hint = "Muoviti sulla mappa o esplora l'esagono; segui i paragrafi."
+		elif phase == "paragraph":
+			hint = "Leggi e scegli un rimando, oppure premi Continua."
+		lbl_hint.text = hint
 
 	# Refresh hex buttons and panel mode
 	_refresh_hex_buttons()
@@ -1201,12 +1227,26 @@ func _build_choices(para_num: int) -> void:
 		var label_text: String = ch.label
 		if label_text.length() > 90:
 			label_text = label_text.substr(0, 88) + "…"
-		b.text = "→ %s  (¶%03d)" % [label_text, ch.para]
+		b.text = "▶  %s  (¶%03d)" % [label_text, ch.para]
 		b.tooltip_text = ch.label
 		b.clip_text = true
+		b.custom_minimum_size = Vector2(0, 34)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.add_theme_font_size_override("font_size", 13)
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.16, 0.28, 0.20)
+		sb.set_corner_radius_all(5)
+		sb.set_content_margin_all(8)
+		sb.border_color = Color(0.4, 0.8, 0.5, 0.7)
+		sb.set_border_width_all(1)
+		var sbh := sb.duplicate() as StyleBoxFlat
+		sbh.bg_color = Color(0.22, 0.40, 0.27)
+		b.add_theme_stylebox_override("normal", sb)
+		b.add_theme_stylebox_override("hover", sbh)
+		b.add_theme_stylebox_override("pressed", sbh)
+		b.add_theme_stylebox_override("focus", sb)
+		b.add_theme_color_override("font_color", Color(0.85, 1.0, 0.85))
 		b.pressed.connect(_on_choice_selected.bind(ch.para))
 		choices_box.add_child(b)
 
