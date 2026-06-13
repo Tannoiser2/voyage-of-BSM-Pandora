@@ -28,7 +28,7 @@ const INTER_REGION := Rect2(34, 1346, 336, 656)
 const INTER_SCALE := 1.26
 const INTER_OFFSET := Vector2(33, 36)
 const GRID_BASE := Vector2(82, 1399)   # centro esagono 11 in pixel mappa
-const GRID_DX := 78.0
+const GRID_DX := 81.0                   # passo orizzontale (calibrato sui dischi-sistema)
 const GRID_DY := 92.0
 const GRID_EVEN_OFFSET := 45.0
 
