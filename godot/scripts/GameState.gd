@@ -711,10 +711,25 @@ func return_to_pandora() -> void:
 		add_log("Ritorno alla Pandora da %s." % current_planet)
 		current_planet = ""
 		current_creature = ""
+		creature_rating = 0
+		# Termina la spedizione: azzera lo stato di superficie, altrimenti
+		# expedition_pos != 0 tiene is_orbit_decision() falso e la mappa
+		# strategica resta bloccata (niente «Riparti», esagoni disabilitati).
+		expedition_pos = 0
+		landing_hex = 0
+		current_environ_id = 0
+		environ_grid = {}
 		set_phase(Phase.ORBIT)
+		environ_changed.emit()
 		# If at Sol, go to game over
 		if current_system == "Sol":
 			_end_tour()
+		else:
+			# Rimostra il pianeta in orbita: il giocatore può esplorare di nuovo
+			# (altra spedizione) oppure ripartire (come al primo ingresso, 5.0).
+			var para := GameData.get_planet_paragraph(current_system, tour_length)
+			if para > 0:
+				show_paragraph(para)
 
 func _end_tour() -> void:
 	add_log("Tour completato! Calcolo Punti Vittoria...")
