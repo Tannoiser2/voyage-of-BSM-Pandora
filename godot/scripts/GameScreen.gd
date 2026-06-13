@@ -23,6 +23,19 @@ var choices_box: VBoxContainer
 var sfx: AudioStreamPlayer
 var _sounds: Dictionary = {}
 
+# Overlay del riferimento regole (tabelle originali del gioco)
+var charts_overlay: Control
+const CHARTS := [
+	["Chart_8-6 Combat Results.jpg", "8.6 Risultati Combattimento"],
+	["Chart_8-3 Creature Rating.jpg", "8.3 Valutazione Creatura"],
+	["Chart_8-2 Encounter Strategy.jpg", "8.2 Strategia d'Incontro"],
+	["Chart_6-6 Terrain Effects.jpg", "6.6 Effetti del Terreno"],
+	["Chart_6-4 Exploration Matrix.jpg", "6.4 Matrice d'Esplorazione"],
+	["Chart_5-8 Port Capacity.jpg", "5.8 Capacità di Porto"],
+	["Chart_4-3 Planet Table.jpg", "4.3 Tabella Pianeti"],
+	["Chart_4-2 Interstellar Event.jpg", "4.2 Evento Interstellare"],
+]
+
 # Overlay della mappa interstellare reale (Voyage Map.jpg)
 # Coordinate ricavate per calibrazione dai cerchi dei sistemi stellari sull'originale.
 const INTER_REGION := Rect2(34, 1346, 336, 656)
@@ -320,6 +333,12 @@ func _build_ui() -> void:
 	btn_save.text = "💾 Salva"
 	btn_save.pressed.connect(_on_save)
 	actions_hbox.add_child(btn_save)
+
+	var btn_charts := Button.new()
+	btn_charts.name = "BtnCharts"
+	btn_charts.text = "📖 Tabelle"
+	btn_charts.pressed.connect(_toggle_charts)
+	actions_hbox.add_child(btn_charts)
 
 	var btn_menu := Button.new()
 	btn_menu.name = "BtnMenu"
@@ -812,6 +831,34 @@ func _on_environ_changed() -> void:
 func _on_phase_changed(phase: String) -> void:
 	_update_display()
 	_update_action_buttons(phase)
+	if phase == "game_over":
+		_append_endtour_summary()
+
+# Riepilogo dettagliato di fine tour: appende al paragrafo finale lo storico
+# delle variazioni di Punti Vittoria e il totale, con lo stato dell'equipaggio.
+func _append_endtour_summary() -> void:
+	var pd := find_child("ParagraphText", true, false) as RichTextLabel
+	if not pd:
+		return
+	var bb := "\n\n[color=#ffd24d]──── Riepilogo del Tour ────[/color]\n"
+	for e in GameState.vp_ledger:
+		var amt := int(e.get("amount", 0))
+		var col := "#9fe0a0" if amt >= 0 else "#ff8866"
+		bb += "[color=%s]%+d[/color]  %s\n" % [col, amt, e.get("reason", "")]
+	bb += "[color=#ffe27a]── Punti Vittoria finali: [b]%d[/b] ──[/color]\n\n" % GameState.victory_points
+	# Stato dell'equipaggio a fine tour
+	var alive := 0
+	var dead: Array = []
+	for k in GameState.crew:
+		if GameState.crew[k].get("alive", false):
+			alive += 1
+		else:
+			dead.append(GameState.crew[k].get("name", k))
+	bb += "Equipaggio sopravvissuto: [b]%d/7[/b]" % alive
+	if dead.size() > 0:
+		bb += " — caduti: [color=#ff8866]%s[/color]" % ", ".join(dead)
+	bb += "\nSistemi visitati: [b]%d[/b]" % GameState.visited_systems.size()
+	pd.append_text(bb)
 
 func _update_action_buttons(phase: String) -> void:
 	var btn_orbit := find_child("BtnOrbit", true, false)
@@ -1515,6 +1562,77 @@ func _on_save() -> void:
 func _on_menu() -> void:
 	# Torna al menu principale (lo stato resta in memoria; usa Salva per conservarlo).
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+
+# --- Riferimento regole: overlay con le tabelle originali del gioco -----------
+func _toggle_charts() -> void:
+	if charts_overlay and is_instance_valid(charts_overlay):
+		charts_overlay.queue_free()
+		charts_overlay = null
+		return
+	_build_charts_overlay()
+
+func _build_charts_overlay() -> void:
+	_play("click")
+	var panel := Panel.new()
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(panel)
+	charts_overlay = panel
+
+	var bg := ColorRect.new()
+	bg.color = Color(0.04, 0.06, 0.12, 0.97)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.add_child(bg)
+
+	var v := VBoxContainer.new()
+	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	v.offset_left = 16; v.offset_top = 12; v.offset_right = -16; v.offset_bottom = -12
+	v.add_theme_constant_override("separation", 8)
+	panel.add_child(v)
+
+	var header := HBoxContainer.new()
+	v.add_child(header)
+	var title := Label.new()
+	title.text = "📖 Tabelle di riferimento"
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title)
+	var close_btn := Button.new()
+	close_btn.text = "✕ Chiudi"
+	close_btn.pressed.connect(_toggle_charts)
+	header.add_child(close_btn)
+
+	var flow := HFlowContainer.new()
+	v.add_child(flow)
+	for c in CHARTS:
+		var b := Button.new()
+		b.text = c[1]
+		b.pressed.connect(_show_chart.bind(c[0]))
+		flow.add_child(b)
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_child(scroll)
+	var tex := TextureRect.new()
+	tex.name = "ChartImage"
+	tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tex.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(tex)
+
+	_show_chart(CHARTS[0][0])
+
+func _show_chart(filename: String) -> void:
+	if not charts_overlay:
+		return
+	var tex := charts_overlay.find_child("ChartImage", true, false) as TextureRect
+	if not tex:
+		return
+	var path := "res://assets/charts/%s" % filename
+	if ResourceLoader.exists(path):
+		tex.texture = load(path)
 
 func _on_encounter_started(creature_name: String) -> void:
 	_play("encounter")

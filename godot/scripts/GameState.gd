@@ -60,6 +60,7 @@ var crew: Dictionary = {
 
 var visited_systems: Array = []
 var log_entries: Array = []
+var vp_ledger: Array = []   # storico delle variazioni di PV {amount, reason} per il riepilogo finale
 
 # Preparazione della spedizione (regola 5.0)
 var planet_attrs: Dictionary = {}          # attributi reali del pianeta in orbita
@@ -102,6 +103,7 @@ func start_new_game(p_tour_length: int) -> void:
 	current_planet = ""
 	visited_systems = []
 	log_entries = []
+	vp_ledger = []
 	expedition_units = []
 	expedition_gear = []
 	damaged_gear = []
@@ -119,6 +121,7 @@ func start_new_game(p_tour_length: int) -> void:
 		10: victory_points = 10
 		20: victory_points = 20
 		30: victory_points = 30
+	vp_ledger.append({"amount": victory_points, "reason": "Punti Vittoria iniziali (tour %d mesi)" % tour_length})
 
 	set_phase(Phase.INTERSTELLAR)
 	add_log("Nuovo viaggio iniziato. Tour: %d mesi. Pandora in orbita attorno a Sol." % tour_length)
@@ -145,6 +148,7 @@ func save_game(silent := false) -> bool:
 		"awaiting_die_roll": awaiting_die_roll, "pending_die_purpose": pending_die_purpose,
 		"manual_dice": manual_dice,
 		"crew": crew, "visited_systems": visited_systems, "log_entries": log_entries,
+		"vp_ledger": vp_ledger,
 		"planet_attrs": planet_attrs, "planet_gravity": planet_gravity,
 		"shuttle_capacity": shuttle_capacity, "expedition_units": expedition_units,
 		"expedition_gear": expedition_gear, "damaged_gear": damaged_gear,
@@ -207,6 +211,7 @@ func load_game() -> bool:
 				crew[k]["endurance"] = int(cr[k].get("endurance", MAX_ENDURANCE))
 	visited_systems = d.get("visited_systems", [])
 	log_entries = d.get("log_entries", [])
+	vp_ledger = d.get("vp_ledger", [])
 	planet_attrs = d.get("planet_attrs", {})
 	planet_gravity = str(d.get("planet_gravity", "Earth like"))
 	shuttle_capacity = int(d.get("shuttle_capacity", 80))
@@ -725,11 +730,13 @@ func _end_tour() -> void:
 
 func gain_vp(amount: int, reason: String) -> void:
 	victory_points += amount
+	vp_ledger.append({"amount": amount, "reason": reason})
 	add_log("VP +%d: %s (totale: %d)" % [amount, reason, victory_points])
 	state_updated.emit()
 
 func lose_vp(amount: int, reason: String) -> void:
 	victory_points -= amount
+	vp_ledger.append({"amount": -amount, "reason": reason})
 	add_log("VP -%d: %s (totale: %d)" % [amount, reason, victory_points])
 	state_updated.emit()
 
