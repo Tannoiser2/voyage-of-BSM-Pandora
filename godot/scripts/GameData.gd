@@ -122,6 +122,42 @@ func get_paragraph(num: int) -> Dictionary:
 func get_paragraph_text(num: int) -> String:
 	return get_paragraph(num).get("it", "")
 
+# Estrae le scelte/rimandi di un paragrafo (libro-gioco). Ogni rimando ¶NNN nel
+# testo diventa una scelta cliccabile; l'etichetta è la frase/riga che lo contiene.
+func get_paragraph_choices(num: int) -> Array:
+	var text := get_paragraph_text(num)
+	var choices: Array = []
+	var seen := {}
+	# Spezza il testo in segmenti su a-capo e punti elenco, così ogni condizione
+	# con un rimando diventa una scelta distinta.
+	var segments := text.replace("•", "\n").split("\n", false)
+	for seg in segments:
+		var s: String = seg.strip_edges()
+		if s.is_empty():
+			continue
+		var re := RegEx.new()
+		re.compile("¶\\s*(\\d{1,3})")
+		var matches := re.search_all(s)
+		if matches.is_empty():
+			continue
+		# Etichetta = segmento ripulito dal marcatore e dai rimandi
+		var label := s
+		label = label.lstrip("* ").strip_edges()
+		var cleaner := RegEx.new()
+		cleaner.compile("¶\\s*\\d{1,3}")
+		label = cleaner.sub(label, "", true).strip_edges()
+		label = label.rstrip(":.,; ").strip_edges()
+		for m in matches:
+			var target := int(m.get_string(1))
+			if seen.has(target):
+				continue
+			seen[target] = true
+			var lbl := label
+			if lbl.is_empty():
+				lbl = "Vai al paragrafo %03d" % target
+			choices.append({"para": target, "label": lbl})
+	return choices
+
 func get_planet_paragraph(planet_name: String, tour_length: int) -> int:
 	var systems: Dictionary = interstellar.get("star_systems", {})
 	for sys_name in systems:
