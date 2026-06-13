@@ -371,11 +371,48 @@ func show_paragraph(para_num: int) -> void:
 	paragraph_request.emit(para_num)
 	state_updated.emit()
 
+# Valori degli attributi della creatura calcolati nell'incontro corrente (8.4),
+# memorizzati come da regola (una volta determinati restano fissi).
+var creature_attr_cache: Dictionary = {}
+const RATING_TABLE := {2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11: 9}
+
+# Calcola (e memorizza) il Valore di un attributo della creatura (8.4):
+# tabella[2d6 + modificatore]. attr: "intel"|"combat"|"aggression"|"speed".
+func creature_attr(attr: String) -> int:
+	if current_creature.is_empty():
+		return 0
+	if creature_attr_cache.has(attr):
+		return creature_attr_cache[attr]
+	var modn := int(GameData.get_creature(current_creature).get(attr, 0))
+	var total := clampi(randi_range(1, 6) + randi_range(1, 6) + modn, 2, 12)
+	var rating: int
+	if total <= 11:
+		rating = int(RATING_TABLE.get(total, 1))
+	else:
+		var d := randi_range(1, 6)
+		rating = 9 if d <= 2 else (10 if d <= 4 else (11 if d == 5 else 12))
+	creature_attr_cache[attr] = rating
+	return rating
+
+# Velocità più alta / più bassa tra i personaggi imbarcati (per i confronti dei paragrafi).
+func expedition_max_speed() -> int:
+	var best := 0
+	for k in expedition_units:
+		best = maxi(best, int(GameData.get_character(k).get("speed", 0)))
+	return best
+
+func expedition_min_speed() -> int:
+	var worst := 99
+	for k in expedition_units:
+		worst = mini(worst, int(GameData.get_character(k).get("speed", 99)))
+	return worst if worst < 99 else 0
+
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
 func _begin_creature(name: String) -> void:
 	if GameData.get_creature(name).is_empty():
 		return
 	current_creature = name
+	creature_attr_cache = {}
 	creature_rating = GameData.roll_creature_combat_rating(name)
 	add_log("Incontro con %s! Valutazione di combattimento per l'esagono: %d." % [name, creature_rating])
 

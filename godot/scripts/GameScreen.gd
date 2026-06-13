@@ -1538,6 +1538,21 @@ func _set_dice_result(val: int) -> void:
 	var lbl := find_child("DiceResult", true, false) as Label
 	if lbl: lbl.text = str(val)
 
+# Box coi Valori calcolati dal sistema (8.4) per le condizioni del paragrafo.
+func _computed_values_box(text: String) -> String:
+	var low := text.to_lower()
+	var rows: Array = []
+	if "aggressività" in low or "aggressivita" in low:
+		rows.append("Aggressività creatura: [b]%d[/b]" % GameState.creature_attr("aggression"))
+	if "velocità" in low or "velocita" in low:
+		rows.append("Velocità creatura: [b]%d[/b]  (squadra: max %d, min %d)" % [
+			GameState.creature_attr("speed"), GameState.expedition_max_speed(), GameState.expedition_min_speed()])
+	if "intelligenza" in low:
+		rows.append("Intelligenza creatura: [b]%d[/b]" % GameState.creature_attr("intel"))
+	if rows.is_empty():
+		return ""
+	return "\n\n[color=#88ccff]Calcolato dal sistema (8.4):[/color]\n• " + "\n• ".join(rows)
+
 func _on_paragraph_request(para_num: int) -> void:
 	current_para_num = para_num
 	var text := GameData.get_paragraph_text(para_num)
@@ -1569,6 +1584,10 @@ func _on_paragraph_request(para_num: int) -> void:
 			bb += "[p]" + text + "[/p]"
 		else:
 			bb += "[p]" + _linkify(text) + "[/p]"
+		# Calcoli automatici (8.4): se il paragrafo richiede un Valore della creatura,
+		# il sistema lo calcola e lo mostra, così la condizione è già risolta.
+		if not GameState.current_creature.is_empty() and not is_creature_here:
+			bb += _computed_values_box(text)
 		para_display.bbcode_text = bb
 
 	# Durante un incontro i comandi di combattimento sostituiscono le scelte; in orbita
