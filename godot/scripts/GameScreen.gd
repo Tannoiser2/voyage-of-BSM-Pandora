@@ -462,6 +462,7 @@ func _build_status_rows(parent: Control) -> void:
 		["Months",   "Mesi: 0 / 0"],
 		["Supply",   "Rifornimenti: 6"],
 		["ExpTime",  "Ore spedizione: 0"],
+		["Damage",   "Danni: 0"],
 		["Planet",   "Pianeta: —"],
 	]
 	for row in rows:
@@ -796,8 +797,12 @@ func _update_action_buttons(phase: String) -> void:
 	if btn_comm: btn_comm.visible = initial_creature
 	if btn_strat: btn_strat.visible = initial_creature
 	# Risoluzione del combattimento (8.5) sui paragrafi-esito di combattimento
-	if btn_kill: btn_kill.visible = combat_outcome
-	if btn_capture: btn_capture.visible = combat_outcome and not GameState.pending_no_capture
+	if btn_kill:
+		btn_kill.visible = combat_outcome
+		if combat_outcome: btn_kill.text = "Uccidi (squadra %d)" % GameState.best_combat("kill")
+	if btn_capture:
+		btn_capture.visible = combat_outcome and not GameState.pending_no_capture
+		if combat_outcome: btn_capture.text = "Cattura (squadra %d)" % GameState.best_combat("capture")
 	# Fuggi: strategia all'inizio, oppure ritirata durante il combattimento
 	if btn_flee: btn_flee.visible = initial_creature or combat_outcome
 	# "Continua" per i paragrafi senza scelte, fuori da orbita e da incontro attivo
@@ -822,6 +827,12 @@ func _update_display() -> void:
 
 	var lbl_exp := find_child("ExpTime", true, false) as Label
 	if lbl_exp: lbl_exp.text = "Ore spedizione: %d" % s.expedition_hours
+
+	var lbl_damage := find_child("Damage", true, false) as Label
+	if lbl_damage:
+		lbl_damage.text = "Danni: %d" % s.damage_points
+		lbl_damage.add_theme_color_override("font_color",
+			Color(1, 0.6, 0.5) if s.damage_points > 0 else Color(0.85, 0.85, 0.85))
 
 	var lbl_planet := find_child("Planet", true, false) as Label
 	if lbl_planet: lbl_planet.text = "Pianeta: %s" % (s.current_planet if s.current_planet != "" else "—")
@@ -1459,8 +1470,8 @@ func _on_encounter_started(creature_name: String) -> void:
 		if ResourceLoader.exists(tex_path):
 			bb += "[center][img=160]" + tex_path + "[/img][/center]\n\n"
 		bb += "[center][b]%s[/b][/center]\n\n" % creature_name
-		bb += "Valutazione di combattimento per questo esagono: [b]%d[/b]\n\n" % GameState.creature_rating
-		bb += "Modificatori — Intelligenza: %d · Combattimento: %d · Aggressività: %d · Velocità: %d\n\n" % [
+		bb += _creature_combat_summary() + "\n\n"
+		bb += "Modificatori creatura — Intelligenza: %d · Combattimento: %d · Aggressività: %d · Velocità: %d\n\n" % [
 			cdata.get("intel", 0), cdata.get("combat", 0), cdata.get("aggression", 0), cdata.get("speed", 0)
 		]
 		bb += "[i]Scegli: Uccidi, Cattura (per PV extra) o Fuggi.[/i]"
@@ -1553,6 +1564,19 @@ func _computed_values_box(text: String) -> String:
 		return ""
 	return "\n\n[color=#88ccff]Calcolato dal sistema (8.4):[/color]\n• " + "\n• ".join(rows)
 
+# Riepilogo dei Valori utili per l'incontro: valutazione della creatura per l'esagono
+# (8.4) e i migliori valori della squadra (Uccidi/Cattura) con la forbice di Velocità.
+func _creature_combat_summary() -> String:
+	if GameState.current_creature.is_empty():
+		return ""
+	var kill: int = GameState.best_combat("kill")
+	var capt: int = GameState.best_combat("capture")
+	var s := "[color=#ffd24d]Valutazione creatura (esagono): [b]%d[/b][/color]\n" % GameState.creature_rating
+	s += "[color=#9fe0a0]Squadra — Uccidi: [b]%d[/b]  ·  Cattura: [b]%d[/b][/color]\n" % [kill, capt]
+	s += "[color=#9fc6e0]Velocità squadra: max [b]%d[/b] · min [b]%d[/b][/color]" % [
+		GameState.expedition_max_speed(), GameState.expedition_min_speed()]
+	return s
+
 func _on_paragraph_request(para_num: int) -> void:
 	current_para_num = para_num
 	var text := GameData.get_paragraph_text(para_num)
@@ -1572,7 +1596,8 @@ func _on_paragraph_request(para_num: int) -> void:
 			var cpath := "res://assets/creatures/%s.png" % GameData.get_creature(creature).get("img", "")
 			if ResourceLoader.exists(cpath):
 				bb += "[center][img=150]" + cpath + "[/img][/center]\n"
-			bb += "[center][b]%s[/b] — valutazione di combattimento: [b]%d[/b][/center]\n\n" % [creature, GameState.creature_rating]
+			bb += "[center][b]%s[/b][/center]\n\n" % creature
+			bb += _creature_combat_summary() + "\n\n"
 		else:
 			# Illustrazione narrativa dell'evento (se presente)
 			var img_path := GameData.get_event_image_path(para_num)
