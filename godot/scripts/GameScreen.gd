@@ -262,9 +262,23 @@ func _build_ui() -> void:
 	btn_capture.pressed.connect(_on_combat.bind("capture"))
 	actions_hbox.add_child(btn_capture)
 
+	var btn_comm := Button.new()
+	btn_comm.name = "BtnComm"
+	btn_comm.text = "💬 Comunica"
+	btn_comm.visible = false
+	btn_comm.pressed.connect(_on_strategy.bind("communicate"))
+	actions_hbox.add_child(btn_comm)
+
+	var btn_strat := Button.new()
+	btn_strat.name = "BtnStrat"
+	btn_strat.text = "🎯 Cattura/Uccidi"
+	btn_strat.visible = false
+	btn_strat.pressed.connect(_on_strategy.bind("capture_kill"))
+	actions_hbox.add_child(btn_strat)
+
 	var btn_flee := Button.new()
 	btn_flee.name = "BtnFlee"
-	btn_flee.text = "Fuggi"
+	btn_flee.text = "🏃 Fuggi"
 	btn_flee.visible = false
 	btn_flee.pressed.connect(_on_flee)
 	actions_hbox.add_child(btn_flee)
@@ -325,6 +339,22 @@ func _build_ui() -> void:
 	crew_grid.add_theme_constant_override("v_separation", 6)
 	right_vbox.add_child(crew_grid)
 	_build_crew_counters(crew_grid)
+
+	# Segnalini di robot/strumenti imbarcati (compaiono in spedizione)
+	var gear_title := Label.new()
+	gear_title.name = "GearTitle"
+	gear_title.text = "Equipaggiamento"
+	gear_title.add_theme_font_size_override("font_size", 13)
+	gear_title.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	gear_title.visible = false
+	right_vbox.add_child(gear_title)
+
+	var gear_grid := GridContainer.new()
+	gear_grid.name = "GearCounters"
+	gear_grid.columns = 4
+	gear_grid.add_theme_constant_override("h_separation", 6)
+	gear_grid.add_theme_constant_override("v_separation", 6)
+	right_vbox.add_child(gear_grid)
 
 	var sep2 := HSeparator.new()
 	right_vbox.add_child(sep2)
@@ -483,6 +513,43 @@ func _refresh_crew_counters() -> void:
 				hp.add_theme_color_override("font_color",
 					Color(1, 0.7, 0.5) if e < GameState.MAX_ENDURANCE else Color(0.7, 0.9, 0.7))
 
+# Segnalini dei robot/strumenti imbarcati (mostrati durante la spedizione).
+func _refresh_gear_counters() -> void:
+	var grid := find_child("GearCounters", true, false) as GridContainer
+	var title := find_child("GearTitle", true, false) as Label
+	if not grid:
+		return
+	for c in grid.get_children():
+		grid.remove_child(c)
+		c.free()
+	var show := GameState.expedition_pos > 0 and GameState.expedition_gear.size() > 0
+	if title: title.visible = show
+	if not show:
+		return
+	for k in GameState.expedition_gear:
+		var u := GameData.get_unit(k)
+		var folder := "bots" if GameData.get_bot_keys().has(k) else "tools"
+		var box := VBoxContainer.new()
+		box.tooltip_text = u.get("name", k)
+		box.add_theme_constant_override("separation", 0)
+		var tex := TextureRect.new()
+		var path := "res://assets/%s/%s.png" % [folder, u.get("img", "")]
+		if ResourceLoader.exists(path):
+			tex.texture = load(path)
+		tex.custom_minimum_size = Vector2(46, 46)
+		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		var damaged: bool = k in GameState.damaged_gear
+		tex.modulate = Color(0.5, 0.3, 0.3, 0.7) if damaged else Color(1, 1, 1)
+		box.add_child(tex)
+		var lb := Label.new()
+		lb.text = "guasto" if damaged else u.get("name", k)
+		lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lb.add_theme_font_size_override("font_size", 8)
+		lb.add_theme_color_override("font_color", Color(1, 0.5, 0.5) if damaged else Color(0.8, 0.85, 0.9))
+		box.add_child(lb)
+		grid.add_child(box)
+
 func _build_hex_buttons() -> void:
 	for col in range(1, 5):
 		var max_row := 7 if col % 2 == 1 else 6
@@ -571,6 +638,7 @@ func _refresh_environ_buttons() -> void:
 		var explored: bool = GameState.environ_grid[hex_id].get("explored", false)
 		var is_pos: bool = (hex_id == GameState.expedition_pos)
 		var reachable: bool = GameState.can_move_expedition(hex_id)
+		var hasty: bool = GameState.can_hasty_move(hex_id)
 
 		var fill := Color(0, 0, 0, 0)
 		var border := Color(0, 0, 0, 0)
@@ -587,6 +655,10 @@ func _refresh_environ_buttons() -> void:
 			fill = Color(1.0, 1.0, 1.0, 0.16)
 			border = Color(1.0, 0.95, 0.5, 0.9)
 			bw = 3
+		elif hasty:
+			# Raggiungibile con movimento affrettato (6.3): contorno tenue
+			border = Color(0.6, 0.7, 1.0, 0.35)
+			bw = 1
 		elif explored:
 			border = Color(0.4, 1.0, 0.5, 0.5)
 			bw = 2
@@ -603,8 +675,11 @@ func _refresh_environ_buttons() -> void:
 		btn.add_theme_stylebox_override("pressed", sb)
 		btn.add_theme_stylebox_override("focus", sb)
 		btn.add_theme_stylebox_override("disabled", sb)
-		btn.disabled = not (reachable or is_pos)
-		btn.mouse_filter = Control.MOUSE_FILTER_STOP if (reachable or is_pos) else Control.MOUSE_FILTER_IGNORE
+		var clickable := reachable or hasty
+		btn.disabled = not clickable
+		btn.mouse_filter = Control.MOUSE_FILTER_STOP if clickable else Control.MOUSE_FILTER_IGNORE
+		if hasty and not reachable:
+			btn.tooltip_text = "Movimento affrettato (6.3)"
 
 func _center_on_expedition() -> void:
 	if not env_scroll:
@@ -616,7 +691,9 @@ func _center_on_expedition() -> void:
 
 func _on_environ_hex_clicked(hex_id: int) -> void:
 	if GameState.can_move_expedition(hex_id):
-		GameState.move_expedition(hex_id)
+		GameState.move_expedition(hex_id)            # mossa normale (adiacente)
+	elif GameState.can_hasty_move(hex_id):
+		GameState.hasty_move_to(hex_id)              # movimento affrettato (6.3)
 
 func _update_left_panel_mode() -> void:
 	var on_surface := GameState.current_phase == GameState.Phase.EXPEDITION \
@@ -659,30 +736,43 @@ func _update_action_buttons(phase: String) -> void:
 	var btn_kill := find_child("BtnKill", true, false)
 	var btn_capture := find_child("BtnCapture", true, false)
 	var btn_flee := find_child("BtnFlee", true, false)
+	var btn_comm := find_child("BtnComm", true, false)
+	var btn_strat := find_child("BtnStrat", true, false)
 	var btn_heal := find_child("BtnHeal", true, false)
 
-	var in_combat := not GameState.current_creature.is_empty()
+	var creature_active := not GameState.current_creature.is_empty()
 	var on_surface := GameState.expedition_pos > 0
-	var orbit_decision := GameState.is_orbit_decision() and not in_combat
+	var orbit_decision := GameState.is_orbit_decision() and not creature_active
+	# Incontro iniziale (paragrafo della creatura) → si dichiara la strategia (8.2)
+	var initial_creature := creature_active and GameData.creature_for_paragraph(current_para_num) == GameState.current_creature
+	# Paragrafo-esito che richiede combattimento (8.5)
+	var para_low := GameData.get_paragraph_text(current_para_num).to_lower()
+	var combat_outcome := creature_active and not initial_creature and ("combattiment" in para_low)
+	var encounter_busy := initial_creature or combat_outcome
 
 	# In orbita: scelta netta esplora/riparti
 	if btn_land: btn_land.visible = orbit_decision      # "Esplora il pianeta"
 	if btn_orbit: btn_orbit.visible = orbit_decision    # "Riparti (non esplorare)"
-	# "Torna alla Pandora" solo se sbarcati
-	if btn_return: btn_return.visible = on_surface and not in_combat
+	# "Torna alla Pandora" solo se sbarcati e fuori da un incontro attivo
+	if btn_return: btn_return.visible = on_surface and not encounter_busy
 	# "Esplora" appare quando l'esagono occupato non è ancora stato esplorato (es. atterraggio)
 	var here_explored: bool = GameState.environ_grid.get(GameState.expedition_pos, {}).get("explored", true)
 	var here_unexplored: bool = on_surface and not here_explored
-	if btn_explore: btn_explore.visible = (phase == "expedition") and not in_combat and here_unexplored
-	# "Continua" solo per i paragrafi senza scelte e fuori dalla decisione in orbita
+	if btn_explore: btn_explore.visible = (phase == "expedition") and not creature_active and here_unexplored
+	# Strategia d'incontro (8.2) sul paragrafo iniziale della creatura
+	if btn_comm: btn_comm.visible = initial_creature
+	if btn_strat: btn_strat.visible = initial_creature
+	# Risoluzione del combattimento (8.5) sui paragrafi-esito di combattimento
+	if btn_kill: btn_kill.visible = combat_outcome
+	if btn_capture: btn_capture.visible = combat_outcome
+	# Fuggi: strategia all'inizio, oppure ritirata durante il combattimento
+	if btn_flee: btn_flee.visible = initial_creature or combat_outcome
+	# "Continua" per i paragrafi senza scelte, fuori da orbita e da incontro attivo
 	var has_choices: bool = choices_box != null and choices_box.get_child_count() > 0
-	if btn_continue: btn_continue.visible = (phase == "paragraph") and not in_combat and not orbit_decision and not has_choices
-	if btn_kill: btn_kill.visible = in_combat
-	if btn_capture: btn_capture.visible = in_combat
-	if btn_flee: btn_flee.visible = in_combat
-	if btn_heal: btn_heal.visible = (phase == "expedition") and not in_combat and GameState.can_heal()
+	if btn_continue: btn_continue.visible = (phase == "paragraph") and not orbit_decision and not has_choices and not encounter_busy
+	if btn_heal: btn_heal.visible = (phase == "expedition") and not creature_active and GameState.can_heal()
 	var btn_repair := find_child("BtnRepair", true, false)
-	if btn_repair: btn_repair.visible = (phase == "expedition") and not in_combat and GameState.can_repair()
+	if btn_repair: btn_repair.visible = (phase == "expedition") and not creature_active and GameState.can_repair()
 
 func _update_display() -> void:
 	# Update status labels
@@ -743,6 +833,7 @@ func _update_display() -> void:
 	# Refresh hex buttons and panel mode
 	_refresh_hex_buttons()
 	_refresh_crew_counters()
+	_refresh_gear_counters()
 	_update_left_panel_mode()
 
 func _refresh_hex_buttons() -> void:
@@ -1053,10 +1144,16 @@ func _on_land() -> void:
 		return
 	_open_prep_panel()
 
+func _on_strategy(strategy: String) -> void:
+	GameState.choose_encounter_strategy(strategy)
+
 func _on_continue() -> void:
 	# Chiude il paragrafo corrente e torna alla fase appropriata
 	GameState.current_paragraph = 0
 	if GameState.expedition_pos > 0:
+		# Un eventuale incontro è concluso (esito narrativo risolto)
+		GameState.current_creature = ""
+		GameState.creature_rating = 0
 		GameState.set_phase(GameState.Phase.EXPEDITION)
 		_show_expedition_panel()
 	elif GameState.current_system != "" and GameState.current_system != "Sol" and GameState.current_planet == "":
@@ -1086,8 +1183,12 @@ func _on_combat(mode: String) -> void:
 		_on_encounter_started(GameState.current_creature)
 
 func _on_flee() -> void:
-	GameState.flee_encounter()
-	_show_expedition_panel()
+	# All'inizio dell'incontro «Fuggi» è una strategia (8.2); durante il combattimento è una ritirata.
+	if not GameState.current_creature.is_empty() and GameData.creature_for_paragraph(current_para_num) == GameState.current_creature:
+		GameState.choose_encounter_strategy("flee")
+	else:
+		GameState.flee_encounter()
+		_show_expedition_panel()
 
 func _on_heal() -> void:
 	GameState.heal_wounded()

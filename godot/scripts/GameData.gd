@@ -252,6 +252,12 @@ func creature_for_paragraph(para: int) -> String:
 func creature_vp(name: String) -> int:
 	return int(get_creature(name).get("vp", 0))
 
+# Tabella di Strategia d'Incontro (8.2): dado modificato + strategia -> paragrafo esito.
+func encounter_strategy_para(die: int, strategy: String) -> int:
+	var d := clampi(die, -1, 8)
+	var row: Dictionary = tables.get("encounter_strategy_table", {}).get(str(d), {})
+	return int(row.get(strategy, 0))
+
 func get_creature_texture(name: String) -> Texture2D:
 	var data := get_creature(name)
 	var img_name: String = data.get("img", "")
