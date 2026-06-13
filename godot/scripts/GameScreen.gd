@@ -15,6 +15,7 @@ var status_display: Control
 var dice_panel: Control
 var current_para_num: int = 0
 var _prep_updating: bool = false
+var choices_box: VBoxContainer
 
 # Fattore di scala con cui la mappa reale dell'environ viene mostrata nel pannello.
 # 1.0 = dimensione nativa del rendering; valori < 1 rimpiccioliscono. La vista è
@@ -174,7 +175,22 @@ func _build_ui() -> void:
 	paragraph_display.text = "[i]Scegli la durata del tour e avvia una nuova partita.[/i]"
 	paragraph_display.add_theme_font_size_override("normal_font_size", 15)
 	paragraph_display.add_theme_color_override("default_color", Color(0.9, 0.9, 0.85))
+	paragraph_display.meta_clicked.connect(_on_meta_clicked)
 	scroll.add_child(paragraph_display)
+
+	# Scelte del paragrafo (rimandi ¶NNN resi cliccabili)
+	var choices_label := Label.new()
+	choices_label.name = "ChoicesLabel"
+	choices_label.text = "▶ Cosa fai?"
+	choices_label.add_theme_font_size_override("font_size", 13)
+	choices_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	choices_label.visible = false
+	para_vbox.add_child(choices_label)
+
+	choices_box = VBoxContainer.new()
+	choices_box.name = "ChoicesBox"
+	choices_box.add_theme_constant_override("separation", 5)
+	para_vbox.add_child(choices_box)
 
 	# Action buttons row
 	var actions_hbox := HBoxContainer.new()
@@ -966,6 +982,7 @@ func _on_repair() -> void:
 	_show_expedition_panel()
 
 func _on_encounter_started(creature_name: String) -> void:
+	_clear_choices()
 	var cdata := GameData.get_creature(creature_name)
 	var title_lbl := find_child("ParaTitle", true, false) as Label
 	if title_lbl: title_lbl.text = "Incontro: %s" % creature_name
@@ -990,6 +1007,7 @@ func _on_encounter_ended() -> void:
 	_show_expedition_panel()
 
 func _show_expedition_panel() -> void:
+	_clear_choices()
 	var title_lbl := find_child("ParaTitle", true, false) as Label
 	if title_lbl: title_lbl.text = "— Spedizione su %s —" % GameState.current_planet
 
@@ -1065,10 +1083,62 @@ func _on_paragraph_request(para_num: int) -> void:
 		var img_path := GameData.get_event_image_path(para_num)
 		if not img_path.is_empty():
 			bb += "[center][img=360]" + img_path + "[/img][/center]\n\n"
-		bb += "[p]" + text + "[/p]"
+		bb += "[p]" + _linkify(text) + "[/p]"
 		para_display.bbcode_text = bb
 
+	_build_choices(para_num)
 	_update_action_buttons(GameState.phase_name(GameState.current_phase))
+
+# Trasforma i rimandi ¶NNN del testo in link cliccabili.
+func _linkify(text: String) -> String:
+	var re := RegEx.new()
+	re.compile("¶\\s*(\\d{1,3})")
+	var out := ""
+	var last := 0
+	for m in re.search_all(text):
+		out += text.substr(last, m.get_start() - last)
+		var n := m.get_string(1)
+		out += "[url=%s][color=#ffd24d][b]→ ¶%s[/b][/color][/url]" % [n, n]
+		last = m.get_end()
+	out += text.substr(last)
+	return out
+
+# Costruisce i pulsanti-scelta sotto il paragrafo dai rimandi ¶NNN.
+func _build_choices(para_num: int) -> void:
+	_clear_choices()
+	var choices := GameData.get_paragraph_choices(para_num)
+	var lbl := find_child("ChoicesLabel", true, false) as Label
+	if lbl: lbl.visible = choices.size() > 0
+	for ch in choices:
+		var b := Button.new()
+		var label_text: String = ch.label
+		if label_text.length() > 90:
+			label_text = label_text.substr(0, 88) + "…"
+		b.text = "→ %s  (¶%03d)" % [label_text, ch.para]
+		b.tooltip_text = ch.label
+		b.clip_text = true
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.add_theme_font_size_override("font_size", 13)
+		b.pressed.connect(_on_choice_selected.bind(ch.para))
+		choices_box.add_child(b)
+
+func _clear_choices() -> void:
+	if not choices_box:
+		return
+	for c in choices_box.get_children():
+		choices_box.remove_child(c)
+		c.free()
+	var lbl := find_child("ChoicesLabel", true, false) as Label
+	if lbl: lbl.visible = false
+
+func _on_choice_selected(para: int) -> void:
+	GameState.show_paragraph(para)
+
+func _on_meta_clicked(meta) -> void:
+	var n := int(str(meta))
+	if n > 0:
+		GameState.show_paragraph(n)
 
 func _on_message(msg: String) -> void:
 	if log_display:
