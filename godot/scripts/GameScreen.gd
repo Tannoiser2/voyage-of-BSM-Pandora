@@ -5,10 +5,10 @@ var center_panel: Panel
 var right_panel: Panel
 var interstellar_display: Control
 var environ_display: Control
-var env_scroll: ScrollContainer
 var env_canvas: Control
 var env_map: TextureRect
 var env_loaded_id: int = 0
+var env_scale: float = 0.45   # scala per far stare l'intera mappa nel pannello
 var paragraph_display: Control
 var log_display: RichTextLabel
 var status_display: Control
@@ -16,11 +16,6 @@ var dice_panel: Control
 var current_para_num: int = 0
 var _prep_updating: bool = false
 var choices_box: VBoxContainer
-
-# Fattore di scala con cui la mappa reale dell'environ viene mostrata nel pannello.
-# 1.0 = dimensione nativa del rendering; valori < 1 rimpiccioliscono. La vista è
-# scrollabile e si centra automaticamente sulla posizione della spedizione.
-const ENVIRON_DISPLAY_SCALE := 0.62
 
 # Overlay della mappa interstellare reale (Voyage Map.jpg)
 # Coordinate ricavate per calibrazione dai cerchi dei sistemi stellari sull'originale.
@@ -97,19 +92,11 @@ func _build_ui() -> void:
 	environ_display.visible = false
 	left_panel.add_child(environ_display)
 
-	# Vista scrollabile con la mappa reale dell'environ
-	env_scroll = ScrollContainer.new()
-	env_scroll.name = "EnvScroll"
-	env_scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	env_scroll.offset_left = 4
-	env_scroll.offset_top = 26
-	env_scroll.offset_right = -4
-	env_scroll.offset_bottom = -4
-	environ_display.add_child(env_scroll)
-
+	# Mappa intera (niente scroll): env_canvas viene dimensionato per stare nel pannello
 	env_canvas = Control.new()
 	env_canvas.name = "EnvCanvas"
-	env_scroll.add_child(env_canvas)
+	env_canvas.position = Vector2(6, 28)
+	environ_display.add_child(env_canvas)
 
 	env_map = TextureRect.new()
 	env_map.name = "EnvMap"
@@ -119,6 +106,22 @@ func _build_ui() -> void:
 	# usare la dimensione nativa della texture — così mappa e bottoni combaciano.
 	env_map.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	env_canvas.add_child(env_map)
+
+	# Pannello caratteristiche del pianeta, sotto la mappa
+	var planet_panel := PanelContainer.new()
+	planet_panel.name = "PlanetPanel"
+	planet_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	planet_panel.offset_left = 6
+	planet_panel.offset_right = -6
+	planet_panel.offset_top = -150
+	planet_panel.offset_bottom = -6
+	environ_display.add_child(planet_panel)
+	var planet_lbl := RichTextLabel.new()
+	planet_lbl.name = "PlanetInfo"
+	planet_lbl.bbcode_enabled = true
+	planet_lbl.fit_content = true
+	planet_lbl.add_theme_font_size_override("normal_font_size", 12)
+	planet_panel.add_child(planet_lbl)
 
 	var env_title := Label.new()
 	env_title.name = "EnvironTitle"
@@ -604,15 +607,23 @@ func _load_environ_view() -> void:
 	if env.is_empty():
 		env_loaded_id = eid
 		return
-	var iw: float = float(env.get("w", 1000)) * ENVIRON_DISPLAY_SCALE
-	var ih: float = float(env.get("h", 1400)) * ENVIRON_DISPLAY_SCALE
+	var img_w: float = float(env.get("w", 1000))
+	var img_h: float = float(env.get("h", 1400))
+	# Calcola la scala per far stare l'INTERA mappa nello spazio disponibile
+	# (larghezza del pannello, altezza meno titolo e pannello caratteristiche).
+	var avail_w: float = max(left_panel.size.x - 16, 360.0)
+	var avail_h: float = max(left_panel.size.y - 28 - 158, 360.0)
+	env_scale = min(avail_w / img_w, avail_h / img_h)
+	var iw: float = img_w * env_scale
+	var ih: float = img_h * env_scale
 	env_map.texture = load(env.get("img", ""))
 	env_map.size = Vector2(iw, ih)
-	env_canvas.custom_minimum_size = Vector2(iw, ih)
 	env_canvas.size = Vector2(iw, ih)
+	# Centra orizzontalmente la mappa nel pannello
+	env_canvas.position = Vector2(max((left_panel.size.x - iw) * 0.5, 4.0), 28)
 
 	var dx: float = float(env.get("dx", 168.0))
-	var bsize: float = dx * ENVIRON_DISPLAY_SCALE * 0.92
+	var bsize: float = dx * env_scale * 0.92
 	for hex_id in GameState.environ_grid:
 		var pos := _environ_hex_screen_pos(hex_id)
 		var btn := Button.new()
@@ -624,11 +635,27 @@ func _load_environ_view() -> void:
 		env_canvas.add_child(btn)
 	env_loaded_id = eid
 	_refresh_environ_buttons()
-	call_deferred("_center_on_expedition")
+	_refresh_planet_panel()
 
 func _environ_hex_screen_pos(hex_id: int) -> Vector2:
 	var cell: Dictionary = GameState.environ_grid.get(hex_id, {})
-	return Vector2(cell.get("x", 0.0), cell.get("y", 0.0)) * ENVIRON_DISPLAY_SCALE
+	return Vector2(cell.get("x", 0.0), cell.get("y", 0.0)) * env_scale
+
+# Mostra le caratteristiche del pianeta sotto la mappa di superficie.
+func _refresh_planet_panel() -> void:
+	var lbl := find_child("PlanetInfo", true, false) as RichTextLabel
+	if not lbl:
+		return
+	var a := GameState.planet_attrs
+	var atmo: String = a.get("atmosphere", "Normal")
+	var bb := "[b]%s[/b]\n" % GameState.current_planet
+	bb += "Gravità: %s · Atmosfera: %s\n" % [GameData.gravity_it(GameState.planet_gravity), GameData.atmosphere_it(atmo)]
+	bb += "Idrografia: %d%% · Geologia: %s · Supporto vitale: %d\n" % [
+		int(a.get("hydro", 0)), str(a.get("geology", "—")), int(a.get("lsv", 0))]
+	var note := GameData.atmosphere_note(atmo)
+	if note != "":
+		bb += "[color=#ffcc66]⚠ %s[/color]" % note
+	lbl.text = bb
 
 func _refresh_environ_buttons() -> void:
 	for hex_id in GameState.environ_grid:
@@ -681,14 +708,6 @@ func _refresh_environ_buttons() -> void:
 		if hasty and not reachable:
 			btn.tooltip_text = "Movimento affrettato (6.3)"
 
-func _center_on_expedition() -> void:
-	if not env_scroll:
-		return
-	var pos := _environ_hex_screen_pos(GameState.expedition_pos)
-	var vp := env_scroll.size
-	env_scroll.scroll_horizontal = int(max(0.0, pos.x - vp.x * 0.5))
-	env_scroll.scroll_vertical = int(max(0.0, pos.y - vp.y * 0.5))
-
 func _on_environ_hex_clicked(hex_id: int) -> void:
 	if GameState.can_move_expedition(hex_id):
 		GameState.move_expedition(hex_id)            # mossa normale (adiacente)
@@ -719,9 +738,6 @@ func _connect_signals() -> void:
 
 func _on_environ_changed() -> void:
 	_update_left_panel_mode()
-	# La vista segue la spedizione mentre si sposta sulla superficie
-	if environ_display and environ_display.visible and env_loaded_id == GameState.current_environ_id:
-		call_deferred("_center_on_expedition")
 
 func _on_phase_changed(phase: String) -> void:
 	_update_display()
