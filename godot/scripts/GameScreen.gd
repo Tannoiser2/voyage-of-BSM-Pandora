@@ -19,6 +19,10 @@ var current_para_num: int = 0
 var _prep_updating: bool = false
 var choices_box: VBoxContainer
 
+# Audio: effetti brevi caricati all'avvio (feedback sugli eventi chiave)
+var sfx: AudioStreamPlayer
+var _sounds: Dictionary = {}
+
 # Overlay della mappa interstellare reale (Voyage Map.jpg)
 # Coordinate ricavate per calibrazione dai cerchi dei sistemi stellari sull'originale.
 const INTER_REGION := Rect2(34, 1346, 336, 656)
@@ -31,7 +35,9 @@ const GRID_EVEN_OFFSET := 45.0
 
 func _ready() -> void:
 	_build_ui()
+	_init_audio()
 	_connect_signals()
+	_render_full_log()
 	_update_display()
 	# Ripristina la visualizzazione corrente al (ri)entro nella scena
 	if not GameState.current_creature.is_empty():
@@ -303,6 +309,23 @@ func _build_ui() -> void:
 	btn_repair.visible = false
 	btn_repair.pressed.connect(_on_repair)
 	actions_hbox.add_child(btn_repair)
+
+	# Spaziatore per spingere Salva/Menu a destra
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	actions_hbox.add_child(spacer)
+
+	var btn_save := Button.new()
+	btn_save.name = "BtnSave"
+	btn_save.text = "💾 Salva"
+	btn_save.pressed.connect(_on_save)
+	actions_hbox.add_child(btn_save)
+
+	var btn_menu := Button.new()
+	btn_menu.name = "BtnMenu"
+	btn_menu.text = "☰ Menu"
+	btn_menu.pressed.connect(_on_menu)
+	actions_hbox.add_child(btn_menu)
 
 	# (Il Registro di Bordo è nel pannello destro, in basso.)
 
@@ -744,6 +767,30 @@ func _update_left_panel_mode() -> void:
 			else:
 				_refresh_environ_buttons()
 
+func _init_audio() -> void:
+	sfx = AudioStreamPlayer.new()
+	sfx.name = "Sfx"
+	add_child(sfx)
+	for key in ["click", "page", "encounter", "success", "hit", "save"]:
+		var p := "res://assets/audio/%s.wav" % key
+		if ResourceLoader.exists(p):
+			_sounds[key] = load(p)
+
+# Riproduce un effetto sonoro (no-op se l'asset non è disponibile).
+func _play(key: String) -> void:
+	if sfx and _sounds.has(key):
+		sfx.stream = _sounds[key]
+		sfx.play()
+
+# Breve dissolvenza in entrata del testo del paragrafo, come "cambio pagina".
+func _flash_paragraph() -> void:
+	var pd := find_child("ParagraphText", true, false) as Control
+	if not pd:
+		return
+	pd.modulate = Color(1, 1, 1, 0.15)
+	var tw := create_tween()
+	tw.tween_property(pd, "modulate", Color(1, 1, 1, 1), 0.22)
+
 func _connect_signals() -> void:
 	GameState.phase_changed.connect(_on_phase_changed)
 	GameState.state_updated.connect(_update_display)
@@ -753,6 +800,11 @@ func _connect_signals() -> void:
 	GameState.encounter_ended.connect(_on_encounter_ended)
 	GameState.environ_changed.connect(_on_environ_changed)
 	GameState.die_rolled.connect(_on_die_rolled)
+	GameState.combat_resolved.connect(_on_combat_resolved)
+	GameState.game_saved.connect(func(): _play("save"))
+
+func _on_combat_resolved(result: String, _detail: String) -> void:
+	_play("success" if result in ["AE", "DR"] else "hit")
 
 func _on_environ_changed() -> void:
 	_update_left_panel_mode()
@@ -1457,7 +1509,15 @@ func _on_repair() -> void:
 	GameState.repair_gear()
 	_show_expedition_panel()
 
+func _on_save() -> void:
+	GameState.save_game()
+
+func _on_menu() -> void:
+	# Torna al menu principale (lo stato resta in memoria; usa Salva per conservarlo).
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+
 func _on_encounter_started(creature_name: String) -> void:
+	_play("encounter")
 	_clear_choices()
 	var cdata := GameData.get_creature(creature_name)
 	var title_lbl := find_child("ParaTitle", true, false) as Label
@@ -1578,6 +1638,8 @@ func _creature_combat_summary() -> String:
 	return s
 
 func _on_paragraph_request(para_num: int) -> void:
+	_play("page")
+	_flash_paragraph()
 	current_para_num = para_num
 	var text := GameData.get_paragraph_text(para_num)
 
@@ -1682,6 +1744,7 @@ func _clear_choices() -> void:
 	if lbl: lbl.visible = false
 
 func _on_choice_selected(para: int) -> void:
+	_play("click")
 	GameState.show_paragraph(para)
 
 func _on_meta_clicked(meta) -> void:
@@ -1689,9 +1752,37 @@ func _on_meta_clicked(meta) -> void:
 	if n > 0:
 		GameState.show_paragraph(n)
 
+# Colore/icona per la voce di diario in base al contenuto (regola: solo estetica).
+func _log_decorate(msg: String) -> String:
+	var low := msg.to_lower()
+	var icon := "▸"
+	var col := "#aaffaa"
+	if "incontro" in low or "creatura" in low:
+		icon = "✦"; col = "#ffd24d"
+	elif "punti vittoria" in low or " pv" in low or "+pv" in low:
+		icon = "★"; col = "#ffe27a"
+	elif "salvata" in low or "caricata" in low:
+		icon = "💾"; col = "#9fc6e0"
+	elif "ucciso" in low or "danno" in low or "resistenza" in low or "danneggiat" in low:
+		icon = "✖"; col = "#ff8866"
+	elif "arriva" in low or "orbita" in low or "spedizione" in low or "atterr" in low:
+		icon = "➤"; col = "#9fe0a0"
+	return "[color=%s]%s[/color] %s" % [col, icon, msg]
+
+# Ricostruisce l'intero Registro di Bordo dalle voci salvate (usato all'avvio
+# e dopo un caricamento di partita).
+func _render_full_log() -> void:
+	if not log_display:
+		return
+	log_display.clear()
+	var lines: Array = []
+	for e in GameState.log_entries:
+		lines.append(_log_decorate(str(e)))
+	log_display.append_text("\n".join(lines))
+
 func _on_message(msg: String) -> void:
 	if log_display:
-		log_display.append_text("\n[color=#aaffaa]▸[/color] " + msg)
+		log_display.append_text("\n" + _log_decorate(msg))
 
 	var hint_lbl := find_child("DiceHint", true, false) as Label
 	if hint_lbl and GameState.awaiting_die_roll:
