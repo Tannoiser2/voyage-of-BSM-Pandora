@@ -797,7 +797,7 @@ func _update_action_buttons(phase: String) -> void:
 	if btn_strat: btn_strat.visible = initial_creature
 	# Risoluzione del combattimento (8.5) sui paragrafi-esito di combattimento
 	if btn_kill: btn_kill.visible = combat_outcome
-	if btn_capture: btn_capture.visible = combat_outcome
+	if btn_capture: btn_capture.visible = combat_outcome and not GameState.pending_no_capture
 	# Fuggi: strategia all'inizio, oppure ritirata durante il combattimento
 	if btn_flee: btn_flee.visible = initial_creature or combat_outcome
 	# "Continua" per i paragrafi senza scelte, fuori da orbita e da incontro attivo
@@ -1584,9 +1584,10 @@ func _on_paragraph_request(para_num: int) -> void:
 			bb += "[p]" + text + "[/p]"
 		else:
 			bb += "[p]" + _linkify(text) + "[/p]"
-		# Calcoli automatici (8.4): se il paragrafo richiede un Valore della creatura,
-		# il sistema lo calcola e lo mostra, così la condizione è già risolta.
-		if not GameState.current_creature.is_empty() and not is_creature_here:
+		# Esito risolto dal sistema (rami codificati 8.2/8.5), o valori calcolati.
+		if GameState.encounter_outcome_text != "":
+			bb += "\n\n[color=#ffd24d]➡ %s[/color]" % GameState.encounter_outcome_text
+		elif not GameState.current_creature.is_empty() and not is_creature_here:
 			bb += _computed_values_box(text)
 		para_display.bbcode_text = bb
 
