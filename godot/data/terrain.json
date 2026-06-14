@@ -20,7 +20,8 @@
     "Forest": "Heavy Vegetation",
     "Desert": "Solid Lava",
     "Ice": "Glacial Ice",
-    "Alien City": "Alien City"
+    "Alien City": "Alien City",
+    "Light Vegetation": "Light Vegetation"
   },
   "terrain_it": {
     "Flat": "Pianura",

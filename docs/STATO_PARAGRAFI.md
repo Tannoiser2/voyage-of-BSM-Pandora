@@ -52,11 +52,12 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   a terreno/gravità/clima/atmosfera. L'interprete valuta gravità, atmosfera,
   idrografia, geologia, vegetazione, **clima** (5.1, derivato dal testo dell'area:
   «Il clima è X»), i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice) e
-  ora le **Città Aliene** (23 esagoni mappati dalle 8 mappe environ, verificati).
-  **8 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.** Restano inerti i
-  **terreni fini** (Cave/Cliffs/Mountain/Light Vegetation/Liquid Surface/Marsh) e le
-  sotto-feature (lava fluente, ecc.): 12 snodi sono bloccati solo da questi terreni,
-  16 da sotto-feature ⇒ 🔴 finché non si arricchisce ulteriormente il per-esagono.
+  ora le **Città Aliene** (23 esagoni) e la **Light Vegetation** (60 esagoni),
+  entrambe mappate dalle 8 mappe environ e verificate sulle immagini.
+  **11 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.** Restano inerti i
+  **terreni fini** (Cave/Cliffs/Mountain/Liquid Surface/Marsh) e le sotto-feature
+  (lava fluente, ecc.): 9 snodi sono bloccati solo da questi terreni, 16 da
+  sotto-feature ⇒ 🔴 finché non si arricchisce ulteriormente il per-esagono.
 - **procedurale-vario:** tiri/condizioni con effetti su Resistenza, PV, ore,
   equipaggiamento. Quasi sempre solo testo ⇒ 🔴 (🟡 se in parte coperto).
 
@@ -68,13 +69,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 80 | 34,5% |
+| 🟢 Verde | 83 | 35,8% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 111 | 47,8% |
+| 🔴 Rosso | 108 | 46,6% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 43,3%**
-( (80 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 44,6%**
+( (83 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -85,9 +86,9 @@ come metà, l'indice di completezza è **≈ 43,3%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 8 | 0 | 28 | 36 |
+| snodo «Incontro di spedizione» | 11 | 0 | 25 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **80** | **41** | **111** | **232** |
+| **Totale** | **83** | **41** | **108** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -170,7 +171,7 @@ come metà, l'indice di completezza è **≈ 43,3%**
 | 059 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶028/039/147) non valutata. |
 | 060 | incontro-creatura (Scorsaur) | 🟡 | Creatura preparata; ramo «Combatti → ¶180» (incornata velenosa) non automatizzato. |
 | 061 | evento-interstellare | 🔴 | Check WO/Intelligenza, +1 mese o ¶169 non automatizzato. |
-| 062 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶030/179/066) non valutata. |
+| 062 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/179/066 — Città Aliena / Light Veg.+gravità / Hill+gravità): salto al ramo giusto o ri-tiro Matrice. |
 | 063 | incontro-creatura (Nessie) | 🟡 | Creatura preparata e strategia offerta; il requisito «3 E-cage» per il trasporto non è modellato. |
 | 064 | evento-interstellare (deviazione Opoplo) | 🔴 | Deviazione di rotta verso Opoplo, esagono 0817 e ¶076 non automatizzati. |
 | 065 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶030/170/075) non valutata. |
@@ -275,7 +276,7 @@ come metà, l'indice di completezza è **≈ 43,3%**
 | 154 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶040/156/167) non valutata. |
 | 155 | procedurale (atmosfera/robot) | 🔴 | Deterioramento robot a ogni controllo rifornimento non automatizzato. |
 | 156 | incontro-creatura (Aenon, snodo) | 🔴 | Filtro ambot/turbolaser → fuga o ¶223 non gestito. |
-| 157 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶030/072/054/032) non valutata. |
+| 157 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/072/054/032 — Città Aliena / Glacial Ice / Light Veg.+atmosfera / geologia attiva): salto al ramo giusto o ri-tiro Matrice. |
 | 158 | esito (alieno amichevole) | 🔴 | +5 PV e bonus CO/neuroscanner/Holographer e divieto incontri successivi non automatizzati. |
 | 159 | incontro-creatura (Mirror Fly) | 🟡 | Creatura preparata; «il carapace respinge il turbolaser» non modellato. |
 | 160 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/060/153 — Città Aliena / Flat+veg.+gravità / atmosfera+clima sahariano): il motore salta al ramo giusto o ri-tira la Matrice. |
@@ -283,7 +284,7 @@ come metà, l'indice di completezza è **≈ 43,3%**
 | 162 | incontro-creatura (Draloid, snodo) | 🔴 | Sorpresa→¶226 e check Intelligenza/GTO non gestiti. |
 | 163 | procedurale (shuttle divorato) | 🔴 | Vincolo temporale «torna allo shuttle prima del controllo» e perdita shuttle→¶050 non gestiti. |
 | 164 | incontro-creatura (vetta viva, senza pedina) | 🔴 | Modificatori speciali e tiri comunica/combatti/fuga → ¶214/218/221 non gestiti. |
-| 165 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶036/145/151) non valutata. |
+| 165 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/151 — Città Aliena / Light Veg.+gravità / Hill+idrografia): salto al ramo giusto o ri-tiro Matrice. |
 | 166 | procedurale (gravità) | 🔴 | 2 dadi di Punti Danno (1 con GTO/Reconbot) con regole rover/enviorig non automatizzati. |
 | 167 | incontro-creatura (Ironhorn) | 🟡 | Creatura preparata; «1 ora per ispezionare» e inefficacia netgun/stunbomb non gestite. |
 | 168 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶152/036/041/066) non valutata. |
