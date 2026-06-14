@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 131 | 56,5% |
+| 🟢 Verde | 134 | 57,8% |
 | 🟡 Giallo | 38 | 16,4% |
-| 🔴 Rosso | 63 | 27,2% |
+| 🔴 Rosso | 60 | 25,9% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 64,7%**
-( (131 + 38/2) / 232 ).
+come metà, l'indice di completezza è **≈ 65,9%**
+( (134 + 38/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -95,11 +95,11 @@ come metà, l'indice di completezza è **≈ 64,7%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 16 | 9 | 4 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 12 | 21 | 15 | 48 |
+| incontro-creatura (intro) | 15 | 21 | 12 | 48 |
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **131** | **38** | **63** | **232** |
+| **Totale** | **134** | **38** | **60** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -292,7 +292,7 @@ come metà, l'indice di completezza è **≈ 64,7%**
 | 159 | incontro-creatura (Mirror Fly) | 🟡 | Creatura preparata; «il carapace respinge il turbolaser» non modellato. |
 | 160 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/060/153 — Città Aliena / Flat+veg.+gravità / atmosfera+clima sahariano): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 161 | incontro-creatura (insetti, senza pedina) | 🔴 | Gruppo variabile (1d6), +3 a ogni attributo, comunica(¶222)/combatti(¶125): non gestito. |
-| 162 | incontro-creatura (Draloid, snodo) | 🔴 | Sorpresa→¶226 e check Intelligenza/GTO non gestiti. |
+| 162 | incontro-creatura (Draloid, snodo) | 🟢 | Sorpresa → ¶226. Non sorpresa: se l'Ufficiale rilevamento terrestre (GSO) è assente, 2 dadi vs Int max spedizione (≥ → ¶226). Codificato (effetto-intro). |
 | 163 | procedurale (shuttle divorato) | 🔴 | Vincolo temporale «torna allo shuttle prima del controllo» e perdita shuttle→¶050 non gestiti. |
 | 164 | incontro-creatura (vetta viva, senza pedina) | 🔴 | Modificatori speciali e tiri comunica/combatti/fuga → ¶214/218/221 non gestiti. |
 | 165 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/151 — Città Aliena / Light Veg.+gravità / Hill+idrografia): salto al ramo giusto o ri-tiro Matrice. |
@@ -300,9 +300,9 @@ come metà, l'indice di completezza è **≈ 64,7%**
 | 167 | incontro-creatura (Ironhorn) | 🟡 | Creatura preparata; «1 ora per ispezionare» e inefficacia netgun/stunbomb non gestite. |
 | 168 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (stagno usato nel rifornimento / Citta Aliena / Glacial Ice / Flat senza veg+atmosfera): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
 | 169 | evento-interstellare (esito) | 🟢 | trattativa del Comandante coi pirati: 2 dadi vs sua Int -> fuga / ¶203 / ¶183. Automatizzato. |
-| 170 | incontro-creatura (snodo) | 🔴 | Sorpresa (divora il più lento), strategia, ramo Fuga→¶226 non gestiti. |
+| 170 | incontro-creatura (Monoke, snodo) | 🟢 | Sorpresa: il membro col Valore di Velocità più basso (robot o personaggio) viene divorato. Fuga → ¶226. Codificato (intro + paragraph_logic). |
 | 171 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/147 — Città Aliena / Light Veg.+gravità / Mountain): salto al ramo giusto o ri-tiro Matrice. |
-| 172 | incontro (alieno città, snodo) | 🔴 | Tiro 1d6 → ¶158/228 non gestito. |
+| 172 | incontro (alieno città, snodo) | 🟢 | 1 dado: 1-4 → ¶158, 5-6 → ¶228. Instradamento procedurale a dado. |
 | 173 | incontro (fungo, senza pedina) | 🔴 | Check Intelligenza/GSO → ¶219/224 non gestito. |
 | 174 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/048/167 — Città Aliena / veg.+clima tropicale / Flat senza veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 175 | procedurale (arma, WO) | 🟢 | Pulsante «Esamina» (resolver `intel_check`): 2 dadi vs Intelligenza più alta → arma trasportabile dopo 1d6 ore / oggetto banale lasciato / esplosione con 2d6 Punti Danno. |

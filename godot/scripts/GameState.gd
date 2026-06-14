@@ -1522,10 +1522,26 @@ func show_paragraph(para_num: int) -> void:
 	# Se il paragrafo è l'incontro di una creatura (retro del segnalino, 2.6) e la
 	# spedizione è sulla superficie, prepara l'incontro: i comandi di combattimento
 	# compaiono sopra al testo del paragrafo (le meccaniche seguono il libro-gioco).
+	var _just_began := false
 	if current_creature.is_empty() and expedition_pos > 0:
 		var creature := GameData.creature_for_paragraph(para_num)
 		if creature != "":
 			_begin_creature(creature)
+			_just_began = true
+	# Effetti d'intro della creatura (8.1): sorpresa → redirect/uccisione (¶162/¶170).
+	if _just_began:
+		_apply_creature_intro(para_num)
+		if pending_goto > 0:
+			var idest := pending_goto
+			pending_goto = 0
+			show_paragraph(idest)
+			return
+	# Instradamento procedurale a dado per paragrafi non-creatura (es. ¶172).
+	if current_creature.is_empty() and expedition_pos > 0:
+		var route := _paragraph_dice_route(para_num)
+		if route > 0:
+			show_paragraph(route)
+			return
 	# Esito d'incontro: se siamo in un incontro e il paragrafo ha rami codificati,
 	# il sistema li risolve coi Valori calcolati (8.2/8.5).
 	if not current_creature.is_empty() and not GameData.get_paragraph_logic(para_num).is_empty():
@@ -1767,6 +1783,79 @@ func _compute_shift(act: Dictionary) -> int:
 	return int(act.get("shift", 0))
 
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
+# Effetti d'intro di una creatura appena incontrata (8.1): sorpresa che ridireziona
+# o uccide, prima della scelta di strategia.
+func _apply_creature_intro(para: int) -> void:
+	match para:
+		162:
+			# Draloid: se colta di sorpresa → ¶226. Se non sorpresa e l'Ufficiale al
+			# rilevamento terrestre (GSO) è assente, 2 dadi vs Int max spedizione: ≥ → ¶226.
+			if surprise_active:
+				_clear_encounter_state()
+				pending_goto = 226
+			elif not ("GSO" in expedition_units):
+				var roll := randi_range(1, 6) + randi_range(1, 6)
+				if roll >= _expedition_max_intel():
+					add_log("¶162: 2 dadi %d ≥ Int max spedizione → ¶226." % roll)
+					_clear_encounter_state()
+					pending_goto = 226
+		170:
+			# Monoke: se colta di sorpresa, il membro col Valore di Velocità più basso
+			# (robot o personaggio) viene immediatamente divorato.
+			if surprise_active:
+				var slow := _slowest_unit()
+				if slow != "":
+					add_log("¶170: %s (il più lento) viene divorato!" % slow)
+					_kill_unit(slow)
+
+# Instradamento procedurale a dado per paragrafi non-creatura. Ritorna il paragrafo
+# di destinazione (0 = nessun instradamento).
+func _paragraph_dice_route(para: int) -> int:
+	match para:
+		172:
+			# Alieno nella città: 1 dado, 1-4 → ¶158, 5-6 → ¶228.
+			var roll := randi_range(1, 6)
+			var dest := 158 if roll <= 4 else 228
+			add_log("¶172: 1 dado %d → ¶%03d." % [roll, dest])
+			return dest
+	return 0
+
+# Int più alta tra i PERSONAGGI della spedizione (i robot non hanno Intelligenza).
+func _expedition_max_intel() -> int:
+	var best := 0
+	for k in expedition_units:
+		if crew.has(k):
+			best = maxi(best, character_intelligence(k))
+	return best
+
+# Unità della spedizione col Valore di Velocità efficace più basso (5.2).
+func _slowest_unit() -> String:
+	var worst := 99
+	var who := ""
+	for k in expedition_units:
+		var sp := effective_char_stat(k, "speed")
+		if sp < worst:
+			worst = sp
+			who = k
+	return who
+
+# Uccide/distrugge un'unità della spedizione: personaggio (Resistenza a 0, −10 PV)
+# oppure robot/strumento (danneggiato e rimosso dalla spedizione, 6.9).
+func _kill_unit(key: String) -> void:
+	if crew.has(key):
+		if crew[key].get("alive", false):
+			crew[key]["alive"] = false
+			crew[key]["endurance"] = 0
+			lose_vp(10, "Personaggio ucciso: %s" % crew[key].get("name", key))
+			add_log("%s viene ucciso." % crew[key].get("name", key))
+	else:
+		if not damaged_gear.has(key):
+			damaged_gear.append(key)
+		expedition_gear.erase(key)
+		expedition_units.erase(key)
+		add_log("%s viene distrutto." % key)
+	state_updated.emit()
+
 func _begin_creature(name: String) -> void:
 	if GameData.get_creature(name).is_empty():
 		return
