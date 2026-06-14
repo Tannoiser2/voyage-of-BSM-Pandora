@@ -266,6 +266,27 @@ func _build_ui() -> void:
 	btn_return.pressed.connect(_on_return_to_pandora)
 	actions_hbox.add_child(btn_return)
 
+	var btn_artifact := Button.new()
+	btn_artifact.name = "BtnArtifact"
+	btn_artifact.text = "Acquisisci artefatto"
+	btn_artifact.visible = false
+	btn_artifact.pressed.connect(_on_acquire_artifact)
+	actions_hbox.add_child(btn_artifact)
+
+	var btn_examine := Button.new()
+	btn_examine.name = "BtnExamine"
+	btn_examine.text = "Esamina"
+	btn_examine.visible = false
+	btn_examine.pressed.connect(_on_examine)
+	actions_hbox.add_child(btn_examine)
+
+	var btn_procedure := Button.new()
+	btn_procedure.name = "BtnProcedure"
+	btn_procedure.text = "Risolvi"
+	btn_procedure.visible = false
+	btn_procedure.pressed.connect(_on_procedure)
+	actions_hbox.add_child(btn_procedure)
+
 	var btn_explore := Button.new()
 	btn_explore.name = "BtnExplore"
 	btn_explore.text = "Esplora (tira dado)"
@@ -551,6 +572,10 @@ func _refresh_crew_counters() -> void:
 		var alive: bool = c.get("alive", true)
 		var e: int = int(c.get("endurance", GameState.MAX_ENDURANCE))
 		var onboard: bool = key in GameState.expedition_units
+		# Tooltip: nome + Valore Intelligenza (3.3).
+		var box_ctrl := box as Control
+		if box_ctrl:
+			box_ctrl.tooltip_text = "%s — Intelligenza %d" % [c.get("name", key), int(c.get("intelligence", 0))]
 		var tex := box.get_node_or_null("Tok") as TextureRect
 		var hp := box.get_node_or_null("HP") as Label
 		if tex:
@@ -814,6 +839,7 @@ func _connect_signals() -> void:
 	GameState.phase_changed.connect(_on_phase_changed)
 	GameState.state_updated.connect(_update_display)
 	GameState.paragraph_request.connect(_on_paragraph_request)
+	GameState.choices_resolved.connect(_clear_choices)
 	GameState.message_posted.connect(_on_message)
 	GameState.encounter_started.connect(_on_encounter_started)
 	GameState.encounter_ended.connect(_on_encounter_ended)
@@ -910,6 +936,35 @@ func _update_action_buttons(phase: String) -> void:
 	if btn_heal: btn_heal.visible = (phase == "expedition") and not creature_active and GameState.can_heal()
 	var btn_repair := find_child("BtnRepair", true, false)
 	if btn_repair: btn_repair.visible = (phase == "expedition") and not creature_active and GameState.can_repair()
+	# Acquisizione artefatto (2.6/9.1): sul paragrafo dell'artefatto, in spedizione,
+	# se non già acquisito e nessun incontro attivo.
+	var btn_artifact := find_child("BtnArtifact", true, false)
+	if btn_artifact:
+		# La raccolta diretta non vale per i paragrafi con check Intelligenza (¶006/¶175),
+		# dove l'acquisizione passa dall'esame dell'oggetto.
+		var can_take: bool = (phase == "paragraph") and on_surface and not creature_active \
+			and GameData.is_artifact_paragraph(current_para_num) \
+			and not GameData.has_intel_check(current_para_num) \
+			and not GameState.procedure_available(current_para_num) \
+			and not GameState.is_artifact_acquired(current_para_num)
+		btn_artifact.visible = can_take
+		if can_take:
+			var a := GameData.get_artifact(current_para_num)
+			btn_artifact.text = "Raccogli: %s (+%d PV al rientro)" % [a.get("name", "artefatto"), int(a.get("vp", 0))]
+	# Esame di un oggetto con check Intelligenza (3.3): ¶006/¶175.
+	var btn_examine := find_child("BtnExamine", true, false)
+	if btn_examine:
+		var can_examine: bool = (phase == "paragraph") and on_surface and not creature_active \
+			and GameState.intel_check_available(current_para_num)
+		btn_examine.visible = can_examine
+	# Paragrafo procedurale una-tantum (¶187 raggi, ¶193 struttura).
+	var btn_procedure := find_child("BtnProcedure", true, false) as Button
+	if btn_procedure:
+		var can_proc: bool = (phase == "paragraph") and on_surface and not creature_active \
+			and GameState.procedure_available(current_para_num)
+		btn_procedure.visible = can_proc
+		if can_proc:
+			btn_procedure.text = GameState.procedure_label(current_para_num)
 
 func _update_display() -> void:
 	# Update status labels
@@ -1430,9 +1485,13 @@ func _refresh_prep_panel() -> void:
 			continue
 		var u := GameData.get_character(k)
 		chk.button_pressed = k in GameState.expedition_units
+		# Peso/Porto/Velocità EFFICACI: includono i modificatori dell'equipaggiamento
+		# d'atmosfera del pianeta in orbita (rig/respiratore, regola 5.2).
 		chk.text = "%s — Catt %d / Ucc %d · Peso %d · Porto %d · Vel %d" % [
 			u.get("name", k), u.get("capture", 0), u.get("kill", 0),
-			u.get("weight", 0), u.get("port", 0), u.get("speed", 0)]
+			GameState.effective_char_stat(k, "weight"),
+			GameState.effective_char_stat(k, "port"),
+			GameState.effective_char_stat(k, "speed")]
 		chk.disabled = not GameState.crew.get(k, {}).get("alive", true)
 	# Robot e strumenti imbarcabili (caselle-segnalino)
 	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
@@ -1506,6 +1565,11 @@ func _on_strategy(strategy: String) -> void:
 	GameState.choose_encounter_strategy(strategy)
 
 func _on_continue() -> void:
+	# A Tour concluso (GAME_OVER) il "Continua" non riprende il gioco né rientra in orbita.
+	if GameState.current_phase == GameState.Phase.GAME_OVER:
+		GameState.current_paragraph = 0
+		_update_display()
+		return
 	# Chiude il paragrafo corrente e torna alla fase appropriata
 	GameState.current_paragraph = 0
 	if GameState.expedition_pos > 0:
@@ -1522,6 +1586,23 @@ func _on_continue() -> void:
 
 func _on_return_to_pandora() -> void:
 	GameState.return_to_pandora()
+
+func _on_acquire_artifact() -> void:
+	if GameState.acquire_artifact(current_para_num):
+		_update_display()
+		_update_action_buttons(GameState.phase_name(GameState.current_phase))
+
+func _on_examine() -> void:
+	# Risolve il check Intelligenza del paragrafo (3.3); può rimandare ad altro paragrafo.
+	GameState.resolve_intel_check(current_para_num)
+	_update_display()
+	_update_action_buttons(GameState.phase_name(GameState.current_phase))
+
+func _on_procedure() -> void:
+	# Risolve un paragrafo procedurale una-tantum (¶187/¶193); può rimandare.
+	GameState.resolve_procedure(current_para_num)
+	_update_display()
+	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
 func _on_explore() -> void:
 	# Esplora l'esagono attualmente occupato (es. quello di atterraggio), con i
@@ -1712,16 +1793,36 @@ func _on_die_rolled(value: int, _purpose: String) -> void:
 	_set_dice_result(value)
 
 func _on_roll_dice() -> void:
-	var die := randi_range(1, 6)
+	# Il controllo (4.0) e l'evento (4.2) interstellari usano DUE dadi (2-12);
+	# gli altri tiri usano un dado solo.
+	var p: String = GameState.pending_die_purpose
+	# Tiri a DUE dadi: controllo/evento interstellare (4.0/4.2) e gli eventi 4.2 che
+	# confrontano 2 dadi con un Valore di Intelligenza/creatura (¶044, ¶061, ¶084).
+	var two_dice := GameState.awaiting_die_roll and (
+		p == "interstellar_event" or p == "interstellar_check"
+		or p == "event_044" or p == "event_061" or p == "event_084")
+	var die := (randi_range(1, 6) + randi_range(1, 6)) if two_dice else randi_range(1, 6)
 	_set_dice_result(die)
 
 	if GameState.awaiting_die_roll:
 		GameState.awaiting_die_roll = false
 		match GameState.pending_die_purpose:
+			"interstellar_check":
+				GameState.resolve_interstellar_check(die)
 			"interstellar_event":
 				GameState.resolve_interstellar_event(die)
 			"landing":
 				GameState.land_on_planet(die)
+				return
+			"supply_check":
+				# Controllo del Rifornimento (7.2): risolve un controllo in coda e, se ne
+				# restano altri, richiede subito un nuovo tiro al giocatore (6.8 loop multiplo).
+				GameState.resolve_pending_supply_check(die)
+				return
+			"event_044", "event_055", "event_058", "event_061", "event_084":
+				# Tiro manuale per un paragrafo-evento interstellare in attesa (4.2).
+				GameState.resolve_event_die(die)
+				return
 
 func _set_dice_result(val: int) -> void:
 	var lbl := find_child("DiceResult", true, false) as Label
@@ -1851,7 +1952,9 @@ func _linkify(text: String) -> String:
 # Costruisce i pulsanti-scelta sotto il paragrafo dai rimandi ¶NNN.
 func _build_choices(para_num: int) -> void:
 	_clear_choices()
-	var choices := GameData.get_paragraph_choices(para_num)
+	# I paragrafi procedurali (¶187/¶193) gestiscono i propri rimandi tramite il
+	# pulsante «Risolvi»: si sopprimono le scelte auto-estratte dal testo.
+	var choices := [] if GameState.procedure_available(para_num) else GameData.get_paragraph_choices(para_num)
 	var lbl := find_child("ChoicesLabel", true, false) as Label
 	if lbl: lbl.visible = choices.size() > 0
 	for ch in choices:
@@ -1859,7 +1962,10 @@ func _build_choices(para_num: int) -> void:
 		var label_text: String = ch.label
 		if label_text.length() > 90:
 			label_text = label_text.substr(0, 88) + "…"
-		b.text = "▶  %s  (¶%03d)" % [label_text, ch.para]
+		if ch.has("act"):
+			b.text = "▶  %s" % label_text
+		else:
+			b.text = "▶  %s  (¶%03d)" % [label_text, ch.para]
 		b.tooltip_text = ch.label
 		b.clip_text = true
 		b.custom_minimum_size = Vector2(0, 34)
@@ -1879,7 +1985,10 @@ func _build_choices(para_num: int) -> void:
 		b.add_theme_stylebox_override("pressed", sbh)
 		b.add_theme_stylebox_override("focus", sb)
 		b.add_theme_color_override("font_color", Color(0.85, 1.0, 0.85))
-		b.pressed.connect(_on_choice_selected.bind(ch.para))
+		if ch.has("act"):
+			b.pressed.connect(_on_choice_act.bind(ch.act))
+		else:
+			b.pressed.connect(_on_choice_selected.bind(ch.para))
 		choices_box.add_child(b)
 
 func _clear_choices() -> void:
@@ -1894,6 +2003,11 @@ func _clear_choices() -> void:
 func _on_choice_selected(para: int) -> void:
 	_play("click")
 	GameState.show_paragraph(para)
+
+# Scelta-paragrafo con azione (tiro/condizione): vedi paragraph_choices.json.
+func _on_choice_act(act: Dictionary) -> void:
+	_play("click")
+	GameState.resolve_paragraph_choice(act)
 
 func _on_meta_clicked(meta) -> void:
 	var n := int(str(meta))

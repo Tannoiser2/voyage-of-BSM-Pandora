@@ -1,62 +1,841 @@
 {
-  "_legend": "Regole di ramo per i paragrafi d'incontro. Ogni regola: cond (tutte vere) -> act. Prima regola che combacia vince. lhs attributi creatura calcolati (aggression/speed/intel) o modificatori (aggr_mod/intel_mod/speed_mod); rhs numero o token max_spd/min_spd. act.type: flee, capture, leave, attack_flee, release, combat, restrategy. shift: colonne a sinistra (positivo) sul combattimento.",
-  "010": [
-    {"cond": [["aggression","<=",4],["speed",">","max_spd"]], "act": {"type":"flee"}},
-    {"cond": [["aggression","<=",4]], "act": {"type":"combat","or_leave":true}},
-    {"cond": [["aggression",">=",5]], "act": {"type":"attack_flee","resistance":12}}
-  ],
-  "011": [ {"cond": [], "act": {"type":"capture","hours":"sum_pos_mods"}} ],
-  "012": [ {"cond": [], "act": {"type":"leave"}} ],
-  "013": [
-    {"cond": [["aggression","<=",5],["speed",">","max_spd"]], "act": {"type":"flee"}},
-    {"cond": [["aggression","<=",5]], "act": {"type":"combat","or_leave":true}},
-    {"cond": [["aggression",">=",6]], "act": {"type":"combat","shift":2,"shift_if_gso":1}}
-  ],
-  "014": [
-    {"cond": [["aggression","<=",5],["speed",">","max_spd_plus1"]], "act": {"type":"flee"}},
-    {"cond": [], "act": {"type":"combat","shift_right_neg_intel":true}}
-  ],
-  "015": [
-    {"cond": [["speed",">","min_spd_plus1"]], "act": {"type":"combat"}},
-    {"cond": [], "act": {"type":"leave","hours":1}}
-  ],
-  "016": [ {"cond": [], "act": {"type":"restrategy","hours_if_co_gso":1,"hours_else":3}} ],
-  "017": [
-    {"cond": [["aggression","<=",5],["speed",">","max_spd"]], "act": {"type":"flee"}},
-    {"cond": [["aggression","<=",5]], "act": {"type":"combat"}},
-    {"cond": [["aggression",">=",6]], "act": {"type":"combat","shift_if_intel23":1}}
-  ],
-  "018": [
-    {"cond": [["speed",">","min_spd"]], "act": {"type":"combat","shift":1,"no_capture":true}},
-    {"cond": [], "act": {"type":"leave","hours":2}}
-  ],
-  "019": [
-    {"cond": [["intel",">=",7]], "act": {"type":"flee"}},
-    {"cond": [["aggr_mod","==",-3]], "act": {"type":"flee"}},
-    {"cond": [["aggr_mod",">=",2]], "act": {"type":"combat"}},
-    {"cond": [], "act": {"type":"capture"}}
-  ],
-  "020": [ {"cond": [], "act": {"type":"combat","shift_sum_mods":true}} ],
-  "021": [
-    {"cond": [["speed",">=","min_spd"]], "act": {"type":"combat","shift":2,"no_capture":true}},
-    {"cond": [], "act": {"type":"leave","hours":3}}
-  ],
-  "022": [
-    {"cond": [["intel",">=",8]], "act": {"type":"release","vp":2,"hours":1}},
-    {"cond": [], "act": {"type":"combat","kill_as_capture":true}}
-  ],
-  "023": [
-    {"cond": [["aggression","<=",6],["speed",">=","max_spd"]], "act": {"type":"flee"}},
-    {"cond": [["aggression","<=",6]], "act": {"type":"combat"}},
-    {"cond": [], "act": {"type":"combat","shift_left_max_mods":["intel_mod","speed_mod"]}}
-  ],
-  "024": [ {"cond": [], "act": {"type":"combat","shift":1,"no_capture":true,"resistance_only":true}} ],
-  "025": [
-    {"cond": [["intel",">=",8]], "act": {"type":"release","vp":3,"vp_holographer":2,"vp_gso":2,"hours":2}},
-    {"cond": [], "act": {"type":"combat","kill_as_capture":true}}
-  ],
-  "026": [
-    {"cond": [["aggression","<=",3]], "act": {"type":"flee","hours":2}},
-    {"cond": [], "act": {"type":"combat","shift_left_max_mods":["aggr_mod","intel_mod","speed_mod"],"resistance_only":true}}
-  ]
+ "_legend": "Regole di ramo per i paragrafi d'incontro. Ogni regola: cond (tutte vere) -> act. Prima regola che combacia vince. lhs attributi creatura calcolati (aggression/speed/intel) o modificatori (aggr_mod/intel_mod/speed_mod); rhs numero o token max_spd/min_spd. lhs non numerici: 'surprised' (booleano, sorpresa 8.1), 'strategy' (token 'communicate'/'capture_kill'/'flee', strategia dichiarata 8.2) e 'has_gear' (rhs = chiave strumento/robot, es. 'Neuroscan', presente nella spedizione) confrontati con == o !=. Rami con cond 'strategy' su un paragrafo d'incontro intro (es. 009): risolti alla scelta della strategia, scavalcando la Tabella di Strategia. act.type: flee, capture, leave, attack_flee, release, combat, restrategy, goto. goto.para: paragrafo di destinazione (rimando narrativo); goto.new_creature: se true azzera l'incontro corrente così che la destinazione prepari una nuova creatura. shift: colonne a sinistra (positivo) sul combattimento.",
+ "010": [
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     4
+    ],
+    [
+     "speed",
+     ">",
+     "max_spd"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     4
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "or_leave": true
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggression",
+     ">=",
+     5
+    ]
+   ],
+   "act": {
+    "type": "attack_flee",
+    "resistance": 12
+   }
+  }
+ ],
+ "011": [
+  {
+   "cond": [],
+   "act": {
+    "type": "capture",
+    "hours": "sum_pos_mods"
+   }
+  }
+ ],
+ "012": [
+  {
+   "cond": [],
+   "act": {
+    "type": "leave"
+   }
+  }
+ ],
+ "013": [
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     5
+    ],
+    [
+     "speed",
+     ">",
+     "max_spd"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     5
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "or_leave": true
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggression",
+     ">=",
+     6
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "shift": 2,
+    "shift_if_gso": 1
+   }
+  }
+ ],
+ "014": [
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     5
+    ],
+    [
+     "speed",
+     ">",
+     "max_spd_plus1"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "combat",
+    "shift_right_neg_intel": true
+   }
+  }
+ ],
+ "015": [
+  {
+   "cond": [
+    [
+     "speed",
+     ">",
+     "min_spd_plus1"
+    ]
+   ],
+   "act": {
+    "type": "combat"
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "leave",
+    "hours": 1
+   }
+  }
+ ],
+ "016": [
+  {
+   "cond": [],
+   "act": {
+    "type": "restrategy",
+    "hours_if_co_gso": 1,
+    "hours_else": 3
+   }
+  }
+ ],
+ "017": [
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     5
+    ],
+    [
+     "speed",
+     ">",
+     "max_spd"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     5
+    ]
+   ],
+   "act": {
+    "type": "combat"
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggression",
+     ">=",
+     6
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "shift_if_intel23": 1
+   }
+  }
+ ],
+ "018": [
+  {
+   "cond": [
+    [
+     "speed",
+     ">",
+     "min_spd"
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "shift": 1,
+    "no_capture": true
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "leave",
+    "hours": 2
+   }
+  }
+ ],
+ "019": [
+  {
+   "cond": [
+    [
+     "intel",
+     ">=",
+     7
+    ]
+   ],
+   "act": {
+    "type": "flee",
+    "hours": 1
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggr_mod",
+     "==",
+     -3
+    ]
+   ],
+   "act": {
+    "type": "flee",
+    "hours": 1
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggr_mod",
+     ">=",
+     2
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "hours": 1
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "capture",
+    "hours": 1
+   }
+  }
+ ],
+ "020": [
+  {
+   "cond": [],
+   "act": {
+    "type": "combat",
+    "shift_sum_mods": true
+   }
+  }
+ ],
+ "021": [
+  {
+   "cond": [
+    [
+     "speed",
+     ">=",
+     "min_spd"
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "shift": 2,
+    "no_capture": true
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "leave",
+    "hours": 3
+   }
+  }
+ ],
+ "022": [
+  {
+   "cond": [
+    [
+     "intel",
+     ">=",
+     8
+    ]
+   ],
+   "act": {
+    "type": "release",
+    "vp": 2,
+    "hours": 1
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "combat",
+    "kill_as_capture": true
+   }
+  }
+ ],
+ "023": [
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     6
+    ],
+    [
+     "speed",
+     ">=",
+     "max_spd"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     6
+    ]
+   ],
+   "act": {
+    "type": "combat"
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "combat",
+    "shift_left_max_mods": [
+     "intel_mod",
+     "speed_mod"
+    ]
+   }
+  }
+ ],
+ "024": [
+  {
+   "cond": [],
+   "act": {
+    "type": "combat",
+    "shift": 1,
+    "no_capture": true,
+    "resistance_only": true
+   }
+  }
+ ],
+ "025": [
+  {
+   "cond": [
+    [
+     "intel",
+     ">=",
+     8
+    ]
+   ],
+   "act": {
+    "type": "release",
+    "vp": 3,
+    "vp_holographer": 2,
+    "vp_gso": 2,
+    "hours": 2
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "combat",
+    "kill_as_capture": true
+   }
+  }
+ ],
+ "026": [
+  {
+   "cond": [
+    [
+     "aggression",
+     "<=",
+     3
+    ]
+   ],
+   "act": {
+    "type": "flee",
+    "hours": 2
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "combat",
+    "shift_left_max_mods": [
+     "aggr_mod",
+     "intel_mod",
+     "speed_mod"
+    ],
+    "resistance_only": true
+   }
+  }
+ ],
+ "003": [
+  {
+   "cond": [],
+   "act": {
+    "type": "goto",
+    "para": 54,
+    "new_creature": true
+   }
+  }
+ ],
+ "005": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "capture"
+   }
+  }
+ ],
+ "009": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ],
+    [
+     "intel",
+     ">=",
+     6
+    ],
+    [
+     "has_gear",
+     "==",
+     "Neuroscan"
+    ]
+   ],
+   "act": {
+    "type": "release",
+    "vp": 3,
+    "vp_holographer": 1
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 16
+   }
+  }
+ ],
+ "007": [
+  {
+   "cond": [
+    [
+     "surprised",
+     "==",
+     true
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "shift": 2
+   }
+  }
+ ],
+ "029": [
+  {
+   "cond": [
+    [
+     "surprised",
+     "==",
+     true
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "shift": 3
+   }
+  }
+ ],
+ "041": [
+  {
+   "cond": [
+    [
+     "surprised",
+     "==",
+     true
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "shift": 2
+   }
+  }
+ ],
+ "069": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "roll_goto",
+    "dice": 1,
+    "ranges": [
+     {
+      "max": 3,
+      "para": 213
+     },
+     {
+      "max": 6,
+      "para": 217
+     }
+    ]
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "roll_goto",
+    "dice": 1,
+    "ranges": [
+     {
+      "max": 4,
+      "para": 220
+     },
+     {
+      "max": 6,
+      "para": 217
+     }
+    ]
+   }
+  }
+ ],
+ "156": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ],
+    [
+     "has_gear",
+     "==",
+     "Ambot"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ],
+    [
+     "has_gear",
+     "==",
+     "Turbolaser"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ],
+    [
+     "has_gear",
+     "==",
+     "Ambot"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ],
+    [
+     "has_gear",
+     "==",
+     "Turbolaser"
+    ]
+   ],
+   "act": {
+    "type": "flee"
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 223
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 223
+   }
+  }
+ ],
+ "181": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ],
+    [
+     "has_gear",
+     "==",
+     "Neuroscan"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 230
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 16
+   }
+  }
+ ],
+ "170": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "flee"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 226
+   }
+  }
+ ],
+ "077": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ],
+    [
+     "has_gear",
+     "==",
+     "Neuroscan"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 211
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 16
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 215
+   }
+  }
+ ],
+ "072": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 206
+   }
+  }
+ ],
+ "035": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ],
+    [
+     "has_gear",
+     "!=",
+     "Armorig"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 209
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ],
+    [
+     "has_gear",
+     "!=",
+     "Armorig"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 209
+   }
+  }
+ ]
 }

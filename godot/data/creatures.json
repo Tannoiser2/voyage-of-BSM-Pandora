@@ -356,7 +356,21 @@
    "speed": 2,
    "img": "Creature_X-Wasp",
    "para": 5,
-   "vp": 2
+   "vp": 2,
+   "poison_bite": {
+    "die": 6,
+    "minus_medic": 2,
+    "minus_medkit": 2
+   }
+  },
+  "Vividmist": {
+   "intel": 2,
+   "combat": 1,
+   "aggression": 3,
+   "speed": 3,
+   "img": "",
+   "para": 66,
+   "vp": 0
   }
  }
 }

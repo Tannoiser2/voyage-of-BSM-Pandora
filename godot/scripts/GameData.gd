@@ -8,6 +8,10 @@ var environ_maps: Dictionary = {}
 var units: Dictionary = {}
 var terrain: Dictionary = {}
 var paragraph_logic: Dictionary = {}
+var paragraph_choices_override: Dictionary = {}
+var expedition_encounters: Dictionary = {}
+var artifacts: Dictionary = {}
+var intel_checks: Dictionary = {}
 
 func _ready() -> void:
 	_load_data()
@@ -21,6 +25,28 @@ func _load_data() -> void:
 	units = _load_json("res://data/units.json")
 	terrain = _load_json("res://data/terrain.json")
 	paragraph_logic = _load_json("res://data/paragraph_logic.json")
+	paragraph_choices_override = _load_json("res://data/paragraph_choices.json")
+	expedition_encounters = _load_json("res://data/expedition_encounters.json")
+	artifacts = _load_json("res://data/artifacts.json")
+	intel_checks = _load_json("res://data/intel_checks.json")
+
+# Procedura di check Intelligenza (3.3) per un paragrafo. {} se assente.
+func get_intel_check(para: int) -> Dictionary:
+	return intel_checks.get("%03d" % para, {})
+
+func has_intel_check(para: int) -> bool:
+	return intel_checks.has("%03d" % para)
+
+# Regole degli snodi «Incontro di spedizione» (regola 6.5). [] se l'id non è uno snodo.
+func get_expedition_encounter(para: int) -> Array:
+	return expedition_encounters.get("%03d" % para, [])
+
+# Dati di un artefatto per paragrafo di acquisizione (regole 2.6/9.1). {} se non lo è.
+func get_artifact(para: int) -> Dictionary:
+	return artifacts.get("%03d" % para, {})
+
+func is_artifact_paragraph(para: int) -> bool:
+	return artifacts.has("%03d" % para)
 
 # Regole di ramo codificate per un paragrafo d'incontro (8.2/8.5). [] se assenti.
 func get_paragraph_logic(para: int) -> Array:
@@ -128,9 +154,34 @@ func get_paragraph(num: int) -> Dictionary:
 func get_paragraph_text(num: int) -> String:
 	return get_paragraph(num).get("it", "")
 
+# Clima dell'area dichiarato nel testo del paragrafo (5.1): «Il clima è X».
+# Restituisce "artico"|"temperato"|"tropicale"|"sahariano" oppure "" se assente.
+func paragraph_climate(num: int) -> String:
+	var re := RegEx.new()
+	re.compile("(?i)clima.{1,6}?(artico|temperato|tropicale|sahariano)")
+	var m := re.search(get_paragraph_text(num))
+	return m.get_string(1).to_lower() if m else ""
+
+# Variazione del Valore di Supporto Vitale dichiarata nel testo di un paragrafo
+# d'atterraggio (5.1): «Aggiungi uno/due … al Valore di Supporto Vitale» (o «Sottrai»).
+func paragraph_lsv_delta(num: int) -> int:
+	var t := get_paragraph_text(num)
+	var re := RegEx.new()
+	re.compile("(?i)(Aggiungi|Sottrai)\\s+(uno|due|tre|\\d+)\\s+al Valore di Supporto Vitale")
+	var m := re.search(t)
+	if m == null:
+		return 0
+	var words := {"uno": 1, "due": 2, "tre": 3}
+	var n: int = words.get(m.get_string(2).to_lower(), m.get_string(2).to_int())
+	return -n if m.get_string(1).to_lower() == "sottrai" else n
+
 # Estrae le scelte/rimandi di un paragrafo (libro-gioco). Ogni rimando ¶NNN nel
 # testo diventa una scelta cliccabile; l'etichetta è la frase/riga che lo contiene.
 func get_paragraph_choices(num: int) -> Array:
+	# Override esplicito (scelte con tiro/condizione): vedi paragraph_choices.json.
+	var key := "%03d" % num
+	if paragraph_choices_override.has(key):
+		return paragraph_choices_override[key]
 	var text := get_paragraph_text(num)
 	var choices: Array = []
 	var seen := {}

@@ -1,0 +1,8 @@
+{
+  "_legend": "Artefatti (regole 2.6 / 9.1). Chiave = paragrafo di acquisizione. vp = Punti Vittoria sul retro del segnalino (linea Additional VP's). weight = peso ai fini del trasporto. L'Arma aliena (006) ha cinque valori come uno strumento (Cattura 9, Uccisione 9, Peso 1, Porto 0, Velocità 0) e può essere usata in combattimento una volta acquisita.",
+  "006": {"name": "Arma aliena", "vp": 5, "weight": 1, "capture": 9, "kill": 9, "port": 0, "speed": 0},
+  "193": {"name": "Struttura vivente", "vp": 6, "weight": 3},
+  "030": {"name": "Globo", "vp": 5, "weight": 0},
+  "036": {"name": "Scultura", "vp": 6, "weight": 3},
+  "042": {"name": "Uovo", "vp": 5, "weight": 1}
+}

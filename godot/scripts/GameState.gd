@@ -3,6 +3,7 @@ extends Node
 signal phase_changed(new_phase: String)
 signal state_updated
 signal paragraph_request(para_num: int)
+signal choices_resolved
 signal message_posted(msg: String)
 signal encounter_started(creature_name: String)
 signal encounter_ended
@@ -45,20 +46,23 @@ var pending_die_purpose: String = ""
 var manual_dice: bool = false
 signal die_rolled(value: int, purpose: String)
 
-# Crew — ogni personaggio ha un Valore di Resistenza (Endurance) di 6 (regola 2.5).
+# Crew — ogni personaggio ha un Valore di Resistenza (Endurance) di 5 (regola 2.5).
 # I Punti Danno riducono la Resistenza; a 0 il personaggio è ucciso (8.8).
-const MAX_ENDURANCE := 6
+const MAX_ENDURANCE := 5
 var crew: Dictionary = {
-	"CO":   {"name": "Comandante",            "alive": true, "endurance": 6},
-	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 6},
-	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "endurance": 6},
-	"GSO":  {"name": "Ufficiale Scienze",     "alive": true, "endurance": 6},
-	"MedO": {"name": "Ufficiale Medico",      "alive": true, "endurance": 6},
-	"WO":   {"name": "Ufficiale Armi",        "alive": true, "endurance": 6},
-	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "endurance": 6}
+	"CO":   {"name": "Comandante",            "alive": true, "endurance": 5, "intelligence": 0},
+	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 5, "intelligence": 0},
+	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "endurance": 5, "intelligence": 0},
+	"GSO":  {"name": "Ufficiale Scienze",     "alive": true, "endurance": 5, "intelligence": 0},
+	"MedO": {"name": "Ufficiale Medico",      "alive": true, "endurance": 5, "intelligence": 0},
+	"WO":   {"name": "Ufficiale Armi",        "alive": true, "endurance": 5, "intelligence": 0},
+	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "endurance": 5, "intelligence": 0}
 }
 
 var visited_systems: Array = []
+# Numero di superfici planetarie su cui si è già sbarcati (regola 6.0). Serve alla
+# condizione del ¶058 («oppure non è ancora stata visitata alcuna superficie planetaria»).
+var surfaces_visited: int = 0
 var log_entries: Array = []
 var vp_ledger: Array = []   # storico delle variazioni di PV {amount, reason} per il riepilogo finale
 
@@ -71,11 +75,35 @@ var expedition_gear: Array = []            # chiavi di robot/strumenti imbarcati
 var damaged_gear: Array = []               # chiavi di robot/strumenti danneggiati (6.9)
 var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
 
+# Traccia Tempo e Rifornimento (6.8 / 7.0): la posizione avanza con le ore di
+# spedizione spese; quando raggiunge/supera lo «spazio di controllo» della gravità
+# si esegue un Controllo del Rifornimento (7.1/7.2) e la posizione si azzera.
+var supply_track_pos: int = 0
+# Spazio del Controllo del Rifornimento per gravità (regola 6.8, valori dei componenti).
+const SUPPLY_CHECK_SPACE := {
+	"Oppressive": 6,
+	"Heavy": 12,
+	"Earth like": 16,
+	"Light": 22,
+	"Near weightless": 30
+}
+# Controlli del rifornimento ancora da risolvere quando i tiri sono manuali: ogni
+# elemento è un singolo controllo in attesa del dado del giocatore (vedi 7.2).
+var pending_supply_checks: int = 0
+
 # Combattimento / incontri
 var current_creature: String = ""
 var creature_rating: int = 0          # valutazione della creatura per l'esagono (8.4)
 var damage_points: int = 0            # danni accumulati dalla spedizione
 var captured_creatures: Array = []    # creature catturate vive (PV extra)
+var acquired_artifacts: Array = []    # paragrafi degli artefatti acquisiti (registro permanente: anti-doppione + arma aliena)
+var pending_artifact_vp: Array = []   # artefatti raccolti ma non ancora riportati sulla Pandora (PV assegnati al rientro, 2.6/9.1)
+var weapon_usable: bool = false       # l'Arma aliena (¶006) è usabile in combattimento solo dopo averla compresa (¶006/¶175)
+var intel_checks_done: Array = []     # paragrafi con check Intelligenza (3.3) già risolti (¶006/¶175/...)
+var poison_endurance_lost: int = 0    # Punti Resistenza persi da veleno (¶005), contrassegnati in modo speciale
+var procedures_done: Array = []       # paragrafi procedurali una-tantum già risolti (¶187/¶193)
+var recorded_creatures: Array = []    # tipi di creatura registrati sul Registro Attributi (PV per attributi a zero, 9.1)
+var explored_planets: Array = []      # sistemi i cui pianeti sono stati esplorati (1 PV ciascuno, 9.1)
 
 # Superficie planetaria (environ) — regola 6.0
 # Ogni environ è una mappa reale di 6 colonne × 7 righe (42 esagoni).
@@ -84,7 +112,19 @@ const ENVIRON_ROWS := 7
 var environ_grid: Dictionary = {}     # hex_id locale -> {"terrain","explored","real","x","y"}
 var expedition_pos: int = 0           # esagono attuale della spedizione (0 = non sbarcata)
 var landing_hex: int = 0
+var pond_supply_used: bool = false    # 6.5: stagno usato in un Controllo del Rifornimento
+var _landing_fx_applied: Array = []   # paragrafi-area i cui effetti numerici (LSV) sono già applicati
+var infected_chars: Array = []        # {key, amt}: personaggi che perdono Resistenza a ogni Controllo del Rifornimento (¶197/¶209/¶224)
+var robot_decay: int = 0              # ¶155: i robot perdono Resistenza (qui: un robot danneggiato) a ogni Controllo del Rifornimento
+var hostile_race: bool = false        # ¶231: rischio d'imboscata a ogni Controllo del Rifornimento
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
+# Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
+# (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
+# affrettato» degli snodi «Incontro di spedizione» (6.5).
+var hasty_path_terrains: Array = []
+# Guardia anti-ricorsione per i ri-tiri della Matrice di Esplorazione negli snodi (6.5).
+var _expedition_reroll_depth: int = 0
+const MAX_EXPEDITION_REROLLS := 8
 signal environ_changed
 
 func _ready() -> void:
@@ -102,6 +142,10 @@ func start_new_game(p_tour_length: int) -> void:
 	current_system = "Sol"
 	current_planet = ""
 	visited_systems = []
+	surfaces_visited = 0
+	jump_origin_hex = 46
+	jump_dest_hex = 46
+	pending_event_para = 0
 	log_entries = []
 	vp_ledger = []
 	expedition_units = []
@@ -111,10 +155,23 @@ func start_new_game(p_tour_length: int) -> void:
 	planet_attrs = {}
 	planet_gravity = "Earth like"
 	shuttle_capacity = 80
+	captured_creatures = []
+	acquired_artifacts = []
+	pending_artifact_vp = []
+	weapon_usable = false
+	intel_checks_done = []
+	poison_endurance_lost = 0
+	procedures_done = []
+	recorded_creatures = []
+	explored_planets = []
+	supply_track_pos = 0
+	pending_supply_checks = 0
 	reset_expedition_state()
 	for k in crew:
 		crew[k]["alive"] = true
 		crew[k]["endurance"] = MAX_ENDURANCE
+		# Valore di Intelligenza determinato a inizio gioco (3.3), fisso per la partita.
+		crew[k]["intelligence"] = _roll_intelligence()
 
 	# Set initial VP based on tour length (from rules)
 	match tour_length:
@@ -125,6 +182,38 @@ func start_new_game(p_tour_length: int) -> void:
 
 	set_phase(Phase.INTERSTELLAR)
 	add_log("Nuovo viaggio iniziato. Tour: %d mesi. Pandora in orbita attorno a Sol." % tour_length)
+
+# Valore di Intelligenza di un personaggio (3.3): un dado -> 1:6, 2-3:7, 4-5:8, 6:9.
+func _roll_intelligence() -> int:
+	var d := randi_range(1, 6)
+	return 6 if d == 1 else (7 if d <= 3 else (8 if d <= 5 else 9))
+
+# Valore di Intelligenza corrente del personaggio (0 se non determinato).
+func character_intelligence(key: String) -> int:
+	return int(crew.get(key, {}).get("intelligence", 0))
+
+# Valore di Intelligenza più alto tra i personaggi indicati ancora vivi (per i
+# paragrafi che fanno riferimento "all'ufficiale con Intelligenza più alta").
+func highest_intelligence(keys: Array) -> int:
+	var best := 0
+	for k in keys:
+		var c: Dictionary = crew.get(k, {})
+		if c.get("alive", false):
+			best = maxi(best, int(c.get("intelligence", 0)))
+	return best
+
+# Chiave del personaggio imbarcato vivo con Intelligenza più alta ("" se nessuno):
+# per i paragrafi in cui «si sceglie un personaggio» (gioco ottimale) e l'effetto
+# ricade su chi investiga (es. ¶030).
+func highest_intelligence_unit() -> String:
+	var best := -1
+	var who := ""
+	for k in expedition_units:
+		var c: Dictionary = crew.get(k, {})
+		if c.get("alive", false) and int(c.get("intelligence", 0)) > best:
+			best = int(c.get("intelligence", 0))
+			who = k
+	return who
 
 # --- Salvataggio / caricamento della partita -------------------------------
 const SAVE_PATH := "user://savegame.json"
@@ -146,6 +235,9 @@ func save_game(silent := false) -> bool:
 		"pandora_hex": pandora_hex, "current_system": current_system, "current_planet": current_planet,
 		"current_phase": int(current_phase), "current_paragraph": current_paragraph,
 		"awaiting_die_roll": awaiting_die_roll, "pending_die_purpose": pending_die_purpose,
+		"pending_event_threshold": pending_event_threshold,
+		"jump_origin_hex": jump_origin_hex, "jump_dest_hex": jump_dest_hex,
+		"pending_event_para": pending_event_para, "surfaces_visited": surfaces_visited,
 		"manual_dice": manual_dice,
 		"crew": crew, "visited_systems": visited_systems, "log_entries": log_entries,
 		"vp_ledger": vp_ledger,
@@ -153,14 +245,23 @@ func save_game(silent := false) -> bool:
 		"shuttle_capacity": shuttle_capacity, "expedition_units": expedition_units,
 		"expedition_gear": expedition_gear, "damaged_gear": damaged_gear,
 		"planned_supply": planned_supply,
+		"supply_track_pos": supply_track_pos, "pending_supply_checks": pending_supply_checks,
 		"current_creature": current_creature, "creature_rating": creature_rating,
 		"damage_points": damage_points, "captured_creatures": captured_creatures,
+		"acquired_artifacts": acquired_artifacts,
+		"weapon_usable": weapon_usable, "intel_checks_done": intel_checks_done,
+		"poison_endurance_lost": poison_endurance_lost, "procedures_done": procedures_done,
+		"pending_artifact_vp": pending_artifact_vp,
+		"recorded_creatures": recorded_creatures,
+		"explored_planets": explored_planets,
 		"creature_attr_cache": creature_attr_cache,
 		"pending_combat_shift": pending_combat_shift, "pending_no_capture": pending_no_capture,
 		"pending_kill_as_capture": pending_kill_as_capture,
+		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
-		"landing_hex": landing_hex, "current_environ_id": current_environ_id,
+		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "hostile_race": hostile_race, "current_environ_id": current_environ_id,
+		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
@@ -202,6 +303,11 @@ func load_game() -> bool:
 	current_paragraph = int(d.get("current_paragraph", 0))
 	awaiting_die_roll = bool(d.get("awaiting_die_roll", false))
 	pending_die_purpose = str(d.get("pending_die_purpose", ""))
+	pending_event_threshold = int(d.get("pending_event_threshold", 0))
+	jump_origin_hex = int(d.get("jump_origin_hex", 46))
+	jump_dest_hex = int(d.get("jump_dest_hex", 46))
+	pending_event_para = int(d.get("pending_event_para", 0))
+	surfaces_visited = int(d.get("surfaces_visited", 0))
 	manual_dice = bool(d.get("manual_dice", false))
 	var cr: Variant = d.get("crew", {})
 	if typeof(cr) == TYPE_DICTIONARY:
@@ -209,6 +315,7 @@ func load_game() -> bool:
 			if crew.has(k):
 				crew[k]["alive"] = bool(cr[k].get("alive", true))
 				crew[k]["endurance"] = int(cr[k].get("endurance", MAX_ENDURANCE))
+				crew[k]["intelligence"] = int(cr[k].get("intelligence", 0))
 	visited_systems = d.get("visited_systems", [])
 	log_entries = d.get("log_entries", [])
 	vp_ledger = d.get("vp_ledger", [])
@@ -219,10 +326,20 @@ func load_game() -> bool:
 	expedition_gear = d.get("expedition_gear", [])
 	damaged_gear = d.get("damaged_gear", [])
 	planned_supply = int(d.get("planned_supply", 6))
+	supply_track_pos = int(d.get("supply_track_pos", 0))
+	pending_supply_checks = int(d.get("pending_supply_checks", 0))
 	current_creature = str(d.get("current_creature", ""))
 	creature_rating = int(d.get("creature_rating", 0))
 	damage_points = int(d.get("damage_points", 0))
 	captured_creatures = d.get("captured_creatures", [])
+	acquired_artifacts = d.get("acquired_artifacts", [])
+	weapon_usable = bool(d.get("weapon_usable", false))
+	intel_checks_done = d.get("intel_checks_done", [])
+	poison_endurance_lost = int(d.get("poison_endurance_lost", 0))
+	procedures_done = d.get("procedures_done", [])
+	pending_artifact_vp = d.get("pending_artifact_vp", [])
+	recorded_creatures = d.get("recorded_creatures", [])
+	explored_planets = d.get("explored_planets", [])
 	creature_attr_cache = {}
 	var cac: Variant = d.get("creature_attr_cache", {})
 	if typeof(cac) == TYPE_DICTIONARY:
@@ -231,6 +348,8 @@ func load_game() -> bool:
 	pending_combat_shift = int(d.get("pending_combat_shift", 0))
 	pending_no_capture = bool(d.get("pending_no_capture", false))
 	pending_kill_as_capture = bool(d.get("pending_kill_as_capture", false))
+	surprise_active = bool(d.get("surprise_active", false))
+	chosen_strategy = str(d.get("chosen_strategy", ""))
 	encounter_outcome_text = str(d.get("encounter_outcome_text", ""))
 	environ_grid = {}
 	var eg: Variant = d.get("environ_grid", {})
@@ -239,7 +358,12 @@ func load_game() -> bool:
 			environ_grid[int(k)] = eg[k]
 	expedition_pos = int(d.get("expedition_pos", 0))
 	landing_hex = int(d.get("landing_hex", 0))
+	pond_supply_used = bool(d.get("pond_supply_used", false))
+	infected_chars = d.get("infected_chars", [])
+	robot_decay = int(d.get("robot_decay", 0))
+	hostile_race = bool(d.get("hostile_race", false))
 	current_environ_id = int(d.get("current_environ_id", 0))
+	hasty_path_terrains = d.get("hasty_path_terrains", [])
 	add_log("Partita caricata.")
 	return true
 
@@ -281,6 +405,11 @@ func move_pandora_to(hex_id: int) -> void:
 		add_log("Non abbastanza mesi per raggiungere quel sistema.")
 		return
 	var cost := GameData.get_hex_distance(pandora_hex, hex_id)
+	# Memorizza l'origine e la destinazione del salto interstellare attuale: servono
+	# ai paragrafi-evento (4.2) che ragionano sulla ROTTA percorsa (es. ¶064 e la
+	# vicinanza all'esagono 14).
+	jump_origin_hex = pandora_hex
+	jump_dest_hex = hex_id
 	pandora_hex = hex_id
 	tour_months_used += cost
 
@@ -288,15 +417,18 @@ func move_pandora_to(hex_id: int) -> void:
 	if sys_name != "":
 		current_system = sys_name
 		add_log("Pandora arriva a %s. Mesi usati: %d/%d." % [sys_name, tour_months_used, tour_length])
-		# Evento interstellare (4.2): tiro manuale del giocatore o automatico.
+		# Determinazione dell'evento (4.0, Procedura): si tirano DUE dadi; se il
+		# risultato è <= agli esagoni percorsi contando l'origine (cioè cost+1)
+		# si verifica un Evento Interstellare, altrimenti si va alla Tabella Pianeti.
+		pending_event_threshold = cost + 1
 		if manual_dice:
-			pending_die_purpose = "interstellar_event"
+			pending_die_purpose = "interstellar_check"
 			awaiting_die_roll = true
-			message_posted.emit("Tira un dado per evento interstellare (regola 4.2).")
+			message_posted.emit("Tira due dadi per verificare se avviene un evento interstellare (regola 4.0).")
 		else:
-			var d := randi_range(1, 6)
-			die_rolled.emit(d, "interstellar_event")
-			resolve_interstellar_event(d)
+			var d := randi_range(1, 6) + randi_range(1, 6)
+			die_rolled.emit(d, "interstellar_check")
+			resolve_interstellar_check(d)
 	else:
 		current_system = ""
 		add_log("Pandora si muove all'esagono %d. Mesi usati: %d/%d." % [hex_id, tour_months_used, tour_length])
@@ -307,19 +439,499 @@ func move_pandora_to(hex_id: int) -> void:
 	if months_remaining() <= 0:
 		_end_tour()
 
+# Soglia (cost+1) per la determinazione dell'evento interstellare (4.0).
+var pending_event_threshold: int = 0
+# Origine e destinazione del salto interstellare attuale (per gli eventi 4.2 che
+# valutano la rotta percorsa, es. ¶064). Aggiornati a ogni move_pandora_to.
+var jump_origin_hex: int = 46
+var jump_dest_hex: int = 46
+# Paragrafo-evento interstellare (4.2) in attesa di un tiro manuale del giocatore:
+# i suoi effetti meccanici si risolvono quando arriva il dado (vedi resolve_event_die).
+var pending_event_para: int = 0
+var _madness_depth: int = 0    # guardia anti-ricorsione per la reinfezione virale (¶144→¶058)
+
+# Determinazione 4.0: due dadi <= esagoni percorsi (origine inclusa) -> evento.
+func resolve_interstellar_check(die: int) -> void:
+	if die <= pending_event_threshold:
+		add_log("Controllo evento interstellare (4.0): %d ≤ %d → si verifica un evento." % [die, pending_event_threshold])
+		# L'evento è determinato dalla Tabella 4.2 con un secondo tiro di due dadi.
+		if manual_dice:
+			pending_die_purpose = "interstellar_event"
+			awaiting_die_roll = true
+			message_posted.emit("Tira due dadi per l'evento interstellare (regola 4.2).")
+		else:
+			var d := randi_range(1, 6) + randi_range(1, 6)
+			die_rolled.emit(d, "interstellar_event")
+			resolve_interstellar_event(d)
+	else:
+		add_log("Controllo evento interstellare (4.0): %d > %d → nessun evento, si va in orbita." % [die, pending_event_threshold])
+		if current_system != "" and current_system != "Sol":
+			enter_orbit()
+
 func resolve_interstellar_event(die: int) -> void:
 	var para := GameData.get_interstellar_event_para(die)
 	if para > 0:
-		add_log("Evento interstellare! (dado: %d) → Paragrafo %03d" % [die, para])
+		add_log("Evento interstellare! (2 dadi: %d) → Paragrafo %03d" % [die, para])
 		show_paragraph(para)
+		# Applica gli effetti meccanici interni del paragrafo-evento (4.2).
+		_apply_interstellar_event_effect(para)
 	else:
-		add_log("Nessun evento interstellare (dado: %d)." % die)
+		# Con la Tabella 4.2 corretta (2-12) ogni risultato ha un paragrafo;
+		# questo ramo è una salvaguardia: in assenza di voce si va in orbita.
+		add_log("Nessuna voce in Tabella Eventi per il risultato %d." % die)
 		if current_system != "" and current_system != "Sol":
 			enter_orbit()
+
+# --- Interprete degli effetti dei paragrafi-evento interstellari (regola 4.2) ---
+#
+# Ogni evento della Tabella 4.2 (080, 061, 055, 049, 046, 001, 044, 047, 052, 058,
+# 064) ha effetti meccanici descritti nel suo paragrafo: mesi di Tour extra, morti
+# casuali, controlli di Intelligenza, morte di creature catturate, salti ad altri
+# paragrafi. Questo metodo li applica DOPO che il testo è stato mostrato.
+#
+# Gli eventi che richiedono un tiro del giocatore vengono messi in coda
+# (pending_event_para) se manual_dice è attivo e risolti in resolve_event_die quando
+# arriva il dado; altrimenti il dado è tirato automaticamente qui.
+func _apply_interstellar_event_effect(para: int) -> void:
+	match para:
+		1:   _event_001()
+		44:  _event_044()
+		46:  _event_046()
+		47:  _event_047()
+		49:  _event_049()
+		52:  _event_052()
+		55:  _event_055()
+		58:  _event_058()
+		61:  _event_061()
+		64:  _event_064()
+		67:  _event_067()
+		73:  _event_073()
+		80:  _event_080()
+		144: _event_144()
+		169: _event_169()
+		_:
+			# Nessun effetto meccanico noto per questo paragrafo: resta narrativo.
+			pass
+
+# ===== Esiti degli eventi interstellari (4.2). I dadi interni sono auto-risolti. =====
+
+# ¶067 — la follia dell'Ufficiale Scienze è temporanea: un Mese di Tour extra.
+func _event_067() -> void:
+	_spend_tour_months(1, "¶067 follia temporanea (Ufficiale Scienze)")
+
+# ¶073 — cura: 2 dadi vs Int dell'Ufficiale Medico. ≤ Int → curato; altrimenti (o
+# MedO assente) l'Ufficiale Scienze va in animazione sospesa (Resistenza persa).
+func _event_073() -> void:
+	var roll := randi_range(1, 6) + randi_range(1, 6)
+	if _officer_aboard("MedO") and roll <= character_intelligence("MedO"):
+		add_log("¶073: 2 dadi %d ≤ Int Medico → la follia è curata." % roll)
+		return
+	if crew.has("GSO") and crew["GSO"].get("alive", false):
+		crew["GSO"]["endurance"] = 0
+		crew["GSO"]["alive"] = false
+		add_log("¶073: nessuna cura → Ufficiale Scienze in animazione sospesa (inutilizzabile, Resistenza persa).")
+		state_updated.emit()
+
+# ¶144 — l'Ufficiale Scienze muore. 1 dado per i Mesi di Tour (5-6 = nessuno). Se Int
+# dell'Ufficiale Medico ≤ 6 o assente, il virus infetta un altro membro a caso → ¶058.
+func _event_144() -> void:
+	if crew.has("GSO") and crew["GSO"].get("alive", false):
+		crew["GSO"]["alive"] = false
+		crew["GSO"]["endurance"] = 0
+		lose_vp(10, "¶144 Ufficiale Scienze deceduto")
+		add_log("¶144: l'Ufficiale Scienze muore della sua afflizione.")
+	var die := randi_range(1, 6)
+	_spend_tour_months(die if die <= 4 else 0, "¶144 cure intensive (dado %d)" % die)
+	if current_phase == Phase.GAME_OVER:
+		return
+	var med_int := character_intelligence("MedO") if _officer_aboard("MedO") else 0
+	if med_int <= 6 and _madness_depth < 6:
+		_madness_depth += 1
+		var living: Array = []
+		for k in crew.keys():
+			if crew[k].get("alive", false):
+				living.append(k)
+		if not living.is_empty():
+			var victim: String = living[randi_range(0, living.size() - 1)]
+			add_log("¶144: il virus infetta %s → ¶058." % crew[victim]["name"])
+			show_paragraph(58)
+			_science_madness(victim)
+
+# Logica della «follia» (¶058) generalizzata a un membro qualunque (reinfezione ¶144):
+# 1 dado sottratto alla sua Int → Resistenza persa dagli ALTRI; 2° dado → 067/073/144.
+func _science_madness(officer_key: String) -> void:
+	var roll := randi_range(1, 6)
+	var loss := maxi(0, character_intelligence(officer_key) - roll)
+	for _i in range(loss):
+		var target := ""
+		var best_e := 0
+		for k in crew.keys():
+			if k == officer_key or not crew[k].get("alive", false):
+				continue
+			var e: int = int(crew[k].get("endurance", 0))
+			if e > best_e:
+				best_e = e
+				target = k
+		if target == "":
+			break
+		crew[target]["endurance"] = maxi(0, int(crew[target]["endurance"]) - 1)
+		if crew[target]["endurance"] <= 0 and crew[target].get("alive", false):
+			crew[target]["alive"] = false
+			lose_vp(10, "Personaggio ucciso: %s" % crew[target]["name"])
+	state_updated.emit()
+	var d2 := randi_range(1, 6)
+	var dest := 67 if d2 <= 3 else (73 if d2 <= 5 else 144)
+	add_log("¶058 (reinfezione): 2° dado %d → ¶%03d." % [d2, dest])
+	show_paragraph(dest)
+	_apply_interstellar_event_effect(dest)
+
+# ¶169 — trattativa coi pirati. CO a bordo: 2 dadi vs sua Int. roll ≤ Int−2 → se ne
+# vanno ingannati; Int−1..Int+1 → ¶203; roll ≥ Int+2 (o CO assente) → ¶183.
+func _event_169() -> void:
+	if not _officer_aboard("CO"):
+		add_log("¶169: Comandante assente → ¶183.")
+		show_paragraph(183)
+		return
+	var roll := randi_range(1, 6) + randi_range(1, 6)
+	var intel := character_intelligence("CO")
+	if roll <= intel - 2:
+		add_log("¶169: 2 dadi %d (≤ Int %d −2) → i pirati se ne vanno ingannati." % [roll, intel])
+	elif roll <= intel + 1:
+		add_log("¶169: 2 dadi %d → ¶203." % roll)
+		show_paragraph(203)
+	else:
+		add_log("¶169: 2 dadi %d (> Int %d +1) → ¶183." % [roll, intel])
+		show_paragraph(183)
+
+# Spende mesi di Tour extra (4.2/4.6); se così facendo il Tour si esaurisce, lo chiude.
+func _spend_tour_months(n: int, reason: String) -> void:
+	if n <= 0:
+		return
+	tour_months_used += n
+	add_log("%s: +%d Mese/i di Tour (rimangono %d)." % [reason, n, months_remaining()])
+	state_updated.emit()
+	if months_remaining() <= 0:
+		_end_tour()
+
+# Vero se il personaggio (chiave ufficiale) è vivo e a bordo della Pandora.
+# In fase interstellare/orbita l'intero equipaggio vivo è considerato a bordo.
+func _officer_aboard(key: String) -> bool:
+	return crew.get(key, {}).get("alive", false)
+
+# Determina il Valore (8.4) di un attributo per una creatura catturata a bordo:
+# 2d6 + modificatore della scheda, mappato con la RATING_TABLE (come creature_attr).
+func _aboard_creature_rating(name: String, attr: String) -> int:
+	var modn := int(GameData.get_creature(name).get(attr, 0))
+	var total := clampi(randi_range(1, 6) + randi_range(1, 6) + modn, 2, 12)
+	if total <= 11:
+		return int(RATING_TABLE.get(total, 1))
+	var d := randi_range(1, 6)
+	return 9 if d <= 2 else (10 if d <= 4 else (11 if d == 5 else 12))
+
+# ¶001 — errore di navigazione: se il salto attuale è ≥3 esagoni (origine inclusa)
+# si spende un Mese di Tour extra; altrimenti nessun evento.
+func _event_001() -> void:
+	var dist := GameData.get_hex_distance(jump_origin_hex, jump_dest_hex) + 1  # +1: origine inclusa
+	if dist >= 3:
+		_spend_tour_months(1, "¶001 errore di navigazione (salto di %d esagoni)" % dist)
+	else:
+		add_log("¶001: salto di %d esagoni (≤2) → nessun effetto." % dist)
+
+# ¶044 — sforzo sui sistemi FTL. Con l'ufficiale alla manutenzione a bordo si tirano
+# due dadi contro la sua Intelligenza; altrimenti 4 mesi fissi.
+func _event_044() -> void:
+	if not _officer_aboard("MntO"):
+		_spend_tour_months(4, "¶044 sforzo FTL (manutenzione assente)")
+		return
+	if manual_dice:
+		pending_event_para = 44
+		pending_die_purpose = "event_044"
+		awaiting_die_roll = true
+		message_posted.emit("¶044: tira due dadi contro l'Intelligenza dell'Ufficiale Manutenzione.")
+	else:
+		_resolve_044(randi_range(1, 6) + randi_range(1, 6))
+
+func _resolve_044(roll: int) -> void:
+	var intel := character_intelligence("MntO")
+	if roll <= intel:
+		_spend_tour_months(1, "¶044 riparazione FTL (%d ≤ Int %d)" % [roll, intel])
+	else:
+		var months := mini(roll - intel, 4)
+		_spend_tour_months(months, "¶044 danno FTL (%d > Int %d)" % [roll, intel])
+
+# ¶046 — brillamenti stellari: un Mese di Tour extra.
+func _event_046() -> void:
+	_spend_tour_months(1, "¶046 brillamenti stellari")
+
+# ¶047 — avaria del Processore Fuji: 9 − (Int più alta tra scienze/manutenzione).
+# L'ufficiale al rilevamento terrestre coincide con l'Ufficiale Scienze (GSO).
+func _event_047() -> void:
+	var best := highest_intelligence(["GSO", "MntO"])
+	_spend_tour_months(maxi(0, 9 - best), "¶047 avaria Processore Fuji (9 − Int %d)" % best)
+
+# ¶049 — tempesta di asteroidi: 9 − (Int più alta tra comandante/navigatore/manutenzione).
+func _event_049() -> void:
+	var best := highest_intelligence(["CO", "Nav", "MntO"])
+	_spend_tour_months(maxi(0, 9 - best), "¶049 tempesta di asteroidi (9 − Int %d)" % best)
+
+# ¶052 — supporto vitale: una creatura catturata a bordo (a caso) muore, perdendo i suoi PV.
+func _event_052() -> void:
+	if captured_creatures.is_empty():
+		add_log("¶052: nessuna creatura a bordo, nessun effetto.")
+		return
+	var idx := randi_range(0, captured_creatures.size() - 1)
+	var name: String = captured_creatures[idx]
+	captured_creatures.remove_at(idx)
+	add_log("¶052: la creatura %s muore per esigenze di supporto vitale." % name)
+	var vp := GameData.creature_vp(name)
+	if vp > 0:
+		lose_vp(vp, "¶052 creatura %s deceduta" % name)
+	state_updated.emit()
+
+# ¶055 — danno cerebrale permanente a un membro dell'equipaggio (a caso). Tutti i
+# Valori −1 (qui modelliamo solo l'Intelligenza), e l'Intelligenza −1d6; se l'Int
+# scende a 2 o meno si perdono 4 PV e l'ufficio non esiste più.
+func _event_055() -> void:
+	if manual_dice:
+		pending_event_para = 55
+		pending_die_purpose = "event_055"
+		awaiting_die_roll = true
+		message_posted.emit("¶055: tira un dado per il danno all'Intelligenza.")
+	else:
+		_resolve_055(randi_range(1, 6))
+
+func _resolve_055(roll: int) -> void:
+	var living: Array = []
+	for k in crew.keys():
+		if crew[k].get("alive", false):
+			living.append(k)
+	if living.is_empty():
+		return
+	var key: String = living[randi_range(0, living.size() - 1)]
+	var old_int := character_intelligence(key)
+	var new_int := maxi(0, old_int - roll)
+	crew[key]["intelligence"] = new_int
+	add_log("¶055: danno cerebrale a %s — Intelligenza %d → %d (−%d)." % [
+		crew[key]["name"], old_int, new_int, roll])
+	# NB: gli altri Valori (Combattimento/Velocità/Porto) non sono memorizzati per
+	# personaggio, quindi il «tutti i Valori −1» resta narrativo per quei valori.
+	if new_int <= 2:
+		lose_vp(4, "¶055 ufficio perso (%s)" % crew[key]["name"])
+		add_log("¶055: %s non è più in grado di svolgere i suoi compiti (Int ≤ 2)." % crew[key]["name"])
+	state_updated.emit()
+
+# ¶058 — ceppi virali: follia dell'Ufficiale Scienze (GSO). Ignora se GSO assente o
+# nessuna superficie ancora visitata. Altrimenti: 1 dado sottratto all'Int del GSO →
+# tanti Punti Resistenza persi dagli altri; poi un altro dado instrada a 067/073/144.
+func _event_058() -> void:
+	_madness_depth = 0
+	if not _officer_aboard("GSO") or surfaces_visited <= 0:
+		add_log("¶058: Ufficiale Scienze assente o nessuna superficie visitata → ignorato.")
+		return
+	if manual_dice:
+		pending_event_para = 58
+		pending_die_purpose = "event_058"
+		awaiting_die_roll = true
+		message_posted.emit("¶058: tira un dado (sottratto all'Intelligenza dell'Ufficiale Scienze).")
+	else:
+		_resolve_058(randi_range(1, 6))
+
+func _resolve_058(roll: int) -> void:
+	var intel := character_intelligence("GSO")
+	var loss := maxi(0, intel - roll)
+	add_log("¶058: dado %d, Int Scienze %d → %d Punti Resistenza persi dagli altri." % [roll, intel, loss])
+	# Distribuisce la perdita di Resistenza tra gli ALTRI personaggi imbarcati (8.8).
+	for _i in range(loss):
+		var target := ""
+		var best_e := 0
+		for k in crew.keys():
+			if k == "GSO" or not crew[k].get("alive", false):
+				continue
+			var e: int = int(crew[k].get("endurance", 0))
+			if e > best_e:
+				best_e = e
+				target = k
+		if target == "":
+			break
+		crew[target]["endurance"] = maxi(0, int(crew[target]["endurance"]) - 1)
+		add_log("¶058: %s perde 1 Punto Resistenza (%d/%d)." % [
+			crew[target]["name"], crew[target]["endurance"], MAX_ENDURANCE])
+		if crew[target]["endurance"] <= 0 and crew[target].get("alive", false):
+			crew[target]["alive"] = false
+			lose_vp(10, "Personaggio ucciso: %s" % crew[target]["name"])
+			add_log("%s muore per la follia dell'Ufficiale Scienze." % crew[target]["name"])
+	state_updated.emit()
+	# Secondo dado: instrada al paragrafo di esito (la sua meccanica segue il libro-gioco).
+	var d2 := randi_range(1, 6)
+	var dest := 67 if d2 <= 3 else (73 if d2 <= 5 else 144)
+	add_log("¶058: secondo dado %d → ¶%03d." % [d2, dest])
+	show_paragraph(dest)
+	_apply_interstellar_event_effect(dest)
+
+# ¶061 — mercanti rinnegati: con l'Ufficiale Armi a bordo, due dadi contro la sua
+# Intelligenza. Se < Int → 1 Mese extra e fuga; altrimenti (o se assente) → ¶169.
+func _event_061() -> void:
+	if not _officer_aboard("WO"):
+		add_log("¶061: Ufficiale Armi assente → ¶169.")
+		show_paragraph(169)
+		_apply_interstellar_event_effect(169)
+		return
+	if manual_dice:
+		pending_event_para = 61
+		pending_die_purpose = "event_061"
+		awaiting_die_roll = true
+		message_posted.emit("¶061: tira due dadi contro l'Intelligenza dell'Ufficiale Armi.")
+	else:
+		_resolve_061(randi_range(1, 6) + randi_range(1, 6))
+
+func _resolve_061(roll: int) -> void:
+	var intel := character_intelligence("WO")
+	if roll < intel:
+		_spend_tour_months(1, "¶061 fuga dai mercanti (%d < Int %d)" % [roll, intel])
+	else:
+		add_log("¶061: %d ≥ Int %d → ¶169." % [roll, intel])
+		show_paragraph(169)
+		_apply_interstellar_event_effect(169)
+
+# ¶064 — vicinanza a Opoplo (esagono 14). Se la rotta del salto attuale entra nel 14
+# o in un esagono adiacente, la Pandora deve deviare verso Opoplo (¶076). Modelliamo
+# il rilevamento e il dirottamento; lo schieramento di superficie segue il libro-gioco.
+func _event_064() -> void:
+	if not _jump_near_opoplo():
+		add_log("¶064: la rotta non passa entro un esagono da Opoplo → nessun effetto.")
+		return
+	add_log("¶064: trasmissioni da Opoplo! La Pandora devia verso l'esagono 14.")
+	# Spesa di Tempo di Tour per adattare la rotta fino a Opoplo (5.0).
+	var extra := GameData.get_hex_distance(jump_dest_hex, 14)
+	if extra > 0:
+		_spend_tour_months(extra, "¶064 deviazione verso Opoplo")
+		if current_phase == Phase.GAME_OVER:
+			return
+	pandora_hex = 14
+	jump_dest_hex = 14
+	current_system = "Opoplo"
+	# La spedizione è piazzata nell'esagono 0817 e si procede al ¶076 (vedi paragrafo).
+	add_log("¶064: arrivati a Opoplo (esagono 14). Organizza la spedizione (¶076).")
+	enter_orbit()
+
+# Vero se la rotta del salto attuale (origine o destinazione) è l'esagono 14 (Opoplo)
+# o un esagono adiacente al 14.
+func _jump_near_opoplo() -> bool:
+	var near := [14]
+	for h in GameData.get_adjacency(14):
+		near.append(int(h) if not (h is int) else h)
+	return jump_dest_hex in near or jump_origin_hex in near
+
+# ¶080 — una creatura a bordo (a caso) si evolve. In base ai suoi Valori di
+# Intelligenza/Combattimento si dirama a 081/082/083/084.
+func _event_080() -> void:
+	if captured_creatures.is_empty():
+		add_log("¶080: nessuna creatura a bordo, nessun effetto.")
+		return
+	var idx := randi_range(0, captured_creatures.size() - 1)
+	var name: String = captured_creatures[idx]
+	var intel := _aboard_creature_rating(name, "intel")
+	var combat := _aboard_creature_rating(name, "combat")
+	add_log("¶080: la creatura %s si evolve (Int %d, Combat %d)." % [name, intel, combat])
+	if intel > 6:
+		show_paragraph(81)
+		_event_081()
+	elif combat > 7 and intel < 6:
+		show_paragraph(82)
+		_event_082()
+	elif (combat == 6 or combat == 7) and intel < 6:
+		show_paragraph(83)
+		_event_083(name)
+	else:
+		show_paragraph(84)
+		_event_084(name, intel, combat)
+
+# ¶081 — la creatura uccide tutti e prende la Pandora: fine del gioco.
+func _event_081() -> void:
+	add_log("¶081: la creatura prende il controllo della Pandora. Il gioco è finito.")
+	for k in crew.keys():
+		crew[k]["alive"] = false
+	set_phase(Phase.GAME_OVER)
+
+# ¶082 — la creatura distrugge la Pandora, uccidendo tutti: fine del gioco.
+func _event_082() -> void:
+	add_log("¶082: la Pandora è distrutta. Il gioco è finito.")
+	for k in crew.keys():
+		crew[k]["alive"] = false
+	set_phase(Phase.GAME_OVER)
+
+# ¶083 — la creatura e un terzo delle creature a bordo (a caso) sono distrutte.
+func _event_083(trigger: String) -> void:
+	captured_creatures.erase(trigger)
+	add_log("¶083: la creatura %s viene distrutta." % trigger)
+	var to_kill := captured_creatures.size() / 3  # divisione intera: un terzo
+	for _i in range(to_kill):
+		if captured_creatures.is_empty():
+			break
+		var j := randi_range(0, captured_creatures.size() - 1)
+		var dead: String = captured_creatures[j]
+		captured_creatures.remove_at(j)
+		add_log("¶083: anche %s viene distrutta." % dead)
+		var vp := GameData.creature_vp(dead)
+		if vp > 0:
+			lose_vp(vp, "¶083 creatura %s distrutta" % dead)
+	state_updated.emit()
+
+# ¶084 — la creatura vaga in cerca di carne umana. Due dadi vs max(Combat, Int):
+# ≥ valore → distrutta senza danni; < valore → la differenza è il numero di
+# personaggi (a caso) uccisi prima che venga distrutta.
+func _event_084(trigger: String, intel: int, combat: int) -> void:
+	captured_creatures.erase(trigger)
+	if manual_dice:
+		pending_event_para = 84
+		pending_die_purpose = "event_084"
+		# Memorizza il valore di confronto nel campo creature_rating (riutilizzato).
+		creature_rating = maxi(combat, intel)
+		awaiting_die_roll = true
+		message_posted.emit("¶084: tira due dadi contro il Valore %d della creatura." % creature_rating)
+	else:
+		_resolve_084(randi_range(1, 6) + randi_range(1, 6), maxi(combat, intel))
+
+func _resolve_084(roll: int, value: int) -> void:
+	if roll >= value:
+		add_log("¶084: %d ≥ %d → la creatura è distrutta senza fare danni." % [roll, value])
+		return
+	var kills := value - roll
+	add_log("¶084: %d < %d → %d personaggio/i ucciso/i." % [roll, value, kills])
+	for _i in range(kills):
+		var living: Array = []
+		for k in crew.keys():
+			if crew[k].get("alive", false):
+				living.append(k)
+		if living.is_empty():
+			break
+		var victim: String = living[randi_range(0, living.size() - 1)]
+		crew[victim]["alive"] = false
+		crew[victim]["endurance"] = 0
+		lose_vp(10, "Personaggio ucciso: %s" % crew[victim]["name"])
+		add_log("¶084: %s viene ucciso dalla creatura." % crew[victim]["name"])
+	state_updated.emit()
+
+# Risolve il tiro manuale in attesa per un paragrafo-evento interstellare (4.2).
+func resolve_event_die(die: int) -> void:
+	var para := pending_event_para
+	pending_event_para = 0
+	pending_die_purpose = ""
+	match para:
+		44: _resolve_044(die)
+		55: _resolve_055(die)
+		58: _resolve_058(die)
+		61: _resolve_061(die)
+		84: _resolve_084(die, creature_rating)
+		_:  pass
 
 # Ingresso in orbita: prepara gli attributi del pianeta e mostra il paragrafo
 # che lo descrive (Tabella Pianeti, 5.0). Il giocatore decide se esplorare.
 func enter_orbit() -> void:
+	# Se il Tour è già finito (es. evento interstellare che esaurisce i mesi o
+	# stermina l'equipaggio), non si rientra in orbita: la partita è conclusa.
+	if current_phase == Phase.GAME_OVER:
+		return
 	set_phase(Phase.ORBIT)
 	setup_orbit_planet()
 	var para := GameData.get_planet_paragraph(current_system, tour_length)
@@ -371,6 +983,11 @@ func land_on_planet(die_result: int) -> void:
 			break
 
 	current_planet = current_system
+	# 1 PV per ogni pianeta esplorato, a prescindere da cosa vi si trovi (9.1).
+	if current_system not in explored_planets:
+		explored_planets.append(current_system)
+		gain_vp(1, "Pianeta esplorato: %s (9.1)" % current_system)
+	surfaces_visited += 1  # una nuova superficie planetaria è stata visitata (per ¶058)
 	expedition_hours = 0
 	expedition_supply = shuttle_supply  # bring supplies from shuttle
 	shuttle_supply = 0
@@ -429,10 +1046,39 @@ func toggle_gear_unit(key: String) -> void:
 		expedition_gear.append(key)
 	planned_supply = clampi(planned_supply, 0, max_planned_supply())
 
+# --- Equipaggiamento d'atmosfera (regola 5.2) --------------------------------
+
+# Statistica EFFICACE di un personaggio (weight/speed/port) coi modificatori
+# dell'equipaggiamento d'atmosfera del pianeta in orbita (5.2):
+#  - Thin (rarefatta): respiratore → Porto −1.
+#  - Poison (velenosa): enviorig → Peso +4, Velocità −1 (uniforme, dai segnalini).
+#  - Corrosive (corrosiva): armorig → Peso +4, Porto −1 (richiesto; si assume indossato).
+# Normal/None: nessun modificatore (None trattato come Normal: nessuna regola lo
+# distingue qui).
+func effective_char_stat(key: String, stat: String) -> int:
+	var c := GameData.get_character(key)
+	var base := int(c.get(stat, 0))
+	var atmo := str(planet_attrs.get("atmosphere", "Normal"))
+	match atmo:
+		"Thin":
+			if stat == "port":
+				base -= 1
+		"Poison":
+			if stat == "weight":
+				base += 4
+			elif stat == "speed":
+				base -= 1
+		"Corrosive":
+			if stat == "weight":
+				base += 4
+			elif stat == "port":
+				base -= 1
+	return base
+
 func units_weight() -> int:
 	var w := 0
 	for k in expedition_units:
-		w += int(GameData.get_character(k).get("weight", 6))
+		w += effective_char_stat(k, "weight")  # peso efficace coi rig d'atmosfera (5.2)
 	for k in expedition_gear:
 		w += int(GameData.get_unit(k).get("weight", 0))
 	return w
@@ -481,7 +1127,197 @@ func best_combat(mode: String) -> int:
 		if g.get("combat", false) or GameData.get_bot_keys().has(k):
 			var gv: int = int(g.get("capture", 0)) if mode == "capture" else int(g.get("kill", 0))
 			best = maxi(best, gv)
+	# Armi-artefatto acquisite (es. Arma aliena ¶006, Cattura/Uccisione 9): una volta
+	# acquisite vengono portate dalla spedizione e usate come strumento (2.6), ma se
+	# danneggiate (registrate in damaged_gear) non sono utilizzabili (6.9).
+	for akey in acquired_artifacts:
+		if akey in damaged_gear:
+			continue
+		# L'Arma aliena (¶006) è utilizzabile solo dopo essere stata compresa (¶006/¶175).
+		if akey == "006" and not weapon_usable:
+			continue
+		var art := GameData.get_artifact(akey.to_int())
+		var av: int = int(art.get("capture", 0)) if mode == "capture" else int(art.get("kill", 0))
+		best = maxi(best, av)
 	return best if best > 0 else 3
+
+# Acquisizione di un artefatto (2.6/9.1): si raccoglie ora, ma i PV indicati sul
+# retro del segnalino (linea Additional VP's) si guadagnano solo riportandolo sulla
+# Pandora (vedi return_to_pandora). Se la spedizione va perduta, niente PV.
+func acquire_artifact(para: int) -> bool:
+	var key := "%03d" % para
+	if key in acquired_artifacts:
+		return false
+	var a := GameData.get_artifact(para)
+	if a.is_empty():
+		return false
+	acquired_artifacts.append(key)
+	pending_artifact_vp.append(key)
+	var vp := int(a.get("vp", 0))
+	add_log("Artefatto raccolto: %s (¶%s). Riportalo sulla Pandora per +%d PV." % [a.get("name", key), key, vp])
+	state_updated.emit()
+	return true
+
+func is_artifact_acquired(para: int) -> bool:
+	return ("%03d" % para) in acquired_artifacts
+
+# Un paragrafo offre un check Intelligenza (3.3) ancora da risolvere?
+func intel_check_available(para: int) -> bool:
+	return GameData.has_intel_check(para) and not (para in intel_checks_done)
+
+# Risolve un check Intelligenza (3.3) data-driven (vedi data/intel_checks.json).
+# Confronta 2d6 col Valore di Intelligenza e applica gli effetti della banda:
+# acquisizione artefatto, usabilità arma, ore spese, danni.
+func resolve_intel_check(para: int) -> void:
+	var cfg := GameData.get_intel_check(para)
+	if cfg.is_empty() or (para in intel_checks_done):
+		return
+	# Rimando se un'unità specifica è presente (es. ¶006 con l'Ufficiale Armi → ¶175).
+	if cfg.has("if_unit_goto"):
+		var ug: Dictionary = cfg["if_unit_goto"]
+		if str(ug.get("unit", "")) in expedition_units:
+			add_log("¶%03d: l'%s esamina l'oggetto → ¶%03d." % [para, GameData.get_character(str(ug.get("unit"))).get("name", ug.get("unit")), int(ug.get("para", 0))])
+			show_paragraph(int(ug.get("para", 0)))
+			return
+	var v := highest_intelligence(expedition_units)
+	var roll := randi_range(1, 6) + randi_range(1, 6)
+	var band := "near"
+	if roll < v - 1:
+		band = "well_below"
+	elif roll > v + 1:
+		band = "well_above"
+	var bands: Dictionary = cfg.get("bands", {})
+	var b: Dictionary = bands.get(band, {})
+	# Banda condizionata a un equipaggiamento (es. ¶030 well_below richiede la
+	# E-cage): se manca, si applica la banda indicata da else_band.
+	if b.has("require_gear") and not _gear_has(str(b["require_gear"])):
+		band = str(b.get("else_band", band))
+		b = bands.get(band, {})
+	# Personaggio che «investiga» (gioco ottimale: Intelligenza più alta): alcuni
+	# effetti ricadono su di lui (¶030).
+	var investigator := highest_intelligence_unit() if bool(cfg.get("investigator", false)) else ""
+	intel_checks_done.append(para)
+	var extra: Array = []
+	if b.has("hours"):
+		var hv := (randi_range(1, 6) if str(b["hours"]) == "d6" else int(b["hours"]))
+		if hv > 0:
+			add_expedition_hours(hv)
+			extra.append("%d ore" % hv)
+	if b.has("damage"):
+		var dv := (randi_range(1, 6) + randi_range(1, 6) if str(b["damage"]) == "2d6" else int(b["damage"]))
+		if dv > 0:
+			_apply_damage(dv)
+			extra.append("%d Punti Danno" % dv)
+	# Danno mirato all'investigatore, eventualmente annullato da un equipaggiamento
+	# (es. armorig protegge dagli schizzi acidi del globo).
+	if b.has("damage_investigator") and investigator != "":
+		if b.has("negated_by") and _gear_has(str(b["negated_by"])):
+			extra.append("%s protegge: nessun danno" % b["negated_by"])
+		else:
+			_damage_character(investigator, int(b["damage_investigator"]))
+	# Morte dell'investigatore, ridotta a un danno se indossa un certo equipaggiamento.
+	if bool(b.get("kill_investigator", false)) and investigator != "":
+		if b.has("armorig_reduces_to") and _gear_has("Armorig"):
+			extra.append("Armorig danneggiato")
+			_damage_character(investigator, int(b["armorig_reduces_to"]))
+		else:
+			_kill_character(investigator)
+	if bool(b.get("weapon_usable", false)):
+		weapon_usable = true
+	if b.has("acquire"):
+		acquire_artifact(int(b["acquire"]))
+	var msg := str(b.get("text", ""))
+	if not extra.is_empty():
+		msg += " (" + ", ".join(extra) + ")"
+	add_log("¶%03d esame (Intelligenza %d, 2 dadi = %d): %s" % [para, v, roll, msg])
+	message_posted.emit(msg)
+	state_updated.emit()
+
+# --- Paragrafi procedurali una-tantum (¶187 raggi ustionanti, ¶193 struttura) ---
+
+const PROCEDURE_PARAS := [187, 193]
+
+func procedure_available(para: int) -> bool:
+	return para in PROCEDURE_PARAS and not (para in procedures_done)
+
+# Etichetta del pulsante procedurale per la UI.
+func procedure_label(para: int) -> String:
+	match para:
+		187: return "Subisci i raggi ustionanti (tira)"
+		193: return "Affronta la struttura"
+	return "Risolvi"
+
+func resolve_procedure(para: int) -> void:
+	if not procedure_available(para):
+		return
+	procedures_done.append(para)
+	match para:
+		187: _resolve_burning_rays()
+		193: _resolve_structure_fight()
+
+# ¶187: per ogni personaggio e robot si tirano 2 dadi; se il risultato supera il
+# Valore di Velocità l'unità viene distrutta dai raggi. Col rover tutti hanno
+# Velocità minima 8. −2 per tiro con turbolaser, −2 con lo scanner, −2 per un
+# personaggio in armorig.
+func _resolve_burning_rays() -> void:
+	var rover := _gear_has("Rover")
+	var base_mod := 0
+	if _gear_has("Turbolaser"): base_mod -= 2
+	if _gear_has("Scanner"): base_mod -= 2
+	var armorig := _gear_has("Armorig")
+	var destroyed: Array = []
+	# Personaggi (si itera su una copia: la morte rimuove da expedition_units).
+	for k in expedition_units.duplicate():
+		if not crew.get(k, {}).get("alive", false):
+			continue
+		var spd := effective_char_stat(k, "speed")
+		if rover: spd = maxi(spd, 8)
+		var mod := base_mod + (-2 if armorig else 0)
+		var roll := randi_range(1, 6) + randi_range(1, 6) + mod
+		if roll > spd:
+			destroyed.append(crew[k].get("name", k))
+			_kill_character(k)
+	# Robot imbarcati e funzionanti.
+	for b in _functioning_bots():
+		var spd := int(GameData.get_unit(b).get("speed", 0))
+		if rover: spd = maxi(spd, 8)
+		var roll := randi_range(1, 6) + randi_range(1, 6) + base_mod
+		if roll > spd:
+			destroyed.append(GameData.get_unit(b).get("name", b))
+			damaged_gear.append(b)
+			add_log("%s distrutto dai raggi ustionanti (¶187)." % GameData.get_unit(b).get("name", b))
+	var msg := "Raggi ustionanti (¶187): " + ("nessuna perdita." if destroyed.is_empty() else "distrutti — " + ", ".join(destroyed) + ".")
+	add_log(msg)
+	message_posted.emit(msg)
+	state_updated.emit()
+
+# ¶193: col turbolaser, si usa il Valore di Intelligenza (come colonna) per
+# combattere la struttura; solo risultati di uccisione. La struttura è distrutta e
+# un pezzo (artefatto ¶193, peso 3) può essere riportato. Senza turbolaser, perdita
+# immediata di 10 Punti Resistenza e fuga obbligata (¶187).
+func _resolve_structure_fight() -> void:
+	if _gear_has("Turbolaser"):
+		var col := highest_intelligence(expedition_units)
+		var die := randi_range(1, 6)
+		var differential := col + die - 7  # Intelligenza come colonna + tiro
+		var result := GameData.get_combat_result(differential)
+		# Solo risultati di uccisione: la struttura viene comunque distrutta; alla
+		# spedizione si applicano gli eventuali danni del risultato.
+		if result == "EX":
+			_apply_damage(1)
+		elif result == "DE":
+			_apply_damage(2)
+		add_log("¶193: combattimento col turbolaser (Intelligenza %d, tiro %d → %s)." % [col, die, result])
+		acquire_artifact(193)  # un pezzo della struttura può essere riportato (peso 3)
+		var msg := "La struttura vivente è neutralizzata: un pezzo è recuperato (riportalo per i PV)."
+		add_log(msg)
+		message_posted.emit(msg)
+		state_updated.emit()
+	else:
+		add_log("¶193: senza turbolaser la spedizione subisce 10 Punti Resistenza e deve fuggire.")
+		_apply_damage(10)
+		message_posted.emit("Senza turbolaser: −10 Punti Resistenza, fuga obbligata (¶187).")
+		show_paragraph(187)
 
 # Distribuzione degli esiti di combattimento per la modalità scelta (8.5):
 # per ciascun risultato del dado (1-6) calcola il differenziale e il risultato
@@ -495,20 +1331,241 @@ func combat_odds(mode: String) -> Dictionary:
 		dist[res] = int(dist.get(res, 0)) + 1
 	return dist
 
-func show_paragraph(para_num: int) -> void:
+# --- Interprete degli snodi «Incontro di spedizione» (regola 6.5) ------------
+
+# Valuta le regole di uno snodo nell'ordine dato e salta al primo goto la cui
+# condizione è vera. Se nessuna è vera, ri-tira la Matrice di Esplorazione (6.4)
+# per ottenere un altro snodo; con una guardia anti-ricorsione, oltre il limite si
+# mostra comunque il testo dello snodo corrente (fallback prudente).
+func _route_expedition_encounter(snodo: int, rules: Array) -> void:
+	for r in rules:
+		if _exp_cond_holds(r.get("cond", {})):
+			var dest := int(r.get("goto", 0))
+			add_log("Incontro di spedizione ¶%03d (6.5) → condizione soddisfatta → ¶%03d." % [snodo, dest])
+			show_paragraph(dest)
+			return
+	# Nessuna condizione vera: si ri-tira la Matrice di Esplorazione (6.5).
+	if _expedition_reroll_depth >= MAX_EXPEDITION_REROLLS:
+		add_log("Incontro di spedizione ¶%03d (6.5): nessuna condizione e troppi ri-tiri; mostro lo snodo." % snodo)
+		_expedition_reroll_depth = 0
+		_show_snodo_text(snodo)
+		return
+	_expedition_reroll_depth += 1
+	var d1 := randi_range(1, 6)
+	var d2 := randi_range(1, 6)
+	var other := GameData.get_exploration_2d6(d1, d2)
+	add_log("Incontro di spedizione ¶%03d (6.5): nessuna condizione vera; ri-tiro Matrice %d/%d → ¶%03d." % [snodo, d1, d2, other])
+	show_paragraph(other)
+
+# Mostra il testo grezzo di uno snodo (fallback quando si esauriscono i ri-tiri).
+func _show_snodo_text(para_num: int) -> void:
 	current_paragraph = para_num
 	encounter_outcome_text = ""
+	pending_goto = 0
+	set_phase(Phase.PARAGRAPH)
+	paragraph_request.emit(para_num)
+	state_updated.emit()
+
+# Vero se il terreno reale dell'esagono attualmente esplorato/occupato è `real`.
+# Regola 6.7: un esagono può contenere più tipi di terreno; oltre al terreno base
+# si considerano i terreni aggiuntivi elencati in `extra` (es. fiume, stagno, ghiaccio).
+func _current_terrain_is(real: String) -> bool:
+	var cell: Dictionary = environ_grid.get(expedition_pos, {})
+	if GameData.terrain_real(cell.get("terrain", "Open")) == real:
+		return true
+	for e in cell.get("extra", []):
+		if GameData.terrain_real(e) == real:
+			return true
+	return false
+
+# Vero se `real` è stato attraversato durante l'ultimo movimento affrettato (6.3).
+func _hasty_has(real: String) -> bool:
+	return real in hasty_path_terrains
+
+# L'esagono attuale ha vegetazione (terreno rado o fitto).
+func _current_has_vegetation() -> bool:
+	return _current_terrain_is("Light Vegetation") or _current_terrain_is("Heavy Vegetation")
+
+# Esiste un esagono Alien City non esplorato nell'area (6.5).
+# Vero se la cella contiene il terreno `real` (base o extra, regola 6.7).
+func _cell_terrain_is(cell: Dictionary, real: String) -> bool:
+	if GameData.terrain_real(cell.get("terrain", "Open")) == real:
+		return true
+	for e in cell.get("extra", []):
+		if GameData.terrain_real(e) == real:
+			return true
+	return false
+
+# Vero se un esagono ADIACENTE a quello occupato contiene lava fluente (6.5).
+# La lava che scorre è modellata come esagono Solid Lava + Liquid Surface (colata
+# liquida), distinta dalla lava solidificata (solo Solid Lava).
+func _lava_in_area() -> bool:
+	for nb in environ_neighbors(expedition_pos):
+		var cell: Dictionary = environ_grid.get(nb, {})
+		if _cell_terrain_is(cell, "Solid Lava") and _cell_terrain_is(cell, "Liquid Surface"):
+			return true
+	return false
+
+# Vero se lo shuttle (fermo sull'esagono di atterraggio) NON è occupato da un
+# personaggio funzionante, cioè la spedizione si è spostata altrove (6.5).
+func _shuttle_hex_unoccupied() -> bool:
+	return expedition_pos > 0 and expedition_pos != landing_hex
+
+func _unexplored_alien_city_in_area() -> bool:
+	for hid in environ_grid:
+		var cell: Dictionary = environ_grid[hid]
+		if cell.get("explored", false):
+			continue
+		if GameData.terrain_real(cell.get("terrain", "Open")) == "Alien City":
+			return true
+		for e in cell.get("extra", []):
+			if GameData.terrain_real(e) == "Alien City":
+				return true
+	return false
+
+# Valuta una condizione di snodo. Il dizionario contiene UNA chiave (o "all" per
+# combinare in AND). Le sotto-feature non modellate e il clima → FALSE (prudenza).
+func _exp_cond_holds(cond: Dictionary) -> bool:
+	if cond.has("all"):
+		for c in cond["all"]:
+			if not _exp_cond_holds(c):
+				return false
+		return true
+	if cond.has("terrain"):
+		return _current_terrain_is(str(cond["terrain"]))
+	if cond.has("terrain_or_hasty"):
+		var t := str(cond["terrain_or_hasty"])
+		return _current_terrain_is(t) or _hasty_has(t)
+	if cond.has("terrain_in"):
+		for t2 in cond["terrain_in"]:
+			if _current_terrain_is(str(t2)):
+				return true
+		return false
+	if cond.has("terrain_or_hasty_in"):
+		for t3 in cond["terrain_or_hasty_in"]:
+			if _current_terrain_is(str(t3)) or _hasty_has(str(t3)):
+				return true
+		return false
+	if cond.has("gravity"):
+		return str(planet_attrs.get("gravity", planet_gravity)) in cond["gravity"]
+	if cond.has("atmosphere"):
+		return str(planet_attrs.get("atmosphere", "Normal")) in cond["atmosphere"]
+	if cond.has("climate"):
+		# Clima del pianeta (5.1): valore atteso dalla traccia attributi (es.
+		# "tropicale", "sahariano", "artico", "temperato"). Vuoto finché non
+		# popolato nei dati-pianeta → condizione falsa.
+		var clim := str(planet_attrs.get("climate", ""))
+		return clim != "" and clim == str(cond["climate"])
+	if cond.has("climate_not"):
+		var clim2 := str(planet_attrs.get("climate", ""))
+		return clim2 != "" and clim2 != str(cond["climate_not"])
+	if cond.has("geology"):
+		return str(planet_attrs.get("geology", "Quiet")) == str(cond["geology"])
+	if cond.has("hydro"):
+		var h := int(planet_attrs.get("hydro", 0))
+		for hv in cond["hydro"]:
+			if int(hv) == h:
+				return true
+		return false
+	if cond.has("vegetation"):
+		return _current_has_vegetation()
+	if cond.has("vegetation_or_hasty"):
+		return _current_has_vegetation() or _hasty_has("Light Vegetation") or _hasty_has("Heavy Vegetation")
+	if cond.has("no_vegetation"):
+		return not _current_has_vegetation()
+	if cond.has("landing_hex"):
+		return expedition_pos == landing_hex
+	if cond.has("robot_in_expedition"):
+		for k in expedition_gear:
+			if GameData.get_bot_keys().has(k):
+				return true
+		return false
+	if cond.has("not_immersion_underground"):
+		# La spedizione non è mai in immersione né sottoterra nel modello attuale: vero.
+		return true
+	if cond.has("unexplored_alien_city_in_area"):
+		return _unexplored_alien_city_in_area()
+	if cond.has("lava_in_area"):
+		return _lava_in_area()
+	if cond.has("shuttle_hex_unoccupied"):
+		return _shuttle_hex_unoccupied()
+	if cond.has("pond_supply_used"):
+		return pond_supply_used
+	# inert / _subfeature: sotto-feature non modellate → FALSE (6.5).
+	# (climate/climate_not sono valutati sopra, ma falsi finché i dati-pianeta non
+	# includono il Clima — vedi 5.1.)
+	return false
+
+func show_paragraph(para_num: int) -> void:
+	# Snodi «Incontro di spedizione» (regola 6.5): se il paragrafo è uno snodo della
+	# Matrice di Esplorazione, non lo si mostra. Si valutano le sue condizioni in ordine
+	# e si salta al primo goto vero; se nessuna è vera si ri-tira la Matrice (con guardia
+	# anti-ricorsione). Vale solo durante una spedizione sulla superficie.
+	if expedition_pos > 0:
+		var rules := GameData.get_expedition_encounter(para_num)
+		if not rules.is_empty():
+			_route_expedition_encounter(para_num, rules)
+			return
+	current_paragraph = para_num
+	encounter_outcome_text = ""
+	pending_goto = 0
+	# Clima dell'area (5.1): se il paragrafo mostrato dichiara «Il clima è X», aggiorna
+	# l'attributo del pianeta usato dagli snodi 6.5 (climate/climate_not).
+	var area_climate := GameData.paragraph_climate(para_num)
+	if area_climate != "":
+		planet_attrs["climate"] = area_climate
+		add_log("Clima dell'area: %s." % area_climate)
+	# Effetto numerico dell'area (5.1): «Aggiungi/Sottrai N al Valore di Supporto
+	# Vitale», applicato una sola volta per spedizione (guardia anti-doppione).
+	var lsv_delta := GameData.paragraph_lsv_delta(para_num)
+	if lsv_delta != 0 and not _landing_fx_applied.has(para_num):
+		_landing_fx_applied.append(para_num)
+		planet_attrs["lsv"] = int(planet_attrs.get("lsv", 0)) + lsv_delta
+		add_log("Area ¶%03d: Valore di Supporto Vitale %+d → %d." % [para_num, lsv_delta, int(planet_attrs["lsv"])])
+		state_updated.emit()
+	# Una volta arrivati a un paragrafo di destinazione la catena di snodi è conclusa:
+	# si azzera il contatore dei ri-tiri per la prossima esplorazione.
+	_expedition_reroll_depth = 0
 	# Se il paragrafo è l'incontro di una creatura (retro del segnalino, 2.6) e la
 	# spedizione è sulla superficie, prepara l'incontro: i comandi di combattimento
 	# compaiono sopra al testo del paragrafo (le meccaniche seguono il libro-gioco).
+	var _just_began := false
 	if current_creature.is_empty() and expedition_pos > 0:
 		var creature := GameData.creature_for_paragraph(para_num)
 		if creature != "":
 			_begin_creature(creature)
+			_just_began = true
+	# Effetti d'intro della creatura (8.1): sorpresa → redirect/uccisione (¶162/¶170).
+	if _just_began:
+		_apply_creature_intro(para_num)
+		if pending_goto > 0:
+			var idest := pending_goto
+			pending_goto = 0
+			show_paragraph(idest)
+			return
+	# Instradamento procedurale a dado per paragrafi non-creatura (es. ¶172).
+	if current_creature.is_empty() and expedition_pos > 0:
+		var route := _paragraph_dice_route(para_num)
+		if route > 0:
+			show_paragraph(route)
+			return
 	# Esito d'incontro: se siamo in un incontro e il paragrafo ha rami codificati,
 	# il sistema li risolve coi Valori calcolati (8.2/8.5).
 	if not current_creature.is_empty() and not GameData.get_paragraph_logic(para_num).is_empty():
 		resolve_encounter_outcome(para_num)
+		# Un ramo «goto» rimanda subito a un altro paragrafo (rimando narrativo).
+		if pending_goto > 0:
+			var dest := pending_goto
+			pending_goto = 0
+			show_paragraph(dest)
+			return
+	# Effetti procedurali del paragrafo (danni/PV/ore/uccisioni/salti condizionati).
+	# Gli effetti numerici sono applicati una sola volta per spedizione; i salti
+	# condizionati ridirezionano subito.
+	var pfx := _apply_paragraph_effect(para_num)
+	if pfx > 0:
+		show_paragraph(pfx)
+		return
 	set_phase(Phase.PARAGRAPH)
 	paragraph_request.emit(para_num)
 	state_updated.emit()
@@ -521,7 +1578,16 @@ const RATING_TABLE := {2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11
 var pending_combat_shift: int = 0      # colonne a sinistra (+) sulla tabella combattimento
 var pending_no_capture: bool = false   # cattura non permessa
 var pending_kill_as_capture: bool = false  # i risultati di uccisione contano come cattura
+var pending_combat_remap: Dictionary = {}  # rimappa i risultati di combattimento (¶218)
+var pending_combat_remap_destroy: String = ""  # equipaggiamento distrutto quando il remap scatta (¶218: turbolaser)
+var pending_combat_kill_on: Array = []     # risultati su cui un personaggio a caso è ucciso (¶227)
 var encounter_outcome_text: String = ""    # esito risolto dal sistema, per la UI
+# Paragrafo di destinazione impostato da un ramo «goto» (rimando narrativo).
+var pending_goto: int = 0
+# Sorpresa (8.1) determinata all'inizio dell'incontro e leggibile dai rami dei paragrafi.
+var surprise_active: bool = false
+# Strategia d'incontro dichiarata dal giocatore (8.2): "communicate"|"capture_kill"|"flee".
+var chosen_strategy: String = ""
 
 # Calcola (e memorizza) il Valore di un attributo della creatura (8.4):
 # tabella[2d6 + modificatore]. attr: "intel"|"combat"|"aggression"|"speed".
@@ -545,13 +1611,13 @@ func creature_attr(attr: String) -> int:
 func expedition_max_speed() -> int:
 	var best := 0
 	for k in expedition_units:
-		best = maxi(best, int(GameData.get_character(k).get("speed", 0)))
+		best = maxi(best, effective_char_stat(k, "speed"))  # velocità efficace (5.2)
 	return best
 
 func expedition_min_speed() -> int:
 	var worst := 99
 	for k in expedition_units:
-		worst = mini(worst, int(GameData.get_character(k).get("speed", 99)))
+		worst = mini(worst, effective_char_stat(k, "speed"))  # velocità efficace (5.2)
 	return worst if worst < 99 else 0
 
 # --- Interprete dei rami dei paragrafi d'incontro (8.2/8.5) -------------------
@@ -572,7 +1638,12 @@ func resolve_encounter_outcome(para: int) -> void:
 
 func _cond_holds(conds: Array) -> bool:
 	for c in conds:
-		var lhs: int = _attr_or_mod(str(c[0]))
+		var key := str(c[0])
+		# Condizioni non numeriche (sorpresa 8.1 / strategia dichiarata 8.2 / equipaggiamento).
+		if key == "surprised" or key == "strategy" or key == "has_gear":
+			if not _cond_holds_special(key, str(c[1]), c[2]): return false
+			continue
+		var lhs: int = _attr_or_mod(key)
 		var rhs: int = _rhs_value(c[2])
 		match str(c[1]):
 			"<=": if not (lhs <= rhs): return false
@@ -580,6 +1651,20 @@ func _cond_holds(conds: Array) -> bool:
 			"<":  if not (lhs < rhs): return false
 			">":  if not (lhs > rhs): return false
 			"==": if not (lhs == rhs): return false
+	return true
+
+# Confronto di condizioni non numeriche dei rami (sorpresa, strategia scelta).
+func _cond_holds_special(key: String, op: String, rhs) -> bool:
+	if key == "surprised":
+		var want := bool(rhs)
+		return surprise_active == want if op == "==" else surprise_active != want
+	if key == "strategy":
+		var want_s := str(rhs)
+		return chosen_strategy == want_s if op == "==" else chosen_strategy != want_s
+	if key == "has_gear":
+		# Presenza di uno strumento/robot nella spedizione (es. Neuroscan, Turbolaser).
+		var present := _gear_has(str(rhs))
+		return present if op == "==" else not present
 	return true
 
 func _attr_or_mod(key: String) -> int:
@@ -604,6 +1689,32 @@ func _rhs_value(rhs) -> int:
 func _apply_act(act: Dictionary) -> void:
 	var t: String = str(act.get("type", ""))
 	match t:
+		"goto":
+			# Salto a un altro paragrafo (es. arrivo di un predatore o rimando narrativo).
+			# Si memorizza la destinazione: show_paragraph la esegue dopo aver risolto
+			# il paragrafo corrente, evitando ricorsione e sovrascritture della UI.
+			var h0: int = int(act.get("hours", 0))
+			if h0 > 0: add_expedition_hours(h0)
+			# Se il salto introduce una creatura diversa (la precedente fugge), si azzera
+			# lo stato d'incontro così che il paragrafo di destinazione la prepari da capo.
+			if bool(act.get("new_creature", false)):
+				_clear_encounter_state()
+				encounter_outcome_text = ""
+			pending_goto = int(act.get("para", 0))
+		"roll_goto":
+			# Tira N dadi (default 1) e instrada al primo intervallo «max» soddisfatto
+			# (es. ¶069 Comunica: 1-3→¶213, 4-6→¶217).
+			var nd: int = int(act.get("dice", 1))
+			var total := 0
+			for _r in range(nd):
+				total += randi_range(1, 6)
+			var rdest := 0
+			for rg in act.get("ranges", []):
+				if total <= int(rg.get("max", 6)):
+					rdest = int(rg.get("para", 0))
+					break
+			add_log("Incontro: %d dado/i = %d → ¶%03d." % [nd, total, rdest])
+			pending_goto = rdest
 		"flee":
 			var h: int = int(act.get("hours", 0)) if typeof(act.get("hours", 0)) != TYPE_STRING else 0
 			if h > 0: add_expedition_hours(h)
@@ -616,8 +1727,10 @@ func _apply_act(act: Dictionary) -> void:
 			_clear_encounter_state()
 		"capture":
 			if str(act.get("hours", "")) == "sum_pos_mods": add_expedition_hours(_sum_pos_mods())
+			elif int(act.get("hours", 0)) > 0: add_expedition_hours(int(act["hours"]))  # ore fisse (es. E-cage ¶019)
 			var nm := current_creature
 			captured_creatures.append(nm)
+			_record_creature_attributes(nm)
 			encounter_outcome_text = "%s catturata! Riportala alla Pandora per i PV." % nm
 			_clear_encounter_state()
 		"attack_flee":
@@ -632,12 +1745,15 @@ func _apply_act(act: Dictionary) -> void:
 			var h3: int = int(act.get("hours", 0))
 			if h3 > 0: add_expedition_hours(h3)
 			gain_vp(vp, "Vita intelligente studiata: %s" % current_creature)
+			_record_creature_attributes(current_creature)
 			encounter_outcome_text = "Vita senziente protetta: niente combattimento. +%d PV. Scegli un'azione." % vp
 			_clear_encounter_state()
 		"combat", "restrategy":
 			if act.has("hours_if_co_gso"):
 				var inteam: bool = ("CO" in expedition_units) or ("GSO" in expedition_units)
 				add_expedition_hours(int(act["hours_if_co_gso"]) if inteam else int(act.get("hours_else", 0)))
+			if act.has("hours"):
+				add_expedition_hours(int(act["hours"]))  # ore fisse (es. allestimento E-cage, ¶019)
 			pending_combat_shift = _compute_shift(act)
 			pending_no_capture = bool(act.get("no_capture", false))
 			pending_kill_as_capture = bool(act.get("kill_as_capture", false))
@@ -684,6 +1800,718 @@ func _compute_shift(act: Dictionary) -> int:
 	return int(act.get("shift", 0))
 
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
+# Registra/aggiorna un'infezione su un personaggio (importo di Resistenza perso a
+# ogni Controllo del Rifornimento). Se già infetto, tiene l'importo maggiore.
+func _infect(key: String, amt: int) -> void:
+	for inf in infected_chars:
+		if str(inf.get("key", "")) == key:
+			inf["amt"] = maxi(int(inf.get("amt", 1)), amt)
+			return
+	infected_chars.append({"key": key, "amt": amt})
+
+# Personaggio vivo a caso della spedizione ("" se nessuno).
+func _random_alive_char() -> String:
+	var alive: Array = []
+	for k in expedition_units:
+		if crew.has(k) and crew[k].get("alive", false):
+			alive.append(k)
+	return alive[randi_range(0, alive.size() - 1)] if not alive.is_empty() else ""
+
+# Danneggia un robot a caso della spedizione (6.9).
+func _damage_random_robot() -> void:
+	var bots := _functioning_bots()
+	if bots.is_empty():
+		return
+	var b: String = bots[randi_range(0, bots.size() - 1)]
+	if not damaged_gear.has(b):
+		damaged_gear.append(b)
+	add_log("%s viene danneggiato." % GameData.get_unit(b).get("name", b))
+
+# Int più alta tra i personaggi vivi a bordo della Pandora.
+func _highest_aboard_intel() -> int:
+	var best := 0
+	for k in crew.keys():
+		if crew[k].get("alive", false):
+			best = maxi(best, character_intelligence(k))
+	return best
+
+# Uccide N personaggi vivi scelti a caso (contesto interstellare/pirati).
+func _kill_random_characters(n: int) -> void:
+	for _i in range(n):
+		var alive: Array = []
+		for k in crew.keys():
+			if crew[k].get("alive", false):
+				alive.append(k)
+		if alive.is_empty():
+			break
+		var v: String = alive[randi_range(0, alive.size() - 1)]
+		crew[v]["alive"] = false
+		lose_vp(10, "Personaggio ucciso: %s" % crew[v].get("name", v))
+		add_log("%s viene ucciso." % crew[v].get("name", v))
+
+# Tira `dice` dadi per i Punti Danno; se la spedizione ha l'armorig, un solo dado.
+func _roll_damage_armorig(dice: int) -> int:
+	var n := 1 if _gear_has("Armorig") else dice
+	var t := 0
+	for _i in range(n):
+		t += randi_range(1, 6)
+	return t
+
+# ¶008 — caduta mortale di un'unità a caso (se a piedi). Eccezioni: gravità quasi
+# assente, climbkit, o (personaggio) armorig → non distrutta, ma perde 1 dado di
+# Resistenza (personaggio) o è danneggiata (robot).
+func _effect_008() -> void:
+	if _gear_has("Rover"):
+		add_log("¶008: la spedizione è nel rover: il veicolo precipita giù per un ripido pendio ed è distrutto (non riparabile).")
+		if not damaged_gear.has("Rover"):
+			damaged_gear.append("Rover")
+		expedition_gear.erase("Rover")
+		return
+	if expedition_units.is_empty():
+		return
+	var victim: String = expedition_units[randi_range(0, expedition_units.size() - 1)]
+	var is_char := crew.has(victim)
+	var protected: bool = str(planet_attrs.get("gravity", "")) == "Near weightless" or _gear_has("Climbkit") or (is_char and _gear_has("Armorig"))
+	if protected:
+		if is_char:
+			var loss := randi_range(1, 6)
+			crew[victim]["endurance"] = maxi(0, int(crew[victim].get("endurance", 0)) - loss)
+			add_log("¶008: %s scivola ma è protetto: −%d Resistenza." % [crew[victim].get("name", victim), loss])
+			if int(crew[victim]["endurance"]) <= 0:
+				_kill_character(victim)
+		else:
+			if not damaged_gear.has(victim):
+				damaged_gear.append(victim)
+			add_log("¶008: %s precipita ma viene recuperato, danneggiato." % victim)
+	elif is_char:
+		add_log("¶008: %s precipita verso la morte!" % crew[victim].get("name", victim))
+		_kill_character(victim)
+	else:
+		_kill_unit(victim)
+
+# ¶152 — virus dello stagno: un personaggio a caso muore, salvo medkit + Ufficiale
+# Medico presenti (e la vittima non è il Medico stesso).
+func _effect_152() -> void:
+	var chars: Array = []
+	for k in expedition_units:
+		if crew.has(k) and crew[k].get("alive", false):
+			chars.append(k)
+	if chars.is_empty():
+		return
+	var victim: String = chars[randi_range(0, chars.size() - 1)]
+	if _gear_has("Medkit") and ("MedO" in expedition_units) and victim != "MedO":
+		add_log("¶152: il virus dello stagno colpisce %s, ma medkit + Ufficiale Medico lo curano." % crew[victim].get("name", victim))
+	else:
+		add_log("¶152: %s muore per il virus dello stagno." % crew[victim].get("name", victim))
+		_kill_character(victim)
+
+# Effetti procedurali per-paragrafo. Ritorna un paragrafo di destinazione (>0) per i
+# salti condizionati; 0 altrimenti. Gli effetti numerici sono applicati una sola
+# volta per spedizione (guardia _landing_fx_applied).
+func _apply_paragraph_effect(para: int) -> int:
+	# Salti condizionati (nessuna guardia: ridirezionano).
+	if para == 2:
+		return 70 if crew.get("Nav", {}).get("alive", false) else 148
+	if _landing_fx_applied.has(para):
+		return 0
+	var applied := true
+	var redirect := 0
+	match para:
+		32:
+			var d := _roll_damage_armorig(2)
+			add_log("¶032: scossa sismica → %d Punti Danno." % d)
+			_apply_damage(d)
+		38:
+			var d2 := 6 if _gear_has("Armorig") else 12
+			add_log("¶038: eruzione vulcanica → %d Punti Resistenza persi." % d2)
+			_apply_damage(d2)
+			if _gear_has("Rover") and not damaged_gear.has("Rover"):
+				damaged_gear.append("Rover")
+				add_log("¶038: il rover viene danneggiato.")
+		166:
+			var nd := 1 if (("GSO" in expedition_units) or _gear_has("Reconbot")) else 2
+			var d3 := 0
+			for _i in range(nd):
+				d3 += randi_range(1, 6)
+			add_log("¶166: caduta dovuta alla gravità → %d Punti Danno." % d3)
+			_apply_damage(d3)
+		40:
+			add_expedition_hours(5)
+			var vp40 := character_intelligence("CO") if crew.get("CO", {}).get("alive", false) else 0
+			if vp40 > 0:
+				gain_vp(vp40, "¶040 rettiliani amichevoli (Int Comandante)")
+		158:
+			var vp := 5
+			if "CO" in expedition_units:
+				vp += 2
+			if _gear_has("Neuroscan"):
+				vp += 2
+			if _gear_has("Holographer"):
+				vp += 2
+			gain_vp(vp, "¶158 ultimo superstite telepate")
+		8:
+			_effect_008()
+		152:
+			_effect_152()
+		70:
+			var ni := character_intelligence("Nav") if crew.get("Nav", {}).get("alive", false) else 0
+			var r70 := randi_range(1, 6) + randi_range(1, 6)
+			if r70 <= ni - 2:
+				add_log("¶070: 2 dadi %d → atterraggio sicuro, nessun danno." % r70)
+			elif r70 <= ni + 1:
+				add_log("¶070: 2 dadi %d → atterraggio movimentato: un robot danneggiato." % r70)
+				_damage_random_robot()
+			else:
+				add_log("¶070: 2 dadi %d → schianto: 5 Punti Danno." % r70)
+				_apply_damage(5)
+		148:
+			var hi := _highest_aboard_intel()
+			var r148 := randi_range(1, 6) + randi_range(1, 6)
+			var dmg148 := 5 if r148 < hi else 12
+			add_log("¶148: 2 dadi %d vs Int %d → schianto: %d Punti Danno." % [r148, hi, dmg148])
+			_apply_damage(dmg148)
+		183:
+			var die183 := randi_range(1, 6)
+			if die183 <= 3:
+				var rl := randi_range(1, 6) + randi_range(1, 6)
+				add_log("¶183: dado %d → pirati respinti: %d Punti Resistenza, +1 Mese di Tour." % [die183, rl])
+				_apply_damage(rl)
+				_spend_tour_months(1, "¶183 riparazioni Pandora")
+			elif die183 <= 5:
+				add_log("¶183: dado %d → ¶191." % die183)
+				redirect = 191
+			else:
+				add_log("¶183: dado %d → i pirati distruggono la Pandora: tutti uccisi. Gioco finito." % die183)
+				for k in crew.keys():
+					crew[k]["alive"] = false
+				set_phase(Phase.GAME_OVER)
+		191:
+			var killed := randi_range(1, 6)
+			_kill_random_characters(killed)
+			for it in ["Turbolaser", "Netgun", "Stunbomb"]:
+				if _gear_has(it):
+					expedition_gear.erase(it)
+					if not damaged_gear.has(it):
+						damaged_gear.append(it)
+			var m191 := randi_range(1, 6)
+			if crew.get("MntO", {}).get("alive", false):
+				m191 = maxi(0, m191 - 2)
+			add_log("¶191: pirati in ritirata. %d personaggio/i ucciso/i; %d Mesi di Tour di riparazioni." % [killed, m191])
+			_spend_tour_months(m191, "¶191 riparazioni Pandora")
+		226:
+			if _gear_has("Rover"):
+				add_log("¶226: l'Oraloid fa a pezzi il rover (distrutto, non riparabile).")
+				expedition_gear.erase("Rover")
+				if not damaged_gear.has("Rover"):
+					damaged_gear.append("Rover")
+			else:
+				add_log("¶226: l'Oraloid divora un robot.")
+				_damage_random_robot()
+		28:
+			if _gear_has("Neuroscan"):
+				gain_vp(4, "¶028 alieni invisibili rilevati (neuroscanner)")
+			else:
+				redirect = 189
+		207:
+			gain_vp(3, "¶207 orchidea raccolta")
+			if randi_range(1, 6) >= 4:
+				redirect = 33
+		210:
+			gain_vp(5, "¶210 teletrasporto degli alieni")
+		211:
+			gain_vp(4 + (2 if _gear_has("Holographer") else 0), "¶211 Garbrist telepate")
+		213:
+			var v213 := 0
+			if _gear_has("Neuroscan"):
+				v213 += 4
+			if _gear_has("Holographer"):
+				v213 += 2
+			if "GSO" in expedition_units:
+				v213 += 2
+			gain_vp(v213, "¶213 Glassman intelligente")
+		214:
+			var v214 := 0
+			if _gear_has("Holographer"):
+				v214 += 3
+			if _gear_has("Neuroscan"):
+				v214 += 2
+			gain_vp(v214, "¶214 la creatura svanisce")
+		197:
+			var vic197 := _random_alive_char()
+			if vic197 != "" and not _gear_has("Armorig"):
+				_infect(vic197, 1)
+				add_log("¶197: %s è ricoperto da un fungo parassita: perdita ricorrente di Resistenza fino al rientro." % crew[vic197].get("name", vic197))
+			elif vic197 != "":
+				add_log("¶197: l'armorig protegge dall'infezione del fungo.")
+		209:
+			var vic209 := _random_alive_char()
+			if vic209 != "":
+				crew[vic209]["endurance"] = maxi(0, int(crew[vic209].get("endurance", 0)) - 2)
+				add_log("¶209: %s ha le convulsioni: −2 Resistenza (germe alieno)." % crew[vic209].get("name", vic209))
+				if not ("MedO" in expedition_units):
+					_infect(vic209, 1)
+				if int(crew[vic209]["endurance"]) <= 0:
+					_kill_character(vic209)
+		221:
+			var hrs := randi_range(1, 6)
+			add_expedition_hours(hrs)
+			for k in crew.keys():
+				if crew[k].get("alive", false) and int(crew[k].get("intelligence", 0)) > 6:
+					crew[k]["intelligence"] = 6
+			add_log("¶221: campo psionico → %d ore di incoscienza; Intelligenza di ogni personaggio ridotta a 6." % hrs)
+		189:
+			var n189 := randi_range(1, 6)
+			var robots := ["Ambot", "Reconbot", "Imrebot", "Specibot"]
+			var stealable: Array = []
+			for g in expedition_gear:
+				if g in robots:
+					stealable.append(g)
+			for g in expedition_gear:
+				if not (g in robots) and not (g in ["Rover", "Armorig", "Enviorig"]):
+					stealable.append(g)
+			var taken := 0
+			for g in stealable:
+				if taken >= n189:
+					break
+				expedition_gear.erase(g)
+				expedition_units.erase(g)
+				taken += 1
+			add_log("¶189: gli alieni invisibili sottraggono %d oggetto/i (robot per primi)." % taken)
+		223:
+			var bots223 := _functioning_bots()
+			if not bots223.is_empty():
+				var b: String = bots223[randi_range(0, bots223.size() - 1)]
+				expedition_gear.erase(b)
+				expedition_units.erase(b)
+				if not damaged_gear.has(b):
+					damaged_gear.append(b)
+				add_log("¶223: l'aeron afferra %s e schizza via." % GameData.get_unit(b).get("name", b))
+			else:
+				var vc223 := _random_alive_char()
+				if vc223 != "":
+					crew[vc223]["endurance"] = maxi(0, int(crew[vc223].get("endurance", 0)) - 2)
+					add_log("¶223: l'aeron colpisce %s di striscio: −2 Resistenza." % crew[vc223].get("name", vc223))
+		147:
+			if surprise_active and not _gear_has("Armorig"):
+				var sub := 0
+				if "SO" in expedition_units:
+					sub += 2
+				if "GSO" in expedition_units:
+					sub += 2
+				for k in expedition_units:
+					if crew.has(k) and crew[k].get("alive", false):
+						var loss := maxi(0, randi_range(1, 6) - sub)
+						if loss > 0:
+							crew[k]["endurance"] = maxi(0, int(crew[k]["endurance"]) - loss)
+							add_log("¶147: %s perde %d Resistenza (vermi-tunnel)." % [crew[k].get("name", k), loss])
+							if int(crew[k]["endurance"]) <= 0:
+								_kill_character(k)
+			redirect = 212
+		180:
+			var vic180 := _random_alive_char()
+			if vic180 != "" and not _gear_has("Armorig"):
+				var loss180 := randi_range(1, 6) + randi_range(1, 6)
+				if "MedO" in expedition_units:
+					loss180 -= 3
+				if _gear_has("Medkit"):
+					loss180 -= 3
+				loss180 = maxi(0, loss180)
+				crew[vic180]["endurance"] = maxi(0, int(crew[vic180]["endurance"]) - loss180)
+				add_log("¶180: %s incornato da uno sperone velenoso: −%d Resistenza." % [crew[vic180].get("name", vic180), loss180])
+				if int(crew[vic180]["endurance"]) <= 0:
+					_kill_character(vic180)
+			redirect = 17
+		217:
+			var vc217 := _random_alive_char()
+			if vc217 != "":
+				_kill_character(vc217)
+			var bots217 := _functioning_bots()
+			if not bots217.is_empty():
+				var b217: String = bots217[randi_range(0, bots217.size() - 1)]
+				expedition_gear.erase(b217)
+				expedition_units.erase(b217)
+				if not damaged_gear.has(b217):
+					damaged_gear.append(b217)
+				add_log("¶217: il Glassman ostile distrugge %s." % GameData.get_unit(b217).get("name", b217))
+			pending_combat_shift = 2
+			add_log("¶217: combattimento di uccisione contro il Glassman (modificatore di Combattimento +3).")
+		195:
+			var r195 := randi_range(1, 6)
+			if "CO" in expedition_units:
+				r195 -= 1
+			if "SO" in expedition_units:
+				r195 -= 1
+			if _gear_has("Neuroscan"):
+				r195 -= 1
+			if r195 <= 1:
+				gain_vp(7, "¶195 alieni: permesso pieno di esplorare")
+			elif r195 <= 4:
+				for it in ["Turbolaser", "Specibot", "Netgun", "Stunbomb"]:
+					if _gear_has(it):
+						expedition_gear.erase(it)
+						expedition_units.erase(it)
+				gain_vp(6, "¶195 alieni: armi dissolte dal prisma")
+			else:
+				redirect = 210
+		212:
+			var ok212 := ("SO" in expedition_units)
+			if not ok212:
+				ok212 = (randi_range(1, 6) + randi_range(1, 6)) < _expedition_max_intel()
+			if ok212:
+				captured_creatures.append("Verme parassita")
+				add_log("¶212: un verme parassita viene catturato con successo.")
+			else:
+				add_log("¶212: il tentativo di cattura del verme fallisce.")
+		219:
+			var v219 := 0
+			if _gear_has("Neuroscan"):
+				v219 += 3
+			if _gear_has("Holographer"):
+				v219 += 2
+			gain_vp(v219, "¶219 fungo intelligente studiato")
+			add_expedition_hours(randi_range(1, 6))
+		228:
+			var survivors := 0
+			for u in expedition_units.duplicate():
+				var sp := effective_char_stat(u, "speed")
+				var rollu := randi_range(1, 6) + randi_range(1, 6)
+				if rollu <= sp:
+					if crew.has(u):
+						survivors += 1
+				elif crew.has(u):
+					crew[u]["endurance"] = maxi(0, int(crew[u].get("endurance", 0)) - (rollu - sp))
+					if int(crew[u]["endurance"]) <= 0:
+						_kill_character(u)
+					elif crew[u].get("alive", false):
+						survivors += 1
+				else:
+					expedition_gear.erase(u)
+					expedition_units.erase(u)
+					if not damaged_gear.has(u):
+						damaged_gear.append(u)
+			if _gear_has("Rover"):
+				expedition_gear.erase("Rover")
+				if not damaged_gear.has("Rover"):
+					damaged_gear.append("Rover")
+			if survivors > 0:
+				gain_vp(5, "¶228 sopravvissuti al crollo")
+			add_log("¶228: trappola del crollo risolta (%d personaggio/i sopravvissuto/i)." % survivors)
+		230:
+			var roll230 := randi_range(1, 6) + randi_range(1, 6)
+			if "SO" in expedition_units:
+				roll230 -= 2
+			if roll230 < _expedition_max_intel():
+				gain_vp(3, "¶230 radrod catturato")
+				add_expedition_hours(1)
+				add_log("¶230: il radrod viene catturato facilmente (+3 PV, 1 ora).")
+			else:
+				expedition_gear.erase("Neuroscan")
+				var v230 := _random_alive_char()
+				if v230 != "":
+					crew[v230]["endurance"] = maxi(0, int(crew[v230].get("endurance", 0)) - 2)
+				add_expedition_hours(randi_range(1, 6) + randi_range(1, 6))
+				add_log("¶230: onde cerebrali del radrod: neuroscanner distrutto, un personaggio −2 Resistenza e privo di sensi.")
+		199:
+			var d199 := randi_range(1, 6)
+			if d199 == 1:
+				redirect = 195
+			elif d199 <= 3:
+				for it in ["Turbolaser", "Specibot", "Netgun", "Stunbomb"]:
+					if _gear_has(it):
+						expedition_gear.erase(it)
+						expedition_units.erase(it)
+				expedition_supply = 0
+				gain_vp(5, "¶199 le armi si dissolvono nel prisma")
+			elif d199 <= 5:
+				for g in expedition_gear.duplicate():
+					if not (g in ["Armorig", "Enviorig"]):
+						expedition_gear.erase(g)
+						expedition_units.erase(g)
+				expedition_supply = 0
+				gain_vp(5, "¶199 lampo accecante: equipaggiamento dissolto")
+			else:
+				redirect = 210
+		204:
+			var d204 := randi_range(1, 6)
+			if d204 == 1:
+				gain_vp(5, "¶204 gli alieni non inseguono")
+			elif d204 <= 3:
+				if _gear_has("Rover"):
+					expedition_gear.erase("Rover")
+					if not damaged_gear.has("Rover"):
+						damaged_gear.append("Rover")
+				redirect = 195
+			elif d204 <= 5:
+				_spend_tour_months(1, "¶204 spedizione imprigionata e studiata")
+				expedition_supply = 0
+				gain_vp(5, "¶204 rilasciati allo shuttle (rifornimenti confiscati)")
+			else:
+				redirect = 210
+		224:
+			var vic224 := _random_alive_char()
+			if vic224 != "" and not _gear_has("Armorig"):
+				var amt224 := 3
+				var hasMed := "MedO" in expedition_units
+				var hasKit := _gear_has("Medkit")
+				if hasMed and hasKit:
+					amt224 = 1
+				elif hasMed or hasKit:
+					amt224 = 2
+				_infect(vic224, amt224)
+				add_log("¶224: %s è spruzzato da veleno corrosivo: −%d Resistenza a ogni Controllo del Rifornimento fino al rientro." % [crew[vic224].get("name", vic224), amt224])
+			elif vic224 != "":
+				add_log("¶224: l'armorig protegge dal veleno del fungo.")
+		155:
+			var atmo := str(planet_attrs.get("atmosphere", ""))
+			var mnt := "MntO" in expedition_units
+			if atmo == "Poison" and mnt:
+				robot_decay = 1
+			elif (atmo == "Poison" and not mnt) or (atmo == "Corrosive" and mnt):
+				robot_decay = 3
+			elif atmo == "Corrosive" and not mnt:
+				robot_decay = 6
+			if robot_decay > 0:
+				add_log("¶155: atmosfera distruttiva → i robot si deterioreranno a ogni Controllo del Rifornimento (gravità %d)." % robot_decay)
+		231:
+			hostile_race = true
+			add_log("¶231: la razza locale è ora ostile: rischio d'imboscata a ogni Controllo del Rifornimento in quest'area.")
+		215:
+			var dmgd := 0
+			for g in expedition_gear.duplicate():
+				if not damaged_gear.has(g) and not (g in ["Armorig", "Enviorig", "Rover"]):
+					damaged_gear.append(g)
+					dmgd += 1
+			add_log("¶215: il campo di forza mentale del Garbrist danneggia %d tra robot e strumenti; poi si conduce il combattimento." % dmgd)
+		216:
+			if _gear_has("Rover") or _gear_has("Armorig"):
+				add_log("¶216: col rover o con l'armorig, si conduce il combattimento con l'Abomnid.")
+			else:
+				var slow216 := _slowest_unit()
+				if slow216 != "":
+					add_log("¶216: %s (il più lento, senza armorig) è fatto a pezzi dall'Abomnid, che poi fugge." % slow216)
+					_kill_unit(slow216)
+				_clear_encounter_state()
+				encounter_outcome_text = "L'Abomnid fugge: scegli un'azione di spedizione."
+		218:
+			if _gear_has("Turbolaser"):
+				pending_combat_remap = {"AR": "AE", "EX": "AE", "DR": "AE"}
+				pending_combat_remap_destroy = "Turbolaser"
+				add_log("¶218: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto). Conduci il combattimento di uccisione.")
+			else:
+				pending_combat_shift = 2
+				add_log("¶218: senza turbolaser, combattimento di uccisione con spostamento di 2 colonne a sinistra.")
+		227:
+			pending_combat_kill_on = ["EX", "DR", "DE"]
+			add_log("¶227: combattimento col glosper — sui risultati C/D/E un personaggio a caso è fatto a pezzi; conduci il combattimento.")
+		222:
+			var aggr := int(RATING_TABLE.get(clampi(randi_range(1, 6) + randi_range(1, 6), 2, 11), 9))
+			if aggr <= 4:
+				gain_vp(4, "¶222 le creature se ne vanno in pace")
+				redirect = 231
+			elif aggr <= 8:
+				var v222 := character_intelligence("CO") if ("CO" in expedition_units) else 4
+				if _gear_has("Neuroscan"):
+					v222 += 1
+				if _gear_has("Holographer"):
+					v222 += 1
+				gain_vp(v222, "¶222 comunicazione con le creature")
+			else:
+				redirect = 225
+		225:
+			# Combattimento di gruppo (valore combinato): qui se ne riassume l'esito
+			# (sopravvivenza +5 PV) e si prosegue al ¶231.
+			gain_vp(5, "¶225 sopravvissuti al combattimento di gruppo")
+			redirect = 231
+		_:
+			applied = false
+	if applied:
+		_landing_fx_applied.append(para)
+		state_updated.emit()
+	return redirect
+
+# Effetti d'intro di una creatura appena incontrata (8.1): sorpresa che ridireziona
+# o uccide, prima della scelta di strategia.
+func _apply_creature_intro(para: int) -> void:
+	match para:
+		162:
+			# Draloid: se colta di sorpresa → ¶226. Se non sorpresa e l'Ufficiale al
+			# rilevamento terrestre (GSO) è assente, 2 dadi vs Int max spedizione: ≥ → ¶226.
+			if surprise_active:
+				_clear_encounter_state()
+				pending_goto = 226
+			elif not ("GSO" in expedition_units):
+				var roll := randi_range(1, 6) + randi_range(1, 6)
+				if roll >= _expedition_max_intel():
+					add_log("¶162: 2 dadi %d ≥ Int max spedizione → ¶226." % roll)
+					_clear_encounter_state()
+					pending_goto = 226
+		170:
+			# Monoke: se colta di sorpresa, il membro col Valore di Velocità più basso
+			# (robot o personaggio) viene immediatamente divorato.
+			if surprise_active:
+				var slow := _slowest_unit()
+				if slow != "":
+					add_log("¶170: %s (il più lento) viene divorato!" % slow)
+					_kill_unit(slow)
+		66:
+			# Nebbia carnivora: sorpresa → combattimento con spostamento di 2 colonne a
+			# sinistra; con l'Holographer si guadagnano 4 PV.
+			if surprise_active:
+				pending_combat_shift = 2
+				add_log("¶066: sorpresa! Combattimento con spostamento di 2 colonne a sinistra.")
+			if _gear_has("Holographer"):
+				gain_vp(4, "¶066 nebbia documentata con l'Holographer")
+		72:
+			# Forma di vita blu (Unithalo): sorpresa → combattimento con spostamento di 1
+			# colonna a sinistra (il combattimento si risolve al ¶206).
+			if surprise_active:
+				pending_combat_shift = 1
+				add_log("¶072: sorpresa! Combattimento con spostamento di 1 colonna a sinistra.")
+		57:
+			# Creatura d'energia (Eleboid): folgora e danneggia tutti i robot, poi si
+			# risolve l'incontro normalmente.
+			var zapped := 0
+			for g in expedition_gear.duplicate():
+				if (g in ["Ambot", "Reconbot", "Imrebot", "Specibot"]) and not damaged_gear.has(g):
+					damaged_gear.append(g)
+					zapped += 1
+			if zapped > 0:
+				add_log("¶057: la creatura d'energia folgora e danneggia %d robot." % zapped)
+		208:
+			# Forma larvale (Reeler): con l'Ufficiale Scienze si riporta in salvo (+2 PV);
+			# altrimenti 1 dado: 1-3 la larva muore, 4-6 si trasforma e si combatte.
+			if "SO" in expedition_units:
+				gain_vp(2, "¶208 forma larvale riportata in salvo")
+				_clear_encounter_state()
+			elif randi_range(1, 6) <= 3:
+				add_log("¶208: la forma larvale muore; nessun Punto Vittoria.")
+				_clear_encounter_state()
+			else:
+				add_log("¶208: la forma larvale si trasforma in una creatura mortale simile a una manta!")
+		43:
+			# Mostruosità al silicio (Crusher): un robot a caso viene polverizzato, poi
+			# l'incontro si risolve normalmente.
+			var bots43 := _functioning_bots()
+			if not bots43.is_empty():
+				var b43: String = bots43[randi_range(0, bots43.size() - 1)]
+				expedition_gear.erase(b43)
+				expedition_units.erase(b43)
+				if not damaged_gear.has(b43):
+					damaged_gear.append(b43)
+				add_log("¶043: la mostruosità al silicio polverizza %s." % GameData.get_unit(b43).get("name", b43))
+		39:
+			# Anfibio di palude (Allidon): 1 dado, 5-6 → ¶205; 1-4 incontro normale.
+			if randi_range(1, 6) >= 5:
+				add_log("¶039: la bestia reagisce male → ¶205.")
+				_clear_encounter_state()
+				pending_goto = 205
+
+# Risolve una scelta-paragrafo cliccata dal giocatore (override paragraph_choices.json):
+# goto diretto, tiro→goto, condizione speciale, oppure «lascia stare».
+func resolve_paragraph_choice(act: Dictionary) -> void:
+	match str(act.get("type", "")):
+		"goto":
+			show_paragraph(int(act.get("para", 0)))
+		"roll_goto":
+			var nd := int(act.get("dice", 1))
+			var t := 0
+			for _i in range(nd):
+				t += randi_range(1, 6)
+			var dest := 0
+			for rg in act.get("ranges", []):
+				if t <= int(rg.get("max", 6)):
+					dest = int(rg.get("para", 0))
+					break
+			if dest > 0:
+				add_log("Scelta: %d dado/i = %d → ¶%03d." % [nd, t, dest])
+				show_paragraph(dest)
+			else:
+				add_log("Scelta: %d dado/i = %d → la creatura svanisce." % [nd, t])
+				encounter_outcome_text = "La creatura svanisce: scegli un'azione di spedizione."
+				choices_resolved.emit()
+		"investigate_173":
+			# Investiga il fungo: con l'Ufficiale Scienze → ¶219; altrimenti 2 dadi vs Int
+			# massima della spedizione (< → ¶219, ≥ → ¶224).
+			if "SO" in expedition_units:
+				show_paragraph(219)
+			elif (randi_range(1, 6) + randi_range(1, 6)) < _expedition_max_intel():
+				show_paragraph(219)
+			else:
+				show_paragraph(224)
+		"give_tribute_203":
+			# ¶203: si cede ai pirati uno di ogni tipo di robot e strumento; se ne vanno.
+			for g in expedition_gear.duplicate():
+				if not (g in ["Rover", "Armorig", "Enviorig"]):
+					expedition_gear.erase(g)
+					if not damaged_gear.has(g):
+						damaged_gear.append(g)
+			add_log("¶203: si cede ai pirati uno di ogni tipo di robot e strumento; i pirati se ne vanno.")
+			encounter_outcome_text = "I pirati se ne vanno con il tributo. Procedi (Tabella Pianeti)."
+			choices_resolved.emit()
+		_:
+			encounter_outcome_text = "Scegli un'azione di spedizione."
+			choices_resolved.emit()
+
+# Instradamento procedurale a dado per paragrafi non-creatura. Ritorna il paragrafo
+# di destinazione (0 = nessun instradamento).
+func _paragraph_dice_route(para: int) -> int:
+	match para:
+		172:
+			# Alieno nella città: 1 dado, 1-4 → ¶158, 5-6 → ¶228.
+			var roll := randi_range(1, 6)
+			var dest := 158 if roll <= 4 else 228
+			add_log("¶172: 1 dado %d → ¶%03d." % [roll, dest])
+			return dest
+		178:
+			# L'uovo si schiude: 1 dado, 1-2 → ¶142, 3-4 → ¶159, 5-6 → ¶162.
+			var r178 := randi_range(1, 6)
+			var d178 := 142 if r178 <= 2 else (159 if r178 <= 4 else 162)
+			add_log("¶178: 1 dado %d → ¶%03d." % [r178, d178])
+			return d178
+		185:
+			# Dispositivo alieno che si autodistrugge: 1 dado, 1-3 → ¶161, 4-6 → ¶034.
+			var r185 := randi_range(1, 6)
+			var d185 := 161 if r185 <= 3 else 34
+			add_log("¶185: 1 dado %d → ¶%03d." % [r185, d185])
+			return d185
+	return 0
+
+# Int più alta tra i PERSONAGGI della spedizione (i robot non hanno Intelligenza).
+func _expedition_max_intel() -> int:
+	var best := 0
+	for k in expedition_units:
+		if crew.has(k):
+			best = maxi(best, character_intelligence(k))
+	return best
+
+# Unità della spedizione col Valore di Velocità efficace più basso (5.2).
+func _slowest_unit() -> String:
+	var worst := 99
+	var who := ""
+	for k in expedition_units:
+		var sp := effective_char_stat(k, "speed")
+		if sp < worst:
+			worst = sp
+			who = k
+	return who
+
+# Uccide/distrugge un'unità della spedizione: personaggio (Resistenza a 0, −10 PV)
+# oppure robot/strumento (danneggiato e rimosso dalla spedizione, 6.9).
+func _kill_unit(key: String) -> void:
+	if crew.has(key):
+		if crew[key].get("alive", false):
+			crew[key]["alive"] = false
+			crew[key]["endurance"] = 0
+			lose_vp(10, "Personaggio ucciso: %s" % crew[key].get("name", key))
+			add_log("%s viene ucciso." % crew[key].get("name", key))
+	else:
+		if not damaged_gear.has(key):
+			damaged_gear.append(key)
+		expedition_gear.erase(key)
+		expedition_units.erase(key)
+		add_log("%s viene distrutto." % key)
+	state_updated.emit()
+
 func _begin_creature(name: String) -> void:
 	if GameData.get_creature(name).is_empty():
 		return
@@ -692,15 +2520,32 @@ func _begin_creature(name: String) -> void:
 	pending_combat_shift = 0
 	pending_no_capture = false
 	pending_kill_as_capture = false
+	pending_combat_remap = {}
+	pending_combat_remap_destroy = ""
+	pending_combat_kill_on = []
 	encounter_outcome_text = ""
+	chosen_strategy = ""
 	creature_rating = GameData.roll_creature_combat_rating(name)
 	add_log("Incontro con %s! Valutazione di combattimento per l'esagono: %d." % [name, creature_rating])
+	# Sorpresa (8.1): la creatura può colpire per prima. Lo Scanner riduce la probabilità.
+	# Il flag resta leggibile dai rami dei paragrafi (cond lhs "surprised").
+	var threshold := 1 if _gear_has("Scanner") else 2
+	var sroll := randi_range(1, 6)
+	surprise_active = sroll <= threshold
+	if surprise_active:
+		add_log("Sorpresa (8.1)! %s coglie la spedizione di sorpresa (tiro %d)." % [name, sroll])
 
 func return_to_pandora() -> void:
 	# Return from expedition to orbit
 	if current_phase == Phase.EXPEDITION or current_phase == Phase.PARAGRAPH:
 		shuttle_supply += expedition_supply
 		expedition_supply = 0
+		# Le infezioni vengono curate dall'attrezzatura sofisticata della Pandora (6.9).
+		if not infected_chars.is_empty():
+			add_log("Rientro sulla Pandora: le infezioni dei personaggi vengono curate.")
+			infected_chars = []
+		robot_decay = 0
+		hostile_race = false
 		# Assegna i PV per le creature catturate riportate sulla Pandora (8.0/9.0)
 		if captured_creatures.size() > 0:
 			for cname in captured_creatures:
@@ -708,6 +2553,13 @@ func return_to_pandora() -> void:
 				var vp := 1 + GameData.creature_vp(cname)
 				gain_vp(vp, "Creatura riportata viva: %s" % cname)
 			captured_creatures = []
+		# Assegna i PV degli artefatti riportati sulla Pandora (2.6/9.1)
+		if pending_artifact_vp.size() > 0:
+			for akey in pending_artifact_vp:
+				var av := int(GameData.get_artifact(akey.to_int()).get("vp", 0))
+				if av > 0:
+					gain_vp(av, "Artefatto riportato: ¶%s" % akey)
+			pending_artifact_vp = []
 		add_log("Ritorno alla Pandora da %s." % current_planet)
 		current_planet = ""
 		current_creature = ""
@@ -732,6 +2584,11 @@ func return_to_pandora() -> void:
 				show_paragraph(para)
 
 func _end_tour() -> void:
+	# Guardia di rientro: un evento interstellare auto-risolto può chiamare _end_tour
+	# (via _spend_tour_months) e poi far ricadere il controllo su move_pandora_to, che
+	# richiamerebbe _end_tour applicando due volte le penalità di fine tour.
+	if current_phase == Phase.GAME_OVER:
+		return
 	add_log("Tour completato! Calcolo Punti Vittoria...")
 	# Regola 9.2: 1 PV perso per ogni Punto Resistenza perso dai personaggi sopravvissuti.
 	var lost := 0
@@ -740,6 +2597,10 @@ func _end_tour() -> void:
 			lost += MAX_ENDURANCE - int(crew[k].get("endurance", MAX_ENDURANCE))
 	if lost > 0:
 		lose_vp(lost, "Ferite dei sopravvissuti a fine tour (%d Resistenza)" % lost)
+	# Regola 9.2: 5 PV persi per ogni mese oltre il Tour di Servizio scelto.
+	var over := tour_months_used - tour_length
+	if over > 0:
+		lose_vp(over * 5, "%d mese/i oltre il Tour (9.2)" % over)
 	show_paragraph(232)
 	set_phase(Phase.GAME_OVER)
 
@@ -757,9 +2618,149 @@ func lose_vp(amount: int, reason: String) -> void:
 
 func add_expedition_hours(h: int) -> void:
 	expedition_hours += h
+	# Traccia Tempo e Rifornimento (6.8): la posizione avanza delle ore spese; ogni
+	# volta che raggiunge/supera lo spazio di controllo si esegue un Controllo del
+	# Rifornimento (7.0) e la posizione si azzera, continuando con le ore residue.
+	# Una grande spesa può innescare più controlli (in particolare con gravità
+	# opprimente): si ripete finché tutte le ore sono collocate.
+	if h > 0 and expedition_pos > 0:
+		_advance_supply_track(h)
 	state_updated.emit()
 	if expedition_hours >= 12:
 		add_log("ATTENZIONE: 12+ ore di spedizione! Tornare allo shuttle!")
+
+# --- Traccia Tempo e Rifornimento (6.8 / 7.0) --------------------------------
+
+# Spazio del Controllo del Rifornimento per la gravità del pianeta in orbita (6.8).
+func supply_check_space() -> int:
+	var g := str(planet_attrs.get("gravity", planet_gravity))
+	return int(SUPPLY_CHECK_SPACE.get(g, 16))
+
+# Fa avanzare la posizione sulla Traccia delle ore indicate, innescando un Controllo
+# del Rifornimento ogni volta che si raggiunge/supera lo spazio di controllo (6.8).
+func _advance_supply_track(h: int) -> void:
+	var space := supply_check_space()
+	supply_track_pos += h
+	# Ciclo: ogni volta che la posizione raggiunge/supera lo spazio si esegue un
+	# controllo e si azzera la posizione, conservando le ore residue (loop multiplo).
+	while supply_track_pos >= space:
+		supply_track_pos -= space
+		_request_supply_check()
+
+# Avvia un Controllo del Rifornimento (7.2): col dado automatico lo risolve subito,
+# coi tiri manuali lo mette in coda e attende il dado del giocatore (GameScreen).
+func _request_supply_check() -> void:
+	if manual_dice:
+		pending_supply_checks += 1
+		# Se non c'è già un altro tiro in attesa, chiede al giocatore di tirare.
+		if not awaiting_die_roll:
+			pending_die_purpose = "supply_check"
+			awaiting_die_roll = true
+			message_posted.emit("Controllo del Rifornimento (7.2): tira un dado.")
+	else:
+		resolve_supply_check(randi_range(1, 6))
+
+# Risolve un Controllo del Rifornimento in coda col dado del giocatore (tiri manuali):
+# scala la coda e, se restano altri controlli, ri-arma la richiesta del dado (6.8).
+func resolve_pending_supply_check(die: int) -> void:
+	if pending_supply_checks > 0:
+		pending_supply_checks -= 1
+	resolve_supply_check(die)
+	if pending_supply_checks > 0:
+		pending_die_purpose = "supply_check"
+		awaiting_die_roll = true
+		message_posted.emit("Controllo del Rifornimento (7.2): tira un dado.")
+	else:
+		pending_die_purpose = ""
+
+# Controllo del Rifornimento (regola 7.2): un unico dado applicato a due calcoli.
+# 1) floor(Totale Utenti / dado) Punti Rifornimento spesi — al massimo 4.
+# 2) somma = Valore Supporto Vitale (lsv) + Modificatori di Rifornimento del terreno
+#    dell'esagono occupato; se > 0, floor(somma / dado) Punti aggiuntivi — al massimo 4.
+# Il totale viene speso dai Rifornimenti; l'eventuale ammanco è pagato in Resistenza (7.3).
+func resolve_supply_check(die: int) -> void:
+	if die <= 0:
+		die = 1
+	var users := supply_user_total()
+	var calc1 := mini(int(users / die), 4)
+	var lsv := int(planet_attrs.get("lsv", 0))
+	var cell: Dictionary = environ_grid.get(expedition_pos, {})
+	# 6.5: se il Controllo avviene su uno stagno, ne è stato «usato» il modificatore.
+	if _cell_terrain_is(cell, "Pond"):
+		pond_supply_used = true
+	var terr_supply := int(GameData.terrain_effect(cell.get("terrain", "Open")).get("supply", 0))
+	var summ := lsv + terr_supply
+	var calc2 := mini(int(summ / die), 4) if summ > 0 else 0
+	var total := calc1 + calc2
+	add_log("Controllo Rifornimento (7.2): dado %d · Utenti %d → %d · (LSV %d + terreno %d = %d) → %d · totale %d." % [
+		die, users, calc1, lsv, terr_supply, summ, calc2, total])
+	_expend_supply(total)
+	# Infezioni in corso (¶197/¶209): ogni personaggio infetto perde 1 Resistenza a
+	# ogni Controllo del Rifornimento, finché non rientra sulla Pandora.
+	for inf in infected_chars.duplicate():
+		var ik: String = str(inf.get("key", ""))
+		var iamt: int = int(inf.get("amt", 1))
+		if crew.has(ik) and crew[ik].get("alive", false):
+			crew[ik]["endurance"] = maxi(0, int(crew[ik].get("endurance", 0)) - iamt)
+			add_log("Infezione: %s perde %d Punto/i Resistenza (%d/%d)." % [crew[ik].get("name", ik), iamt, crew[ik]["endurance"], MAX_ENDURANCE])
+			if int(crew[ik]["endurance"]) <= 0:
+				_kill_character(ik)
+	# ¶155: l'atmosfera distruttiva danneggia un robot a ogni Controllo del Rifornimento.
+	if robot_decay > 0:
+		var rbots := _functioning_bots()
+		if not rbots.is_empty():
+			damaged_gear.append(rbots[0])
+			add_log("Atmosfera distruttiva (¶155): %s si deteriora ed è danneggiato." % GameData.get_unit(rbots[0]).get("name", rbots[0]))
+	# ¶231: la razza ostile può imboscare la spedizione a ogni Controllo del Rifornimento.
+	if hostile_race:
+		var dr := randi_range(1, 6)
+		if dr <= 2:
+			add_log("¶231: dado %d → la spedizione è imboscata e distrutta dalle forze di sicurezza locali." % dr)
+			for k in crew.keys():
+				if k in expedition_units:
+					crew[k]["alive"] = false
+			_end_encounter()
+			return_to_pandora()
+	state_updated.emit()
+
+# Totale degli Utenti di Rifornimento della spedizione (regola 7.1):
+# ogni personaggio conta DUE volte; ogni robot in spedizione (non sullo shuttle)
+# UNA volta; ogni strumento con simbolo di rifornimento UNA volta; il Rover conta
+# DOPPIO se la spedizione lo usa. Robot/strumenti danneggiati e creature catturate
+# non contano.
+# NB: i dati non hanno un flag «simbolo di rifornimento» per strumento, quindi si
+# contano una volta tutti gli strumenti non danneggiati (assunzione documentata).
+func supply_user_total() -> int:
+	var total := 0
+	for k in expedition_units:
+		if crew.get(k, {}).get("alive", false):
+			total += 2  # personaggio: doppio (7.1)
+	for k in expedition_gear:
+		if k in damaged_gear:
+			continue  # danneggiati non contano (7.1)
+		if k == "Rover":
+			total += 2  # il Rover conta doppio se in uso (7.1)
+		elif _gear_is_bot(k):
+			total += 1  # robot in spedizione: singolo (7.1)
+		else:
+			total += 1  # strumento (assunzione: tutti col simbolo di rifornimento)
+	return total
+
+# Spende i Punti Rifornimento del Controllo; l'eventuale ammanco diventa Punti
+# Resistenza tramite il consueto percorso di danno (7.3 / 8.8): 1 Punto = 1 Resistenza.
+func _expend_supply(points: int) -> void:
+	if points <= 0:
+		return
+	if expedition_supply >= points:
+		expedition_supply -= points
+		add_log("Spesi %d Punti Rifornimento (rimasti %d)." % [points, expedition_supply])
+	else:
+		var short := points - expedition_supply
+		if expedition_supply > 0:
+			add_log("Spesi %d Punti Rifornimento: rifornimenti esauriti." % expedition_supply)
+		expedition_supply = 0
+		add_log("Rifornimenti insufficienti (7.3): %d Punti pagati in Resistenza." % short)
+		_apply_damage(short)
 
 func use_expedition_supply(amount: int) -> bool:
 	if expedition_supply >= amount:
@@ -779,6 +2780,11 @@ func reset_expedition_state() -> void:
 	expedition_pos = 0
 	landing_hex = 0
 	current_environ_id = 0
+	hasty_path_terrains = []
+	_expedition_reroll_depth = 0
+	# La Traccia Tempo e Rifornimento (6.8) riparte da capo a ogni nuova spedizione.
+	supply_track_pos = 0
+	pending_supply_checks = 0
 
 # --- Superficie planetaria (environ) -----------------------------------------
 
@@ -804,6 +2810,11 @@ func environ_neighbors(hex_id: int) -> Array:
 # (es. "1502"), scegliendo l'environ corretto e l'esagono d'atterraggio corretto.
 func generate_environ_at(landing_real: String) -> void:
 	environ_grid = {}
+	pond_supply_used = false
+	_landing_fx_applied = []
+	infected_chars = []
+	robot_decay = 0
+	hostile_race = false
 	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
 	if place.is_empty():
 		# Fallback: environ deterministico per sistema, atterraggio al centro.
@@ -820,6 +2831,7 @@ func generate_environ_at(landing_real: String) -> void:
 		var hid := int(str(key))
 		environ_grid[hid] = {
 			"terrain": h.get("terrain", "Open"),
+			"extra": h.get("extra", []),
 			"explored": false,
 			"real": h.get("real", ""),
 			"x": h.get("x", 0.0),
@@ -841,6 +2853,8 @@ func explore_current_hex() -> void:
 	if cell.get("explored", false):
 		add_log("Questo esagono è già stato esplorato.")
 		return
+	# Esplorazione dell'esagono occupato: nuova azione, niente percorso affrettato (6.5).
+	hasty_path_terrains = []
 	explore_environ_hex(expedition_pos, cell.get("terrain", "Open"))
 
 # Versione legacy (atterraggio al centro) mantenuta per compatibilità.
@@ -900,6 +2914,9 @@ func hasty_move_to(hex_id: int) -> void:
 	var cost := _hasty_path_cost(expedition_pos, hex_id)
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
+	# Memorizza i terreni reali attraversati lungo il percorso più economico: servono
+	# alla variante «oppure vi si è entrati durante il movimento affrettato» (6.5).
+	hasty_path_terrains = _hasty_path_terrains(expedition_pos, hex_id)
 	expedition_pos = hex_id
 	add_expedition_hours(cost)
 	add_log("Movimento affrettato fino a %s — %d ore." % [cell.get("real", str(hex_id)), cost])
@@ -935,9 +2952,50 @@ func _hasty_path_cost(from_hex: int, to_hex: int) -> int:
 					queue.append(nb)
 	return dist.get(to_hex, 99)
 
+# Ricostruisce i terreni reali (es. "Mountain") attraversati lungo il percorso più
+# economico di un movimento affrettato (escluso l'esagono di partenza, incluso l'arrivo).
+# Usa lo stesso costo d'ingresso di _hasty_path_cost (Dijkstra con predecessori).
+func _hasty_path_terrains(from_hex: int, to_hex: int) -> Array:
+	var dist := {from_hex: 0}
+	var prev := {}
+	var queue := [from_hex]
+	while queue.size() > 0:
+		var bi := 0
+		for i in range(1, queue.size()):
+			if dist[queue[i]] < dist[queue[bi]]:
+				bi = i
+		var cur: int = queue[bi]
+		queue.remove_at(bi)
+		if cur == to_hex:
+			break
+		for nb in environ_neighbors(cur):
+			if not environ_grid.has(nb):
+				continue
+			var nterr: String = environ_grid[nb].get("terrain", "Open")
+			var nd: int = dist[cur] + enter_cost_for(nterr)
+			if not dist.has(nb) or nd < dist[nb]:
+				dist[nb] = nd
+				prev[nb] = cur
+				if not (nb in queue):
+					queue.append(nb)
+	# Risali la catena dei predecessori fino alla partenza, raccogliendo i terreni reali.
+	var terrains: Array = []
+	if not prev.has(to_hex) and to_hex != from_hex:
+		return terrains
+	var node: int = to_hex
+	while node != from_hex and prev.has(node):
+		var t: String = environ_grid.get(node, {}).get("terrain", "Open")
+		var real := GameData.terrain_real(t)
+		if not (real in terrains):
+			terrains.append(real)
+		node = prev[node]
+	return terrains
+
 func move_expedition(hex_id: int) -> void:
 	if not can_move_expedition(hex_id):
 		return
+	# Un movimento normale azzera la traccia del movimento affrettato (nuova azione, 6.5).
+	hasty_path_terrains = []
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
 	var real_id: String = cell.get("real", str(hex_id))
@@ -961,7 +3019,10 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 	add_expedition_hours(explore_cost)
 	add_log("Esplorazione di %s — %d ore%s." % [
 		_terrain_it(terrain), explore_cost, _gear_cost_note(terrain)])
-	_consume_supply_for(terrain)
+	# Il consumo di rifornimenti non è più legato direttamente al terreno: avviene
+	# tramite il Controllo del Rifornimento (7.0), innescato dalle ore sulla Traccia
+	# Tempo (6.8) in add_expedition_hours; il Modificatore di Rifornimento del terreno
+	# alimenta il calcolo 2 del controllo (7.2), non aggiunge/toglie scorte direttamente.
 	environ_changed.emit()
 	# Esplorazione subordinata al libro-gioco (6.4): Matrice di Esplorazione reale.
 	# Si tira il 1° dado (colonna) e il 2° dado (riga) → paragrafo dell'incontro.
@@ -1009,26 +3070,6 @@ func _gear_cost_note(terrain: String) -> String:
 	if _gear_has("Rover") and int(GameData.terrain_effect(terrain).get("enter_rover", 0)) > 0:
 		parts.append("Rover")
 	return "" if parts.is_empty() else " (" + ", ".join(parts) + ")"
-
-# --- Controllo dei rifornimenti (regola 7.2) ---------------------------------
-
-# Esplorare un esagono consuma (o, su terreni fertili, fornisce) Rifornimenti.
-func _consume_supply_for(terrain: String) -> void:
-	var cost := int(GameData.terrain_effect(terrain).get("supply", 0))
-	if cost < 0:
-		# Terreno fertile: rifornimento, fino al massimo trasportabile
-		expedition_supply = mini(expedition_supply - cost, GameData.max_supply())
-		add_log("Il terreno fornisce %d Rifornimenti (totale %d)." % [-cost, expedition_supply])
-	elif cost > 0:
-		if expedition_supply >= cost:
-			expedition_supply -= cost
-			add_log("Consumo di %d Rifornimenti (rimasti %d)." % [cost, expedition_supply])
-		else:
-			var short := cost - expedition_supply
-			expedition_supply = 0
-			add_log("Rifornimenti esauriti (7.2): %d Punti Danno per gli stenti." % short)
-			_apply_damage(short)
-	state_updated.emit()
 
 # --- Equipaggiamento danneggiato e riparazioni (regola 6.9) ------------------
 
@@ -1078,6 +3119,24 @@ func choose_encounter_strategy(strategy: String) -> void:
 	if current_creature.is_empty():
 		return
 	var c := GameData.get_creature(current_creature)
+	chosen_strategy = strategy
+	var sname0: String = {"communicate": "Comunica", "capture_kill": "Cattura/Uccidi", "flee": "Fuggi"}.get(strategy, strategy)
+	# Alcuni paragrafi d'incontro intro (es. ¶009 «tartaruga») descrivono un esito
+	# specifico per una certa strategia: se il paragrafo corrente ha rami che
+	# combaciano con la strategia scelta, si risolvono direttamente, scavalcando
+	# la Tabella di Strategia d'Incontro.
+	if not GameData.get_paragraph_logic(current_paragraph).is_empty():
+		resolve_encounter_outcome(current_paragraph)
+		if pending_goto > 0:
+			var dest := pending_goto
+			pending_goto = 0
+			add_log("Strategia «%s»: il paragrafo %03d rimanda al ¶%03d." % [sname0, current_paragraph, dest])
+			show_paragraph(dest)
+			return
+		if encounter_outcome_text != "":
+			add_log("Strategia «%s»: esito specifico del paragrafo %03d." % [sname0, current_paragraph])
+			state_updated.emit()
+			return
 	var intel := int(c.get("intel", 0))
 	var aggr := int(c.get("aggression", 0))
 	var modifier := 0
@@ -1088,8 +3147,7 @@ func choose_encounter_strategy(strategy: String) -> void:
 	var roll := randi_range(1, 6)
 	var die := roll + modifier
 	var para := GameData.encounter_strategy_para(die, strategy)
-	var sname: String = {"communicate": "Comunica", "capture_kill": "Cattura/Uccidi", "flee": "Fuggi"}.get(strategy, strategy)
-	add_log("Strategia «%s»: dado %d %+d = %d → Paragrafo %03d." % [sname, roll, modifier, die, para])
+	add_log("Strategia «%s»: dado %d %+d = %d → Paragrafo %03d." % [sname0, roll, modifier, die, para])
 	if para > 0:
 		show_paragraph(para)
 
@@ -1122,6 +3180,23 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 	# Spostamento di colonne dai rami del paragrafo (8.5): a sinistra = a favore.
 	var differential := player_total - creature_rating + pending_combat_shift
 	var result := GameData.get_combat_result(differential)
+	# Rimappa il risultato per i paragrafi speciali (¶218: col turbolaser B/C/D → A,
+	# con il turbolaser considerato distrutto).
+	if pending_combat_remap.has(result):
+		var newr: String = str(pending_combat_remap[result])
+		if pending_combat_remap_destroy != "" and _gear_has(pending_combat_remap_destroy):
+			expedition_gear.erase(pending_combat_remap_destroy)
+			if not damaged_gear.has(pending_combat_remap_destroy):
+				damaged_gear.append(pending_combat_remap_destroy)
+			add_log("%s è considerato distrutto." % pending_combat_remap_destroy)
+		add_log("Risultato di combattimento %s rimappato a %s." % [result, newr])
+		result = newr
+	# Vittime extra su certi risultati (¶227: il glosper fa a pezzi un personaggio).
+	if result in pending_combat_kill_on:
+		var vk := _random_alive_char()
+		if vk != "":
+			add_log("Il mostro fa a pezzi %s." % crew[vk].get("name", vk))
+			_kill_character(vk)
 	var shift_txt := (" [%+d col.]" % pending_combat_shift) if pending_combat_shift != 0 else ""
 	var detail := "%s: %d (val.%d +1d6) vs creatura %d → diff %+d%s → %s" % [
 		mode, player_total, player_combat, creature_rating, differential, shift_txt, result
@@ -1130,7 +3205,10 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 
 	match result:
 		"AE":  # l'attaccante elimina/cattura il difensore
-			if mode == "capture" or pending_kill_as_capture:
+			# Una creatura col morso velenoso (¶005) non può essere catturata in
+			# combattimento: si applica comunque l'uccisione (e morde prima di morire).
+			var venomous: bool = GameData.get_creature(current_creature).has("poison_bite")
+			if (mode == "capture" or pending_kill_as_capture) and not venomous:
 				_capture_creature(current_creature)
 			else:
 				_kill_creature(current_creature)
@@ -1151,12 +3229,62 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 
 func _capture_creature(name: String) -> void:
 	captured_creatures.append(name)
+	_record_creature_attributes(name)
 	add_log("%s catturata viva! (riportala alla Pandora per i PV)" % name)
 	_end_encounter()
 
 func _kill_creature(name: String) -> void:
+	# Morso velenoso (¶005): la creatura morde un personaggio prima di morire.
+	var cd := GameData.get_creature(name)
+	if cd.has("poison_bite"):
+		_apply_poison_bite(name, cd["poison_bite"])
+	_record_creature_attributes(name)
 	add_log("%s eliminata." % name)
 	_end_encounter()
+
+# Morso velenoso (¶005): un personaggio scelto a caso perde Punti Resistenza
+# (un dado, −2 con l'Ufficiale Medico, −2 col Medkit); la perdita è da veleno e
+# va contrassegnata (poison_endurance_lost). Nota: l'eventuale protezione di
+# enviorig/armorig non è modellata (l'enviorig non esiste come oggetto).
+func _apply_poison_bite(name: String, cfg: Dictionary) -> void:
+	var loss := randi_range(1, int(cfg.get("die", 6)))
+	if "MedO" in expedition_units:
+		loss -= int(cfg.get("minus_medic", 0))
+	if _gear_has("Medkit"):
+		loss -= int(cfg.get("minus_medkit", 0))
+	loss = maxi(0, loss)
+	if loss <= 0:
+		add_log("%s tenta di mordere, ma il veleno è neutralizzato (medico/medkit)." % name)
+		return
+	var who := _pick_random_alive()
+	if who == "":
+		return
+	poison_endurance_lost += loss
+	add_log("Morso velenoso di %s: %s perde %d Punti Resistenza da veleno (contrassegnati)." % [name, crew[who]["name"], loss])
+	_damage_character(who, loss)
+
+# Personaggio imbarcato vivo scelto a caso ("" se nessuno).
+func _pick_random_alive() -> String:
+	var alive: Array = []
+	for k in expedition_units:
+		if crew.get(k, {}).get("alive", false):
+			alive.append(k)
+	return alive[randi_range(0, alive.size() - 1)] if not alive.is_empty() else ""
+
+# Registra un tipo di creatura sul Registro degli Attributi (9.1): la prima volta
+# che la si studia (uccisione/cattura/studio) si guadagna 1 PV per ogni modificatore
+# di attributo pari a zero (il «*» del segnalino: Intelligenza/Combattimento/Aggressività/Velocità).
+func _record_creature_attributes(name: String) -> void:
+	if name.is_empty() or name in recorded_creatures:
+		return
+	recorded_creatures.append(name)
+	var c := GameData.get_creature(name)
+	var zeros := 0
+	for a in ["intel", "combat", "aggression", "speed"]:
+		if int(c.get(a, -1)) == 0:
+			zeros += 1
+	if zeros > 0:
+		gain_vp(zeros, "Attributi a zero registrati: %s (%d × «*», 9.1)" % [name, zeros])
 
 # I Punti Danno riducono la Resistenza dei personaggi imbarcati (8.8).
 # I robot funzionanti fanno da scudo: assorbono un colpo ciascuno danneggiandosi (6.9).
@@ -1203,6 +3331,19 @@ func _kill_character(key: String) -> void:
 		add_log("La spedizione non ha più personaggi: è considerata distrutta. Rientro forzato.")
 		_end_encounter()
 		return_to_pandora()
+
+# Danno mirato a uno specifico personaggio (es. ¶030: chi investiga il globo):
+# perde `points` Punti Resistenza; se arriva a zero viene ucciso.
+func _damage_character(key: String, points: int) -> void:
+	if not crew.get(key, {}).get("alive", false):
+		return
+	damage_points += points
+	crew[key]["endurance"] = maxi(0, int(crew[key].get("endurance", MAX_ENDURANCE)) - points)
+	add_log("%s subisce %d Punti Danno (Resistenza %d/%d)." % [
+		crew[key]["name"], points, crew[key]["endurance"], MAX_ENDURANCE])
+	if crew[key]["endurance"] <= 0:
+		_kill_character(key)
+	state_updated.emit()
 
 # Cura: l'Ufficiale Medico o un Medkit imbarcato ripristinano la Resistenza del più ferito (2.5).
 func _can_treat() -> bool:

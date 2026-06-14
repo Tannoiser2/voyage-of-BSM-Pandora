@@ -19,7 +19,21 @@
     "Mountain": "Mountain",
     "Forest": "Heavy Vegetation",
     "Desert": "Solid Lava",
-    "Ice": "Glacial Ice"
+    "Ice": "Glacial Ice",
+    "Alien City": "Alien City",
+    "Light Vegetation": "Light Vegetation",
+    "Cliffs": "Cliffs",
+    "Cave": "Cave",
+    "River": "River",
+    "Abyss": "Abyss",
+    "Marsh": "Marsh",
+    "Pond": "Pond",
+    "Liquid Surface": "Liquid Surface",
+    "Flat": "Flat",
+    "Hill": "Hill",
+    "Heavy Vegetation": "Heavy Vegetation",
+    "Solid Lava": "Solid Lava",
+    "Glacial Ice": "Glacial Ice"
   },
   "terrain_it": {
     "Flat": "Pianura",
