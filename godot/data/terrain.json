@@ -19,7 +19,8 @@
     "Mountain": "Mountain",
     "Forest": "Heavy Vegetation",
     "Desert": "Solid Lava",
-    "Ice": "Glacial Ice"
+    "Ice": "Glacial Ice",
+    "Alien City": "Alien City"
   },
   "terrain_it": {
     "Flat": "Pianura",

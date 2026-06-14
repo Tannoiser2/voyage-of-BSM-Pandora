@@ -51,11 +51,12 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 - **snodo «Incontro di spedizione» (053, 056, …):** tabelle di salto condizionato
   a terreno/gravità/clima/atmosfera. L'interprete valuta gravità, atmosfera,
   idrografia, geologia, vegetazione, **clima** (5.1, derivato dal testo dell'area:
-  «Il clima è X») e i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice).
-  Resta inerte la distinzione dei **terreni fini** (Cave/Cliffs/Mountain/Light
-  Vegetation/Liquid Surface/Marsh/Alien City) e le sotto-feature: le mappe environ
-  codificano solo 5 classi grezze, quindi nessuno dei 36 snodi è ancora pienamente
-  valutabile ⇒ 🔴/🟡 finché non si arricchisce il terreno per-esagono.
+  «Il clima è X»), i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice) e
+  ora le **Città Aliene** (23 esagoni mappati dalle 8 mappe environ, verificati).
+  **8 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.** Restano inerti i
+  **terreni fini** (Cave/Cliffs/Mountain/Light Vegetation/Liquid Surface/Marsh) e le
+  sotto-feature (lava fluente, ecc.): 12 snodi sono bloccati solo da questi terreni,
+  16 da sotto-feature ⇒ 🔴 finché non si arricchisce ulteriormente il per-esagono.
 - **procedurale-vario:** tiri/condizioni con effetti su Resistenza, PV, ore,
   equipaggiamento. Quasi sempre solo testo ⇒ 🔴 (🟡 se in parte coperto).
 
@@ -67,13 +68,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 72 | 31,0% |
+| 🟢 Verde | 80 | 34,5% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 119 | 51,3% |
+| 🔴 Rosso | 111 | 47,8% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 39,9%**
-( (72 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 43,3%**
+( (80 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -84,9 +85,9 @@ come metà, l'indice di completezza è **≈ 39,9%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 0 | 0 | 36 | 36 |
+| snodo «Incontro di spedizione» | 8 | 0 | 28 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **72** | **41** | **119** | **232** |
+| **Totale** | **80** | **41** | **111** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -178,7 +179,7 @@ come metà, l'indice di completezza è **≈ 39,9%**
 | 068 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶004/173/181) non valutata. |
 | 069 | incontro-creatura (Glassman, snodo) | 🔴 | Comunica/Combatti con tiri 1d6 → ¶213/217/220 non gestiti. |
 | 070 | procedurale (atterraggio shuttle) | 🔴 | Tre esiti su Intelligenza navigatore (danni/robot/5 Punti Danno) non automatizzati. |
-| 071 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶042/051/043) non valutata. |
+| 071 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/051/043 — Città Aliena / gravità quasi assente / atmosfera velenosa): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 072 | incontro-creatura (Unithalo) | 🔴 | Sorpresa shift 1 sx, deviazione a ¶206 e ramo Fuga (rapimento) non gestiti. |
 | 073 | evento-interstellare (esito) | 🔴 | Check MedO/Intelligenza (cura o animazione sospesa) non automatizzato. |
 | 074 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶028/009/057) non valutata. |
@@ -207,7 +208,7 @@ come metà, l'indice di completezza è **≈ 39,9%**
 | 097 | pianeta/orbita (Opoplo 20) | 🟢 | Idem, da dati. |
 | 098 | pianeta/orbita (Mezo 20) | 🟢 | Idem, da dati. |
 | 099 | pianeta/orbita (Paleo 20) | 🟢 | Idem, da dati. |
-| 100 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶002/006/207/005) non valutata. |
+| 100 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶002/006/207/005 — atterraggio / Città Aliena / vegetazione+gravità / Heavy Veg.+atmosfera): il motore salta al ramo giusto o ri-tira la Matrice. |
 
 ### 101–150 — orbite, atterraggi, snodi e creature di superficie
 
@@ -252,7 +253,7 @@ come metà, l'indice di completezza è **≈ 39,9%**
 | 137 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 138 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 139 | atterraggio (artico) | 🟡 | «+1 LSV» e ridefinizioni fiumi/paludi→ghiaccio non automatizzati. |
-| 140 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶006/003/170) non valutata. |
+| 140 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶006/003/170 — Città Aliena / Flat+atmosfera / Glacial Ice+gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 141 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 142 | incontro-creatura (Decapus) | 🟡 | Sorpresa+strategia gestite dal motore; nessun effetto extra ⇒ vicino al 🟢, ma lo shift di sorpresa è applicato solo dentro `paragraph_logic` (assente per 142). |
 | 143 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶006/003/162) non valutata. |
@@ -277,7 +278,7 @@ come metà, l'indice di completezza è **≈ 39,9%**
 | 157 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶030/072/054/032) non valutata. |
 | 158 | esito (alieno amichevole) | 🔴 | +5 PV e bonus CO/neuroscanner/Holographer e divieto incontri successivi non automatizzati. |
 | 159 | incontro-creatura (Mirror Fly) | 🟡 | Creatura preparata; «il carapace respinge il turbolaser» non modellato. |
-| 160 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶036/060/153) non valutata. |
+| 160 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/060/153 — Città Aliena / Flat+veg.+gravità / atmosfera+clima sahariano): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 161 | incontro-creatura (insetti, senza pedina) | 🔴 | Gruppo variabile (1d6), +3 a ogni attributo, comunica(¶222)/combatti(¶125): non gestito. |
 | 162 | incontro-creatura (Draloid, snodo) | 🔴 | Sorpresa→¶226 e check Intelligenza/GTO non gestiti. |
 | 163 | procedurale (shuttle divorato) | 🔴 | Vincolo temporale «torna allo shuttle prima del controllo» e perdita shuttle→¶050 non gestiti. |
@@ -291,7 +292,7 @@ come metà, l'indice di completezza è **≈ 39,9%**
 | 171 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶036/145/147) non valutata. |
 | 172 | incontro (alieno città, snodo) | 🔴 | Tiro 1d6 → ¶158/228 non gestito. |
 | 173 | incontro (fungo, senza pedina) | 🔴 | Check Intelligenza/GSO → ¶219/224 non gestito. |
-| 174 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/048/167) non valutata. |
+| 174 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/048/167 — Città Aliena / veg.+clima tropicale / Flat senza veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 175 | procedurale (arma, WO) | 🟢 | Pulsante «Esamina» (resolver `intel_check`): 2 dadi vs Intelligenza più alta → arma trasportabile dopo 1d6 ore / oggetto banale lasciato / esplosione con 2d6 Punti Danno. |
 | 176 | incontro (rete vivente, senza pedina) | 🟡 | Sostanzialmente narrativo «scegli azione»; il +3 PV Holographer non viene assegnato. |
 | 177 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶042/007/149) non valutata. |
@@ -301,9 +302,9 @@ come metà, l'indice di completezza è **≈ 39,9%**
 | 181 | incontro-creatura (Garbrist, snodo) | 🔴 | Comunica(neuroscanner→¶230 / ¶016) non gestito. |
 | 182 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶163/036/041/043) non valutata. |
 | 183 | procedurale (combattimento pirati) | 🔴 | Tiro 1d6 con esiti (Resistenza/¶191/game over) non automatizzato. |
-| 184 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶155/042/031/029) non valutata. |
+| 184 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶155/042/031/029 — atmosfera+robot / Città Aliena / Hill+clima sahariano / Heavy Veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 185 | procedurale (dispositivo alieno) | 🔴 | Tiro 1d6 → ¶161/034 non gestito. |
-| 186 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶042/027/051) non valutata. |
+| 186 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/027/051 — Città Aliena / Heavy Veg.+atmosfera / gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 187 | procedurale (fuga dalla struttura) | 🟢 | Pulsante «Subisci i raggi»: per ogni personaggio e robot 2 dadi vs Velocità → distruzione se superata; col rover Velocità minima 8; −2 con turbolaser, −2 con scanner, −2 per chi indossa l'armorig. |
 | 188 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶034/039/142) non valutata. |
 | 189 | procedurale (furto equipaggiamento) | 🔴 | Tiro 1d6 e rimozione casuale robot/strumenti non automatizzati. |
@@ -313,7 +314,7 @@ come metà, l'indice di completezza è **≈ 39,9%**
 | 193 | procedurale (combattimento struttura) | 🟢 | Pulsante «Affronta la struttura»: col turbolaser combattimento via Intelligenza (solo uccisione) → struttura distrutta e pezzo recuperato (artefatto ¶193, peso 3, PV al rientro); senza turbolaser −10 Punti Resistenza e fuga obbligata a ¶187. Caveat: la colonna-Intelligenza della Tabella Combattimento è modellata in modo approssimato. |
 | 194 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶172/063/069) non valutata. |
 | 195 | procedurale (comunicazione alieni) | 🔴 | Tiro 1d6 con modificatori CO/GSO/neuroscanner e PV/¶210 non gestiti. |
-| 196 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/079/048) non valutata. |
+| 196 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/079/048 — Città Aliena / Glacial Ice+gravità / veg.+clima temperato): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 197 | procedurale (fungo parassita) | 🔴 | Perdita Resistenza a ogni controllo rifornimento (salvo armorig) non automatizzata. |
 | 198 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶040/077/079) non valutata. |
 | 199 | procedurale (combattimento alieni) | 🔴 | Tiro 1d6 con perdite equipaggiamento/PV/¶210 non gestiti. |

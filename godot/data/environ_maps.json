@@ -60,7 +60,7 @@
 "lr": 5,
 "x": 797.9,
 "y": 890.5,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "65": {
 "real": "0605",
@@ -84,7 +84,7 @@
 "lr": 4,
 "x": 291.1,
 "y": 805.2,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "15": {
 "real": "0105",
@@ -188,7 +188,7 @@
 "lr": 4,
 "x": 459.8,
 "y": 713.1,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "44": {
 "real": "0404",
@@ -196,7 +196,7 @@
 "lr": 4,
 "x": 627.6,
 "y": 798.9,
-"terrain": "Forest"
+"terrain": "Alien City"
 },
 "63": {
 "real": "0603",
@@ -268,7 +268,7 @@
 "lr": 2,
 "x": 628.2,
 "y": 439.5,
-"terrain": "Forest"
+"terrain": "Alien City"
 },
 "61": {
 "real": "0601",
@@ -1207,7 +1207,7 @@
 "lr": 3,
 "x": 459.8,
 "y": 559.6,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "43": {
 "real": "0410",
@@ -1392,7 +1392,7 @@
 "lr": 6,
 "x": 297.1,
 "y": 1262.7,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "46": {
 "real": "1013",
@@ -1400,7 +1400,7 @@
 "lr": 6,
 "x": 643.2,
 "y": 1265.7,
-"terrain": "Desert"
+"terrain": "Alien City"
 },
 "66": {
 "real": "1213",
@@ -1408,7 +1408,7 @@
 "lr": 6,
 "x": 996.9,
 "y": 1265.1,
-"terrain": "Desert"
+"terrain": "Alien City"
 },
 "35": {
 "real": "0912",
@@ -1416,7 +1416,7 @@
 "lr": 5,
 "x": 472.1,
 "y": 962.1,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "25": {
 "real": "0812",
@@ -1432,7 +1432,7 @@
 "lr": 6,
 "x": 469.1,
 "y": 1163.7,
-"terrain": "Desert"
+"terrain": "Alien City"
 },
 "55": {
 "real": "1112",
@@ -1440,7 +1440,7 @@
 "lr": 5,
 "x": 817.9,
 "y": 958.4,
-"terrain": "Desert"
+"terrain": "Alien City"
 },
 "65": {
 "real": "1212",
@@ -1456,7 +1456,7 @@
 "lr": 5,
 "x": 644.6,
 "y": 1063.7,
-"terrain": "Desert"
+"terrain": "Alien City"
 },
 "24": {
 "real": "0811",
@@ -1464,7 +1464,7 @@
 "lr": 4,
 "x": 294.8,
 "y": 863.4,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "15": {
 "real": "0712",
@@ -1488,7 +1488,7 @@
 "lr": 6,
 "x": 817.9,
 "y": 1160.1,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "67": {
 "real": "1214",
@@ -1512,7 +1512,7 @@
 "lr": 7,
 "x": 644.9,
 "y": 1462.8,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "37": {
 "real": "0914",
@@ -1536,7 +1536,7 @@
 "lr": 7,
 "x": 122.1,
 "y": 1370.8,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "53": {
 "real": "1110",
@@ -1560,7 +1560,7 @@
 "lr": 3,
 "x": 651.6,
 "y": 669.6,
-"terrain": "Desert"
+"terrain": "Alien City"
 },
 "34": {
 "real": "0911",
@@ -1576,7 +1576,7 @@
 "lr": 4,
 "x": 645.9,
 "y": 868.1,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "63": {
 "real": "1210",
@@ -1600,7 +1600,7 @@
 "lr": 4,
 "x": 996.3,
 "y": 866.1,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "14": {
 "real": "0711",
@@ -1608,7 +1608,7 @@
 "lr": 4,
 "x": 124.7,
 "y": 769.0,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "23": {
 "real": "0810",
@@ -1648,7 +1648,7 @@
 "lr": 2,
 "x": 647.9,
 "y": 473.0,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "61": {
 "real": "1208",
@@ -1712,7 +1712,7 @@
 "lr": 1,
 "x": 646.2,
 "y": 272.9,
-"terrain": "Rough"
+"terrain": "Alien City"
 },
 "11": {
 "real": "0708",
