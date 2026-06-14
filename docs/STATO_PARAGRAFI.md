@@ -59,10 +59,12 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   ora mappati, sono stati convertiti in condizioni
   reali anche i segnaposto di 7 snodi (059/078/110/194 e 143/146/154). I dati di
   terreno delle 8 mappe sono stati rimappati per intero e verificati uno a uno in un
-  foglio esagono×terreno (modello multi-terreno completo). **27 dei 36 snodi sono
-  così pienamente valutabili ⇒ 🟢.** Restano **9 snodi** che richiedono meccaniche
-  non-terreno: esagoni sottomarini/immersione (065/130/188/198/200), adiacenza a
-  lava fluente (056/202), stato stagno/shuttle (168/182) ⇒ 🔴.
+  foglio esagono×terreno (modello multi-terreno completo). Gli esagoni **sottomarini** sono
+  modellati come esagoni **Liquid Surface** (esplorazione in immersione), sbloccando
+  065/130/188/198/200. **32 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.**
+  Restano **4 snodi**: adiacenza a lava fluente (056/202, serve logica di vicinato +
+  definizione lava fluente) e stato stagno/shuttle (168/182, serve tracciamento di
+  stato) ⇒ 🔴.
   Regola **6.7** (un esagono può contenere più terreni): il motore supporta un campo
   `extra` per i terreni aggiuntivi sovrapposti al terreno base; `_current_terrain_is`
   soddisfa sia il base sia gli extra.
@@ -77,13 +79,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 99 | 42,7% |
+| 🟢 Verde | 104 | 44,8% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 92 | 39,7% |
+| 🔴 Rosso | 87 | 37,5% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 51,5%**
-( (99 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 53,7%**
+( (104 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -94,9 +96,9 @@ come metà, l'indice di completezza è **≈ 51,5%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 27 | 0 | 9 | 36 |
+| snodo «Incontro di spedizione» | 32 | 0 | 4 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **99** | **41** | **92** | **232** |
+| **Totale** | **104** | **41** | **87** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -182,7 +184,7 @@ come metà, l'indice di completezza è **≈ 51,5%**
 | 062 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/179/066 — Città Aliena / Light Veg.+gravità / Hill+gravità): salto al ramo giusto o ri-tiro Matrice. |
 | 063 | incontro-creatura (Nessie) | 🟡 | Creatura preparata e strategia offerta; il requisito «3 E-cage» per il trasporto non è modellato. |
 | 064 | evento-interstellare (deviazione Opoplo) | 🔴 | Deviazione di rotta verso Opoplo, esagono 0817 e ¶076 non automatizzati. |
-| 065 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶030/170/075) non valutata. |
+| 065 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cliffs / Liquid Surface+vegetazione): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 066 | incontro-creatura (nebbia, senza pedina) | 🔴 | Creatura «senza counter» con modificatori espliciti e +4 PV Holographer: non gestita (nessun segnalino in dati). |
 | 067 | evento-interstellare (esito) | 🔴 | «+1 mese di tour» (follia temporanea) non applicato; solo testo. |
 | 068 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶004/173/181 — Città Aliena / Heavy Veg. / Marsh): salto al ramo giusto o ri-tiro Matrice. |
@@ -252,7 +254,7 @@ come metà, l'indice di completezza è **≈ 51,5%**
 | 127 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 128 | atterraggio (sahariano) | 🟡 | «+1 LSV» va applicato a mano. |
 | 129 | atterraggio (tropicale) | 🟡 | «Le caverne non esistono» non è modellato nell'environ. |
-| 130 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶166/042/142/029) non valutata. |
+| 130 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (gravita / Citta Aliena / Liquid Surface / Heavy Veg): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 131 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 132 | atterraggio (oceano/tropicale) | 🟡 | Ridefinizioni vegetazione sopra/sotto e città/struttura inesistenti non gestite. |
 | 133 | atterraggio (sahariano) | 🟡 | «+1 LSV» e «caverne 1101–1103 inesistenti» non automatizzati. |
@@ -315,7 +317,7 @@ come metà, l'indice di completezza è **≈ 51,5%**
 | 185 | procedurale (dispositivo alieno) | 🔴 | Tiro 1d6 → ¶161/034 non gestito. |
 | 186 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/027/051 — Città Aliena / Heavy Veg.+atmosfera / gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 187 | procedurale (fuga dalla struttura) | 🟢 | Pulsante «Subisci i raggi»: per ogni personaggio e robot 2 dadi vs Velocità → distruzione se superata; col rover Velocità minima 8; −2 con turbolaser, −2 con scanner, −2 per chi indossa l'armorig. |
-| 188 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶034/039/142) non valutata. |
+| 188 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (citta aliena non esplorata / Marsh+atmosfera / Liquid Surface): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 189 | procedurale (furto equipaggiamento) | 🔴 | Tiro 1d6 e rimozione casuale robot/strumenti non automatizzati. |
 | 190 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/037/164 — Città Aliena / Heavy Veg. / Mountain+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 191 | procedurale (esito pirati) | 🔴 | Uccisioni casuali, perdita robot/strumenti e mesi di tour non automatizzati. |
@@ -325,9 +327,9 @@ come metà, l'indice di completezza è **≈ 51,5%**
 | 195 | procedurale (comunicazione alieni) | 🔴 | Tiro 1d6 con modificatori CO/GSO/neuroscanner e PV/¶210 non gestiti. |
 | 196 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/079/048 — Città Aliena / Glacial Ice+gravità / veg.+clima temperato): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 197 | procedurale (fungo parassita) | 🔴 | Perdita Resistenza a ogni controllo rifornimento (salvo armorig) non automatizzata. |
-| 198 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶040/077/079) non valutata. |
+| 198 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Liquid Surface / vegetazione+atmosfera): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 199 | procedurale (combattimento alieni) | 🔴 | Tiro 1d6 con perdite equipaggiamento/PV/¶210 non gestiti. |
-| 200 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶028/077/035) non valutata. |
+| 200 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Liquid Surface+Cliffs-o-Abyss / Light Veg+atmosfera): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 
 ### 201–232 — avvio, esiti finali, snodi e chiusura
 

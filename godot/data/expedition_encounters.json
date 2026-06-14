@@ -188,7 +188,14 @@
     },
     {
       "cond": {
-        "inert": "esagono sottomarino con vegetazione: sottomarino non modellato"
+        "all": [
+          {
+            "terrain": "Liquid Surface"
+          },
+          {
+            "vegetation": true
+          }
+        ]
       },
       "goto": 75
     }
@@ -445,7 +452,7 @@
     },
     {
       "cond": {
-        "inert": "esagono sottomarino: non modellato"
+        "terrain": "Liquid Surface"
       },
       "goto": 142
     },
@@ -1053,7 +1060,7 @@
     },
     {
       "cond": {
-        "inert": "esagono sottomarino: non modellato"
+        "terrain": "Liquid Surface"
       },
       "goto": 142
     }
@@ -1201,7 +1208,7 @@
     },
     {
       "cond": {
-        "inert": "esagono sottomarino: non modellato"
+        "terrain": "Liquid Surface"
       },
       "goto": 77
     },
@@ -1230,7 +1237,17 @@
     },
     {
       "cond": {
-        "inert": "esagono sottomarino con dirupi o un abisso: sottomarino non modellato"
+        "all": [
+          {
+            "terrain": "Liquid Surface"
+          },
+          {
+            "terrain_in": [
+              "Cliffs",
+              "Abyss"
+            ]
+          }
+        ]
       },
       "goto": 77
     },
