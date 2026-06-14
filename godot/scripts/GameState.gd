@@ -45,17 +45,17 @@ var pending_die_purpose: String = ""
 var manual_dice: bool = false
 signal die_rolled(value: int, purpose: String)
 
-# Crew — ogni personaggio ha un Valore di Resistenza (Endurance) di 6 (regola 2.5).
+# Crew — ogni personaggio ha un Valore di Resistenza (Endurance) di 5 (regola 2.5).
 # I Punti Danno riducono la Resistenza; a 0 il personaggio è ucciso (8.8).
-const MAX_ENDURANCE := 6
+const MAX_ENDURANCE := 5
 var crew: Dictionary = {
-	"CO":   {"name": "Comandante",            "alive": true, "endurance": 6},
-	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 6},
-	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "endurance": 6},
-	"GSO":  {"name": "Ufficiale Scienze",     "alive": true, "endurance": 6},
-	"MedO": {"name": "Ufficiale Medico",      "alive": true, "endurance": 6},
-	"WO":   {"name": "Ufficiale Armi",        "alive": true, "endurance": 6},
-	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "endurance": 6}
+	"CO":   {"name": "Comandante",            "alive": true, "endurance": 5},
+	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 5},
+	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "endurance": 5},
+	"GSO":  {"name": "Ufficiale Scienze",     "alive": true, "endurance": 5},
+	"MedO": {"name": "Ufficiale Medico",      "alive": true, "endurance": 5},
+	"WO":   {"name": "Ufficiale Armi",        "alive": true, "endurance": 5},
+	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "endurance": 5}
 }
 
 var visited_systems: Array = []
