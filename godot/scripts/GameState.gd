@@ -158,6 +158,7 @@ func save_game(silent := false) -> bool:
 		"creature_attr_cache": creature_attr_cache,
 		"pending_combat_shift": pending_combat_shift, "pending_no_capture": pending_no_capture,
 		"pending_kill_as_capture": pending_kill_as_capture,
+		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
 		"landing_hex": landing_hex, "current_environ_id": current_environ_id,
@@ -231,6 +232,8 @@ func load_game() -> bool:
 	pending_combat_shift = int(d.get("pending_combat_shift", 0))
 	pending_no_capture = bool(d.get("pending_no_capture", false))
 	pending_kill_as_capture = bool(d.get("pending_kill_as_capture", false))
+	surprise_active = bool(d.get("surprise_active", false))
+	chosen_strategy = str(d.get("chosen_strategy", ""))
 	encounter_outcome_text = str(d.get("encounter_outcome_text", ""))
 	environ_grid = {}
 	var eg: Variant = d.get("environ_grid", {})
@@ -498,6 +501,7 @@ func combat_odds(mode: String) -> Dictionary:
 func show_paragraph(para_num: int) -> void:
 	current_paragraph = para_num
 	encounter_outcome_text = ""
+	pending_goto = 0
 	# Se il paragrafo è l'incontro di una creatura (retro del segnalino, 2.6) e la
 	# spedizione è sulla superficie, prepara l'incontro: i comandi di combattimento
 	# compaiono sopra al testo del paragrafo (le meccaniche seguono il libro-gioco).
@@ -509,6 +513,12 @@ func show_paragraph(para_num: int) -> void:
 	# il sistema li risolve coi Valori calcolati (8.2/8.5).
 	if not current_creature.is_empty() and not GameData.get_paragraph_logic(para_num).is_empty():
 		resolve_encounter_outcome(para_num)
+		# Un ramo «goto» rimanda subito a un altro paragrafo (rimando narrativo).
+		if pending_goto > 0:
+			var dest := pending_goto
+			pending_goto = 0
+			show_paragraph(dest)
+			return
 	set_phase(Phase.PARAGRAPH)
 	paragraph_request.emit(para_num)
 	state_updated.emit()
@@ -522,6 +532,12 @@ var pending_combat_shift: int = 0      # colonne a sinistra (+) sulla tabella co
 var pending_no_capture: bool = false   # cattura non permessa
 var pending_kill_as_capture: bool = false  # i risultati di uccisione contano come cattura
 var encounter_outcome_text: String = ""    # esito risolto dal sistema, per la UI
+# Paragrafo di destinazione impostato da un ramo «goto» (rimando narrativo).
+var pending_goto: int = 0
+# Sorpresa (8.1) determinata all'inizio dell'incontro e leggibile dai rami dei paragrafi.
+var surprise_active: bool = false
+# Strategia d'incontro dichiarata dal giocatore (8.2): "communicate"|"capture_kill"|"flee".
+var chosen_strategy: String = ""
 
 # Calcola (e memorizza) il Valore di un attributo della creatura (8.4):
 # tabella[2d6 + modificatore]. attr: "intel"|"combat"|"aggression"|"speed".
@@ -572,7 +588,12 @@ func resolve_encounter_outcome(para: int) -> void:
 
 func _cond_holds(conds: Array) -> bool:
 	for c in conds:
-		var lhs: int = _attr_or_mod(str(c[0]))
+		var key := str(c[0])
+		# Condizioni non numeriche (sorpresa 8.1 / strategia dichiarata 8.2).
+		if key == "surprised" or key == "strategy":
+			if not _cond_holds_special(key, str(c[1]), c[2]): return false
+			continue
+		var lhs: int = _attr_or_mod(key)
 		var rhs: int = _rhs_value(c[2])
 		match str(c[1]):
 			"<=": if not (lhs <= rhs): return false
@@ -580,6 +601,16 @@ func _cond_holds(conds: Array) -> bool:
 			"<":  if not (lhs < rhs): return false
 			">":  if not (lhs > rhs): return false
 			"==": if not (lhs == rhs): return false
+	return true
+
+# Confronto di condizioni non numeriche dei rami (sorpresa, strategia scelta).
+func _cond_holds_special(key: String, op: String, rhs) -> bool:
+	if key == "surprised":
+		var want := bool(rhs)
+		return surprise_active == want if op == "==" else surprise_active != want
+	if key == "strategy":
+		var want_s := str(rhs)
+		return chosen_strategy == want_s if op == "==" else chosen_strategy != want_s
 	return true
 
 func _attr_or_mod(key: String) -> int:
@@ -604,6 +635,18 @@ func _rhs_value(rhs) -> int:
 func _apply_act(act: Dictionary) -> void:
 	var t: String = str(act.get("type", ""))
 	match t:
+		"goto":
+			# Salto a un altro paragrafo (es. arrivo di un predatore o rimando narrativo).
+			# Si memorizza la destinazione: show_paragraph la esegue dopo aver risolto
+			# il paragrafo corrente, evitando ricorsione e sovrascritture della UI.
+			var h0: int = int(act.get("hours", 0))
+			if h0 > 0: add_expedition_hours(h0)
+			# Se il salto introduce una creatura diversa (la precedente fugge), si azzera
+			# lo stato d'incontro così che il paragrafo di destinazione la prepari da capo.
+			if bool(act.get("new_creature", false)):
+				_clear_encounter_state()
+				encounter_outcome_text = ""
+			pending_goto = int(act.get("para", 0))
 		"flee":
 			var h: int = int(act.get("hours", 0)) if typeof(act.get("hours", 0)) != TYPE_STRING else 0
 			if h > 0: add_expedition_hours(h)
@@ -693,8 +736,16 @@ func _begin_creature(name: String) -> void:
 	pending_no_capture = false
 	pending_kill_as_capture = false
 	encounter_outcome_text = ""
+	chosen_strategy = ""
 	creature_rating = GameData.roll_creature_combat_rating(name)
 	add_log("Incontro con %s! Valutazione di combattimento per l'esagono: %d." % [name, creature_rating])
+	# Sorpresa (8.1): la creatura può colpire per prima. Lo Scanner riduce la probabilità.
+	# Il flag resta leggibile dai rami dei paragrafi (cond lhs "surprised").
+	var threshold := 1 if _gear_has("Scanner") else 2
+	var sroll := randi_range(1, 6)
+	surprise_active = sroll <= threshold
+	if surprise_active:
+		add_log("Sorpresa (8.1)! %s coglie la spedizione di sorpresa (tiro %d)." % [name, sroll])
 
 func return_to_pandora() -> void:
 	# Return from expedition to orbit
@@ -1078,6 +1129,7 @@ func choose_encounter_strategy(strategy: String) -> void:
 	if current_creature.is_empty():
 		return
 	var c := GameData.get_creature(current_creature)
+	chosen_strategy = strategy
 	var intel := int(c.get("intel", 0))
 	var aggr := int(c.get("aggression", 0))
 	var modifier := 0
