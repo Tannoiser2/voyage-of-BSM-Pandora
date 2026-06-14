@@ -62,13 +62,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 65 | 28,0% |
-| 🟡 Giallo | 45 | 19,4% |
-| 🔴 Rosso | 122 | 52,6% |
+| 🟢 Verde | 67 | 28,9% |
+| 🟡 Giallo | 44 | 19,0% |
+| 🔴 Rosso | 121 | 52,2% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 37,7%**
-( (65 + 45/2) / 232 ).
+come metà, l'indice di completezza è **≈ 38,4%**
+( (67 + 44/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -80,8 +80,8 @@ come metà, l'indice di completezza è **≈ 37,7%**
 | incontro-creatura (intro) | 7 | 22 | 19 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
 | snodo «Incontro di spedizione» | 0 | 0 | 36 | 36 |
-| procedurale-vario / rimandi-testuali | 3 | 7 | 43 | 53 |
-| **Totale** | **65** | **45** | **122** | **232** |
+| procedurale-vario / rimandi-testuali | 5 | 6 | 42 | 53 |
+| **Totale** | **67** | **44** | **121** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -103,7 +103,7 @@ come metà, l'indice di completezza è **≈ 37,7%**
 | 003 | incontro-creatura (snodo) | 🟢 | Codificato: `goto` a ¶054 con nuova creatura (Aracat). Fedele. |
 | 004 | incontro-creatura (struttura) | 🔴 | Scelta fuga(¶187)/combatti(¶193) non gestita; nessuna logica codificata. |
 | 005 | incontro-creatura (X-Wasp) | 🟡 | Creatura preparata e strategia offerta; il morso velenoso e la perdita di PV su dado non sono applicati. |
-| 006 | procedurale (arma) | 🟡 | L'arma aliena è acquisibile (pulsante «Raccogli») con PV al rientro e usabile in combattimento (Cattura/Uccisione 9); il check Intelligenza/2 dadi che ne determina l'usabilità (subito / dopo 5 ore / solo trasportabile) e il rimando all'ufficiale alle armi (¶175) non sono ancora automatizzati. |
+| 006 | procedurale (arma) | 🟢 | Pulsante «Esamina» (check Intelligenza 3.3, resolver `intel_check`): con l'Ufficiale Armi → ¶175; altrimenti 2 dadi vs Intelligenza più alta → barra di energia usabile subito / usabile dopo 5 ore / solo trasportabile (peso 1). L'arma è usabile in combattimento (Cattura/Uccisione 9) solo dopo essere stata compresa. |
 | 007 | incontro-creatura (Drada) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo «non sorpreso» usa le azioni standard. |
 | 008 | procedurale (caduta) | 🔴 | Morte/danni casuali con eccezioni (gravità/armorig/climbkit) non gestiti. |
 | 009 | incontro-creatura (snodo) | 🟢 | Comunica: con Intelligenza≥6 e Neuroscan → +3 PV (+1 con Holographer), nessuna cattura; altrimenti → ¶016. Risolto alla scelta della strategia, scavalcando la Tabella di Strategia (nuova condizione `has_gear`). Cattura/Fuga usano la tabella standard. |
@@ -287,7 +287,7 @@ come metà, l'indice di completezza è **≈ 37,7%**
 | 172 | incontro (alieno città, snodo) | 🔴 | Tiro 1d6 → ¶158/228 non gestito. |
 | 173 | incontro (fungo, senza pedina) | 🔴 | Check Intelligenza/GSO → ¶219/224 non gestito. |
 | 174 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/048/167) non valutata. |
-| 175 | procedurale (arma, WO) | 🔴 | Tre esiti su check Intelligenza (ore/oggetto/danni) non automatizzati. |
+| 175 | procedurale (arma, WO) | 🟢 | Pulsante «Esamina» (resolver `intel_check`): 2 dadi vs Intelligenza più alta → arma trasportabile dopo 1d6 ore / oggetto banale lasciato / esplosione con 2d6 Punti Danno. |
 | 176 | incontro (rete vivente, senza pedina) | 🟡 | Sostanzialmente narrativo «scegli azione»; il +3 PV Holographer non viene assegnato. |
 | 177 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶042/007/149) non valutata. |
 | 178 | procedurale (uovo si schiude) | 🔴 | Tiro 1d6 → ¶142/159/162 non gestito. |

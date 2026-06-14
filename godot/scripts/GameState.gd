@@ -97,6 +97,8 @@ var damage_points: int = 0            # danni accumulati dalla spedizione
 var captured_creatures: Array = []    # creature catturate vive (PV extra)
 var acquired_artifacts: Array = []    # paragrafi degli artefatti acquisiti (registro permanente: anti-doppione + arma aliena)
 var pending_artifact_vp: Array = []   # artefatti raccolti ma non ancora riportati sulla Pandora (PV assegnati al rientro, 2.6/9.1)
+var weapon_usable: bool = false       # l'Arma aliena (¶006) è usabile in combattimento solo dopo averla compresa (¶006/¶175)
+var intel_checks_done: Array = []     # paragrafi con check Intelligenza (3.3) già risolti (¶006/¶175/...)
 var recorded_creatures: Array = []    # tipi di creatura registrati sul Registro Attributi (PV per attributi a zero, 9.1)
 var explored_planets: Array = []      # sistemi i cui pianeti sono stati esplorati (1 PV ciascuno, 9.1)
 
@@ -148,6 +150,8 @@ func start_new_game(p_tour_length: int) -> void:
 	captured_creatures = []
 	acquired_artifacts = []
 	pending_artifact_vp = []
+	weapon_usable = false
+	intel_checks_done = []
 	recorded_creatures = []
 	explored_planets = []
 	supply_track_pos = 0
@@ -222,6 +226,7 @@ func save_game(silent := false) -> bool:
 		"current_creature": current_creature, "creature_rating": creature_rating,
 		"damage_points": damage_points, "captured_creatures": captured_creatures,
 		"acquired_artifacts": acquired_artifacts,
+		"weapon_usable": weapon_usable, "intel_checks_done": intel_checks_done,
 		"pending_artifact_vp": pending_artifact_vp,
 		"recorded_creatures": recorded_creatures,
 		"explored_planets": explored_planets,
@@ -304,6 +309,8 @@ func load_game() -> bool:
 	damage_points = int(d.get("damage_points", 0))
 	captured_creatures = d.get("captured_creatures", [])
 	acquired_artifacts = d.get("acquired_artifacts", [])
+	weapon_usable = bool(d.get("weapon_usable", false))
+	intel_checks_done = d.get("intel_checks_done", [])
 	pending_artifact_vp = d.get("pending_artifact_vp", [])
 	recorded_creatures = d.get("recorded_creatures", [])
 	explored_planets = d.get("explored_planets", [])
@@ -997,6 +1004,9 @@ func best_combat(mode: String) -> int:
 	for akey in acquired_artifacts:
 		if akey in damaged_gear:
 			continue
+		# L'Arma aliena (¶006) è utilizzabile solo dopo essere stata compresa (¶006/¶175).
+		if akey == "006" and not weapon_usable:
+			continue
 		var art := GameData.get_artifact(akey.to_int())
 		var av: int = int(art.get("capture", 0)) if mode == "capture" else int(art.get("kill", 0))
 		best = maxi(best, av)
@@ -1021,6 +1031,55 @@ func acquire_artifact(para: int) -> bool:
 
 func is_artifact_acquired(para: int) -> bool:
 	return ("%03d" % para) in acquired_artifacts
+
+# Un paragrafo offre un check Intelligenza (3.3) ancora da risolvere?
+func intel_check_available(para: int) -> bool:
+	return GameData.has_intel_check(para) and not (para in intel_checks_done)
+
+# Risolve un check Intelligenza (3.3) data-driven (vedi data/intel_checks.json).
+# Confronta 2d6 col Valore di Intelligenza e applica gli effetti della banda:
+# acquisizione artefatto, usabilità arma, ore spese, danni.
+func resolve_intel_check(para: int) -> void:
+	var cfg := GameData.get_intel_check(para)
+	if cfg.is_empty() or (para in intel_checks_done):
+		return
+	# Rimando se un'unità specifica è presente (es. ¶006 con l'Ufficiale Armi → ¶175).
+	if cfg.has("if_unit_goto"):
+		var ug: Dictionary = cfg["if_unit_goto"]
+		if str(ug.get("unit", "")) in expedition_units:
+			add_log("¶%03d: l'%s esamina l'oggetto → ¶%03d." % [para, GameData.get_character(str(ug.get("unit"))).get("name", ug.get("unit")), int(ug.get("para", 0))])
+			show_paragraph(int(ug.get("para", 0)))
+			return
+	var v := highest_intelligence(expedition_units)
+	var roll := randi_range(1, 6) + randi_range(1, 6)
+	var band := "near"
+	if roll < v - 1:
+		band = "well_below"
+	elif roll > v + 1:
+		band = "well_above"
+	var b: Dictionary = cfg.get("bands", {}).get(band, {})
+	intel_checks_done.append(para)
+	var extra: Array = []
+	if b.has("hours"):
+		var hv := (randi_range(1, 6) if str(b["hours"]) == "d6" else int(b["hours"]))
+		if hv > 0:
+			add_expedition_hours(hv)
+			extra.append("%d ore" % hv)
+	if b.has("damage"):
+		var dv := (randi_range(1, 6) + randi_range(1, 6) if str(b["damage"]) == "2d6" else int(b["damage"]))
+		if dv > 0:
+			_apply_damage(dv)
+			extra.append("%d Punti Danno" % dv)
+	if bool(b.get("weapon_usable", false)):
+		weapon_usable = true
+	if b.has("acquire"):
+		acquire_artifact(int(b["acquire"]))
+	var msg := str(b.get("text", ""))
+	if not extra.is_empty():
+		msg += " (" + ", ".join(extra) + ")"
+	add_log("¶%03d esame (Intelligenza %d, 2 dadi = %d): %s" % [para, v, roll, msg])
+	message_posted.emit(msg)
+	state_updated.emit()
 
 # Distribuzione degli esiti di combattimento per la modalità scelta (8.5):
 # per ciascun risultato del dado (1-6) calcola il differenziale e il risultato

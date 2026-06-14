@@ -1,0 +1,20 @@
+{
+  "_legend": "Procedure di check Intelligenza (regola 3.3). compare: 'highest' = Valore di Intelligenza piu' alto della spedizione (per i paragrafi che dicono «scegli un personaggio» si assume il gioco ottimale: il personaggio con Intelligenza piu' alta). Si tirano 2 dadi e si confronta il risultato col Valore V: < V-1 -> banda 'well_below'; da V-1 a V+1 -> 'near'; > V+1 -> 'well_above'. if_unit_goto: se l'unita' indicata e' nella spedizione si va invece al paragrafo dato (es. ¶006 con l'Ufficiale Armi -> ¶175). Campi di banda: text (descrizione), acquire (paragrafo dell'artefatto da raccogliere, PV al rientro), weapon_usable (rende usabile in combattimento l'Arma aliena ¶006), hours (intero o 'd6'), damage (intero o '2d6').",
+  "006": {
+    "if_unit_goto": {"unit": "WO", "para": 175},
+    "compare": "highest",
+    "bands": {
+      "well_below": {"acquire": 6, "weapon_usable": true, "text": "L'arma viene compresa correttamente: e' una barra di energia ad alta potenza, usabile per il resto della spedizione."},
+      "near": {"acquire": 6, "weapon_usable": true, "hours": 5, "text": "Il funzionamento dell'arma viene compreso dopo cinque ore di spedizione: ora e' utilizzabile."},
+      "well_above": {"acquire": 6, "text": "I misteri dell'arma restano sconosciuti: puo' soltanto essere riportata sulla Pandora (peso 1)."}
+    }
+  },
+  "175": {
+    "compare": "highest",
+    "bands": {
+      "well_below": {"acquire": 6, "hours": "d6", "text": "L'arma viene studiata attentamente ma non si scopre nulla; puo' essere riportata sulla Pandora (peso 1)."},
+      "near": {"text": "L'oggetto dall'aspetto banale viene lasciato stare."},
+      "well_above": {"damage": "2d6", "text": "Una manomissione incauta fa esplodere l'oggetto, che si distrugge e ferisce la spedizione."}
+    }
+  }
+}

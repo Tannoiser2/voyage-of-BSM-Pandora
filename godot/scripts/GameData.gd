@@ -10,6 +10,7 @@ var terrain: Dictionary = {}
 var paragraph_logic: Dictionary = {}
 var expedition_encounters: Dictionary = {}
 var artifacts: Dictionary = {}
+var intel_checks: Dictionary = {}
 
 func _ready() -> void:
 	_load_data()
@@ -25,6 +26,14 @@ func _load_data() -> void:
 	paragraph_logic = _load_json("res://data/paragraph_logic.json")
 	expedition_encounters = _load_json("res://data/expedition_encounters.json")
 	artifacts = _load_json("res://data/artifacts.json")
+	intel_checks = _load_json("res://data/intel_checks.json")
+
+# Procedura di check Intelligenza (3.3) per un paragrafo. {} se assente.
+func get_intel_check(para: int) -> Dictionary:
+	return intel_checks.get("%03d" % para, {})
+
+func has_intel_check(para: int) -> bool:
+	return intel_checks.has("%03d" % para)
 
 # Regole degli snodi «Incontro di spedizione» (regola 6.5). [] se l'id non è uno snodo.
 func get_expedition_encounter(para: int) -> Array:

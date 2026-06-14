@@ -273,6 +273,13 @@ func _build_ui() -> void:
 	btn_artifact.pressed.connect(_on_acquire_artifact)
 	actions_hbox.add_child(btn_artifact)
 
+	var btn_examine := Button.new()
+	btn_examine.name = "BtnExamine"
+	btn_examine.text = "Esamina"
+	btn_examine.visible = false
+	btn_examine.pressed.connect(_on_examine)
+	actions_hbox.add_child(btn_examine)
+
 	var btn_explore := Button.new()
 	btn_explore.name = "BtnExplore"
 	btn_explore.text = "Esplora (tira dado)"
@@ -925,13 +932,22 @@ func _update_action_buttons(phase: String) -> void:
 	# se non già acquisito e nessun incontro attivo.
 	var btn_artifact := find_child("BtnArtifact", true, false)
 	if btn_artifact:
+		# La raccolta diretta non vale per i paragrafi con check Intelligenza (¶006/¶175),
+		# dove l'acquisizione passa dall'esame dell'oggetto.
 		var can_take: bool = (phase == "paragraph") and on_surface and not creature_active \
 			and GameData.is_artifact_paragraph(current_para_num) \
+			and not GameData.has_intel_check(current_para_num) \
 			and not GameState.is_artifact_acquired(current_para_num)
 		btn_artifact.visible = can_take
 		if can_take:
 			var a := GameData.get_artifact(current_para_num)
 			btn_artifact.text = "Raccogli: %s (+%d PV al rientro)" % [a.get("name", "artefatto"), int(a.get("vp", 0))]
+	# Esame di un oggetto con check Intelligenza (3.3): ¶006/¶175.
+	var btn_examine := find_child("BtnExamine", true, false)
+	if btn_examine:
+		var can_examine: bool = (phase == "paragraph") and on_surface and not creature_active \
+			and GameState.intel_check_available(current_para_num)
+		btn_examine.visible = can_examine
 
 func _update_display() -> void:
 	# Update status labels
@@ -1558,6 +1574,12 @@ func _on_acquire_artifact() -> void:
 	if GameState.acquire_artifact(current_para_num):
 		_update_display()
 		_update_action_buttons(GameState.phase_name(GameState.current_phase))
+
+func _on_examine() -> void:
+	# Risolve il check Intelligenza del paragrafo (3.3); può rimandare ad altro paragrafo.
+	GameState.resolve_intel_check(current_para_num)
+	_update_display()
+	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
 func _on_explore() -> void:
 	# Esplora l'esagono attualmente occupato (es. quello di atterraggio), con i
