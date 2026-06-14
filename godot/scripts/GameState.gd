@@ -1552,6 +1552,13 @@ func show_paragraph(para_num: int) -> void:
 			pending_goto = 0
 			show_paragraph(dest)
 			return
+	# Effetti procedurali del paragrafo (danni/PV/ore/uccisioni/salti condizionati).
+	# Gli effetti numerici sono applicati una sola volta per spedizione; i salti
+	# condizionati ridirezionano subito.
+	var pfx := _apply_paragraph_effect(para_num)
+	if pfx > 0:
+		show_paragraph(pfx)
+		return
 	set_phase(Phase.PARAGRAPH)
 	paragraph_request.emit(para_num)
 	state_updated.emit()
@@ -1783,6 +1790,116 @@ func _compute_shift(act: Dictionary) -> int:
 	return int(act.get("shift", 0))
 
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
+# Tira `dice` dadi per i Punti Danno; se la spedizione ha l'armorig, un solo dado.
+func _roll_damage_armorig(dice: int) -> int:
+	var n := 1 if _gear_has("Armorig") else dice
+	var t := 0
+	for _i in range(n):
+		t += randi_range(1, 6)
+	return t
+
+# ¶008 — caduta mortale di un'unità a caso (se a piedi). Eccezioni: gravità quasi
+# assente, climbkit, o (personaggio) armorig → non distrutta, ma perde 1 dado di
+# Resistenza (personaggio) o è danneggiata (robot).
+func _effect_008() -> void:
+	if _gear_has("Rover"):
+		add_log("¶008: la spedizione è nel rover: il veicolo precipita giù per un ripido pendio ed è distrutto (non riparabile).")
+		if not damaged_gear.has("Rover"):
+			damaged_gear.append("Rover")
+		expedition_gear.erase("Rover")
+		return
+	if expedition_units.is_empty():
+		return
+	var victim: String = expedition_units[randi_range(0, expedition_units.size() - 1)]
+	var is_char := crew.has(victim)
+	var protected: bool = str(planet_attrs.get("gravity", "")) == "Near weightless" or _gear_has("Climbkit") or (is_char and _gear_has("Armorig"))
+	if protected:
+		if is_char:
+			var loss := randi_range(1, 6)
+			crew[victim]["endurance"] = maxi(0, int(crew[victim].get("endurance", 0)) - loss)
+			add_log("¶008: %s scivola ma è protetto: −%d Resistenza." % [crew[victim].get("name", victim), loss])
+			if int(crew[victim]["endurance"]) <= 0:
+				_kill_character(victim)
+		else:
+			if not damaged_gear.has(victim):
+				damaged_gear.append(victim)
+			add_log("¶008: %s precipita ma viene recuperato, danneggiato." % victim)
+	elif is_char:
+		add_log("¶008: %s precipita verso la morte!" % crew[victim].get("name", victim))
+		_kill_character(victim)
+	else:
+		_kill_unit(victim)
+
+# ¶152 — virus dello stagno: un personaggio a caso muore, salvo medkit + Ufficiale
+# Medico presenti (e la vittima non è il Medico stesso).
+func _effect_152() -> void:
+	var chars: Array = []
+	for k in expedition_units:
+		if crew.has(k) and crew[k].get("alive", false):
+			chars.append(k)
+	if chars.is_empty():
+		return
+	var victim: String = chars[randi_range(0, chars.size() - 1)]
+	if _gear_has("Medkit") and ("MedO" in expedition_units) and victim != "MedO":
+		add_log("¶152: il virus dello stagno colpisce %s, ma medkit + Ufficiale Medico lo curano." % crew[victim].get("name", victim))
+	else:
+		add_log("¶152: %s muore per il virus dello stagno." % crew[victim].get("name", victim))
+		_kill_character(victim)
+
+# Effetti procedurali per-paragrafo. Ritorna un paragrafo di destinazione (>0) per i
+# salti condizionati; 0 altrimenti. Gli effetti numerici sono applicati una sola
+# volta per spedizione (guardia _landing_fx_applied).
+func _apply_paragraph_effect(para: int) -> int:
+	# Salti condizionati (nessuna guardia: ridirezionano).
+	if para == 2:
+		return 70 if crew.get("Nav", {}).get("alive", false) else 148
+	if _landing_fx_applied.has(para):
+		return 0
+	var applied := true
+	match para:
+		32:
+			var d := _roll_damage_armorig(2)
+			add_log("¶032: scossa sismica → %d Punti Danno." % d)
+			_apply_damage(d)
+		38:
+			var d2 := 6 if _gear_has("Armorig") else 12
+			add_log("¶038: eruzione vulcanica → %d Punti Resistenza persi." % d2)
+			_apply_damage(d2)
+			if _gear_has("Rover") and not damaged_gear.has("Rover"):
+				damaged_gear.append("Rover")
+				add_log("¶038: il rover viene danneggiato.")
+		166:
+			var nd := 1 if (("GSO" in expedition_units) or _gear_has("Reconbot")) else 2
+			var d3 := 0
+			for _i in range(nd):
+				d3 += randi_range(1, 6)
+			add_log("¶166: caduta dovuta alla gravità → %d Punti Danno." % d3)
+			_apply_damage(d3)
+		40:
+			add_expedition_hours(5)
+			var vp40 := character_intelligence("CO") if crew.get("CO", {}).get("alive", false) else 0
+			if vp40 > 0:
+				gain_vp(vp40, "¶040 rettiliani amichevoli (Int Comandante)")
+		158:
+			var vp := 5
+			if "CO" in expedition_units:
+				vp += 2
+			if _gear_has("Neuroscan"):
+				vp += 2
+			if _gear_has("Holographer"):
+				vp += 2
+			gain_vp(vp, "¶158 ultimo superstite telepate")
+		8:
+			_effect_008()
+		152:
+			_effect_152()
+		_:
+			applied = false
+	if applied:
+		_landing_fx_applied.append(para)
+		state_updated.emit()
+	return 0
+
 # Effetti d'intro di una creatura appena incontrata (8.1): sorpresa che ridireziona
 # o uccide, prima della scelta di strategia.
 func _apply_creature_intro(para: int) -> void:

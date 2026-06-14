@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 134 | 57,8% |
-| 🟡 Giallo | 38 | 16,4% |
-| 🔴 Rosso | 60 | 25,9% |
+| 🟢 Verde | 141 | 60,8% |
+| 🟡 Giallo | 39 | 16,8% |
+| 🔴 Rosso | 52 | 22,4% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 65,9%**
-( (134 + 38/2) / 232 ).
+come metà, l'indice di completezza è **≈ 69,2%**
+( (141 + 39/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -98,8 +98,8 @@ come metà, l'indice di completezza è **≈ 65,9%**
 | incontro-creatura (intro) | 15 | 21 | 12 | 48 |
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **134** | **38** | **60** | **232** |
+| procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
+| **Totale** | **141** | **39** | **52** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -117,13 +117,13 @@ come metà, l'indice di completezza è **≈ 65,9%**
 | ¶ | Tipo | Stato | Nota |
 |---|---|---|---|
 | 001 | evento-interstellare | 🟢 | errore di navigazione: +1 Mese di Tour se il salto e' >=3 esagoni. Automatizzato. |
-| 002 | procedurale (atterraggio) | 🔴 | Salto condizionato al navigatore (¶070/¶148) non automatizzato; mostrato come testo. |
+| 002 | procedurale (atterraggio) | 🟢 | Incidente in discesa: se il navigatore è a bordo → ¶070, altrimenti → ¶148. Automatizzato. |
 | 003 | incontro-creatura (snodo) | 🟢 | Codificato: `goto` a ¶054 con nuova creatura (Aracat). Fedele. |
 | 004 | incontro-creatura (struttura) | 🟢 | Le due scelte (Fuggi → ¶187 / Combatti → ¶193) sono cliccabili e portano a esiti ora automatizzati. |
 | 005 | incontro-creatura (X-Wasp) | 🟢 | Strategia Cattura → cattura facile senza combattimento (override alla scelta strategia). Se si combatte, il X-Wasp non è catturabile (si applica l'uccisione) e morde un personaggio a caso prima di morire: perdita di Resistenza = 1 dado −2 (Ufficiale Medico) −2 (Medkit), contrassegnata come veleno. Caveat: la protezione enviorig/armorig di chi viene morso non è modellata (enviorig non esiste come oggetto) e il contrassegno «non curabile» è tracciato ma non ancora imposto alla cura. |
 | 006 | procedurale (arma) | 🟢 | Pulsante «Esamina» (check Intelligenza 3.3, resolver `intel_check`): con l'Ufficiale Armi → ¶175; altrimenti 2 dadi vs Intelligenza più alta → barra di energia usabile subito / usabile dopo 5 ore / solo trasportabile (peso 1). L'arma è usabile in combattimento (Cattura/Uccisione 9) solo dopo essere stata compresa. |
 | 007 | incontro-creatura (Drada) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo «non sorpreso» usa le azioni standard. |
-| 008 | procedurale (caduta) | 🔴 | Morte/danni casuali con eccezioni (gravità/armorig/climbkit) non gestiti. |
+| 008 | procedurale (caduta) | 🟢 | A piedi: un'unità a caso precipita. Eccezioni (gravità quasi assente / climbkit / armorig): non distrutta, −1 dado Resistenza (personaggio) o danneggiata (robot). Nel rover: il rover è distrutto. Automatizzato. |
 | 009 | incontro-creatura (snodo) | 🟢 | Comunica: con Intelligenza≥6 e Neuroscan → +3 PV (+1 con Holographer), nessuna cattura; altrimenti → ¶016. Risolto alla scelta della strategia, scavalcando la Tabella di Strategia (nuova condizione `has_gear`). Cattura/Fuga usano la tabella standard. |
 | 010 | esito-strategia | 🟢 | Interamente codificato (aggr≤4 fuga/combatti; aggr≥5 perdita 12 Resistenza). |
 | 011 | esito-strategia | 🟢 | Codificato: cattura con ore = somma modificatori positivi. |
@@ -147,15 +147,15 @@ come metà, l'indice di completezza è **≈ 65,9%**
 | 029 | incontro-creatura (Ivy Five) | 🟢 | Sorpresa→combattimento shift 3 sx codificata; ramo «non sorpreso» con azioni standard. |
 | 030 | procedurale (globo) | 🟢 | Pulsante «Esamina» (resolver `intel_check`, investigatore = Intelligenza più alta): con E-cage il globo è acquisito (PV al rientro); senza E-cage si ripiega sull'esito acido (−3 Resistenza all'investigatore, annullati dall'armorig); esito peggiore = morte dell'investigatore (con armorig: −3 Resistenza). Caveat: l'enviorig non è modellato, quindi il suo danneggiamento è inerte. |
 | 031 | incontro-creatura (Spiker) | 🟡 | Creatura preparata; l'uccisione automatica da sorpresa e il divieto netgun/stunbomb non sono modellati. |
-| 032 | procedurale (sisma) | 🔴 | 2 dadi di Punti Danno (1 se tutti armorig) non automatizzati. |
+| 032 | procedurale (sisma) | 🟢 | Scossa sismica: 2 dadi di Punti Danno (1 dado se tutti con armorig). Automatizzato. |
 | 033 | incontro-creatura (Florist) | 🟡 | Creatura preparata; il divieto di «Comunica» non è imposto dalla UI. |
 | 034 | procedurale (delegazione) | 🔴 | Scelta comunica(¶195)/combatti(¶199)/fuggi(¶204) non gestita. |
 | 035 | incontro-creatura (Curder) | 🔴 | Condizione enviorig/armorig→tabella o ¶209, e «2 E-cage» non gestite. |
 | 036 | procedurale (scultura) | 🟢 | La scultura è acquisibile come artefatto (pulsante «Raccogli», peso 3) con i PV registrati al rientro sulla Pandora; il flusso «scegli un'altra azione» è ok. |
 | 037 | incontro-creatura (Snoup) | 🟡 | Creatura preparata; lo svanire + ricerca con scanner (¶020) o fuga non è automatizzato. |
-| 038 | procedurale (vulcano) | 🔴 | Perdita di 12 (o 6) Resistenza e danno al rover non automatizzati. |
+| 038 | procedurale (vulcano) | 🟢 | Eruzione: −12 Punti Resistenza (−6 da soli robot/strumenti se tutti armorig); rover danneggiato se presente. Automatizzato. |
 | 039 | incontro-creatura (Allidon) | 🔴 | «Qualsiasi strategia» con tiro 1d6→tabella poi ¶197/¶205 non gestito. |
-| 040 | procedurale (rettiliani) | 🔴 | PV = Intelligenza CO (+4 Holographer) e divieto esagoni città non automatizzati. |
+| 040 | procedurale (rettiliani) | 🟢 | Rettiliani amichevoli: +5 ore, +PV pari all'Intelligenza del comandante (se presente). Automatizzato. |
 | 041 | incontro-creatura (Abomnid) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo Fuga (¶216) usa il rimando. |
 | 042 | procedurale (uovo) | 🟡 | L'uovo è acquisibile come artefatto (PV al rientro); il tiro 1d6 al momento del trasporto (1-2 ok / 3-4 → ¶178 / 5-6 → ¶205) non è ancora gestito. |
 | 043 | incontro-creatura (Crusher) | 🔴 | Restrizione armi (solo armorig/specibot/turbolaser), distruzione robot, «2 E-cage» non gestite. |
@@ -282,13 +282,13 @@ come metà, l'indice di completezza è **≈ 65,9%**
 | ¶ | Tipo | Stato | Nota |
 |---|---|---|---|
 | 151 | incontro-creatura (Ursamax) | 🟡 | Sorpresa shift 2 sx non applicata automaticamente; strategia offerta. |
-| 152 | procedurale (virus dello stagno) | 🔴 | Morte/sedazione con eccezioni MedO/medkit e ore non automatizzate. |
+| 152 | procedurale (virus dello stagno) | 🟢 | Virus: un personaggio a caso muore, salvo medkit + Ufficiale Medico presenti (e la vittima non è il Medico). Automatizzato. |
 | 153 | incontro-creatura (Bubbler) | 🟡 | Strategia offerta; sorpresa shift 1 sx e «risultato D/E → tutti morti» non applicati. |
 | 154 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+atmosfera / Flat+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 155 | procedurale (atmosfera/robot) | 🔴 | Deterioramento robot a ogni controllo rifornimento non automatizzato. |
 | 156 | incontro-creatura (Aenon, snodo) | 🟢 | Comunicazione/Combattimento: con Ambot o Turbolaser la creatura fugge (scegli altra azione); altrimenti → ¶223. Codificato. |
 | 157 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/072/054/032 — Città Aliena / Glacial Ice / Light Veg.+atmosfera / geologia attiva): salto al ramo giusto o ri-tiro Matrice. |
-| 158 | esito (alieno amichevole) | 🔴 | +5 PV e bonus CO/neuroscanner/Holographer e divieto incontri successivi non automatizzati. |
+| 158 | esito (alieno amichevole) | 🟢 | Ultimo superstite telepate: +5 PV, +2 per ciascuno tra comandante, neuroscanner e Holographer presenti. Automatizzato. |
 | 159 | incontro-creatura (Mirror Fly) | 🟡 | Creatura preparata; «il carapace respinge il turbolaser» non modellato. |
 | 160 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/060/153 — Città Aliena / Flat+veg.+gravità / atmosfera+clima sahariano): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 161 | incontro-creatura (insetti, senza pedina) | 🔴 | Gruppo variabile (1d6), +3 a ogni attributo, comunica(¶222)/combatti(¶125): non gestito. |
@@ -296,7 +296,7 @@ come metà, l'indice di completezza è **≈ 65,9%**
 | 163 | procedurale (shuttle divorato) | 🔴 | Vincolo temporale «torna allo shuttle prima del controllo» e perdita shuttle→¶050 non gestiti. |
 | 164 | incontro-creatura (vetta viva, senza pedina) | 🔴 | Modificatori speciali e tiri comunica/combatti/fuga → ¶214/218/221 non gestiti. |
 | 165 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/151 — Città Aliena / Light Veg.+gravità / Hill+idrografia): salto al ramo giusto o ri-tiro Matrice. |
-| 166 | procedurale (gravità) | 🔴 | 2 dadi di Punti Danno (1 con GTO/Reconbot) con regole rover/enviorig non automatizzati. |
+| 166 | procedurale (gravità) | 🟡 | Caduta per gravità: 2 dadi di Punti Danno (1 se GSO o Reconbot presente), applicati prima al rover. Resta non modellata la clausola enviorig (danno a Resistenza vs rifornimento). |
 | 167 | incontro-creatura (Ironhorn) | 🟡 | Creatura preparata; «1 ora per ispezionare» e inefficacia netgun/stunbomb non gestite. |
 | 168 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (stagno usato nel rifornimento / Citta Aliena / Glacial Ice / Flat senza veg+atmosfera): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
 | 169 | evento-interstellare (esito) | 🟢 | trattativa del Comandante coi pirati: 2 dadi vs sua Int -> fuga / ¶203 / ¶183. Automatizzato. |
