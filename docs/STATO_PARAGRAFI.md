@@ -80,26 +80,26 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 124 | 53,4% |
-| 🟡 Giallo | 42 | 18,1% |
+| 🟢 Verde | 128 | 55,2% |
+| 🟡 Giallo | 38 | 16,4% |
 | 🔴 Rosso | 66 | 28,4% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 62,5%**
-( (124 + 42/2) / 232 ).
+come metà, l'indice di completezza è **≈ 63,4%**
+( (128 + 38/2) / 232 ).
 
 ### Conteggi per TIPO
 
 | Tipo | 🟢 | 🟡 | 🔴 | Tot |
 |---|---|---|---|---|
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
-| atterraggio/superficie (incl. 002/070/076/148) | 12 | 13 | 4 | 29 |
+| atterraggio/superficie (incl. 002/070/076/148) | 16 | 9 | 4 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **124** | **42** | **66** | **232** |
+| **Totale** | **128** | **38** | **66** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -240,31 +240,31 @@ come metà, l'indice di completezza è **≈ 62,5%**
 | 112 | pianeta/orbita (Mephisto 30) | 🟢 | Idem, da dati. |
 | 113 | pianeta/orbita (New Alto 30) | 🟢 | Idem, da dati. |
 | 114 | atterraggio (acquatico) | 🟡 | Schiera/esplora ok; il vincolo «tutta l'esplorazione in immersione (6.7)» non è imposto. |
-| 115 | atterraggio (artico) | 🟡 | Schiera/esplora ok; «+1 al LSV» va applicato a mano. |
+| 115 | atterraggio (artico) | 🟢 | «+1 al Valore di Supporto Vitale» applicato automaticamente all'ingresso dell'area; schiera/esplora ok. |
 | 116 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora l'esagono di atterraggio. |
-| 117 | atterraggio (artico) | 🟡 | «+1 LSV» e ridefinizione città-aliena→ghiaccio non automatizzati. |
+| 117 | atterraggio (artico) | 🟡 | «+1 LSV» ora applicato; resta la ridefinizione città-aliena→ghiaccio glaciale non automatizzata. |
 | 118 | atterraggio (sahariano) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 119 | atterraggio (temperato) | 🟡 | «La struttura aliena in 0310 non esiste» non è modellato nell'environ. |
 | 120 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶006/181/060 — Città Aliena / Cave+atmosfera / Flat-Hill+gravità+clima): salto al ramo giusto o ri-tiro Matrice. |
-| 121 | atterraggio (sahariano) | 🟡 | «+1 LSV» va applicato a mano. |
+| 121 | atterraggio (sahariano) | 🟢 | «+1 al LSV» applicato automaticamente all'ingresso dell'area; schiera/esplora ok. |
 | 122 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 123 | atterraggio (oceano) | 🟡 | Ridefinizioni (strutture inesistenti, città→struttura, immersione 6.7) non gestite. |
 | 124 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 125 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
-| 126 | atterraggio (artico) | 🟡 | «+1 LSV» e ridefinizione città→ghiaccio non automatizzati. |
+| 126 | atterraggio (artico) | 🟡 | «+1 LSV» ora applicato; resta la ridefinizione città→ghiaccio glaciale non automatizzata. |
 | 127 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
-| 128 | atterraggio (sahariano) | 🟡 | «+1 LSV» va applicato a mano. |
+| 128 | atterraggio (sahariano) | 🟢 | «+1 al LSV» applicato automaticamente all'ingresso dell'area; schiera/esplora ok. |
 | 129 | atterraggio (tropicale) | 🟡 | «Le caverne non esistono» non è modellato nell'environ. |
 | 130 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (gravita / Citta Aliena / Liquid Surface / Heavy Veg): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 131 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 132 | atterraggio (oceano/tropicale) | 🟡 | Ridefinizioni vegetazione sopra/sotto e città/struttura inesistenti non gestite. |
-| 133 | atterraggio (sahariano) | 🟡 | «+1 LSV» e «caverne 1101–1103 inesistenti» non automatizzati. |
+| 133 | atterraggio (sahariano) | 🟡 | «+1 LSV» ora applicato; resta «caverne 1101–1103 inesistenti» non automatizzato. |
 | 134 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
-| 135 | atterraggio (artico) | 🟡 | «+1 LSV» va applicato a mano. |
+| 135 | atterraggio (artico) | 🟢 | «+1 al LSV» applicato automaticamente all'ingresso dell'area; schiera/esplora ok. |
 | 136 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 137 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 138 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
-| 139 | atterraggio (artico) | 🟡 | «+1 LSV» e ridefinizioni fiumi/paludi→ghiaccio non automatizzati. |
+| 139 | atterraggio (artico) | 🟡 | «+1 LSV» ora applicato; restano le ridefinizioni fiumi/paludi→ghiaccio non automatizzate. |
 | 140 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶006/003/170 — Città Aliena / Flat+atmosfera / Glacial Ice+gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 141 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 142 | incontro-creatura (Decapus) | 🟡 | Sorpresa+strategia gestite dal motore; nessun effetto extra ⇒ vicino al 🟢, ma lo shift di sorpresa è applicato solo dentro `paragraph_logic` (assente per 142). |

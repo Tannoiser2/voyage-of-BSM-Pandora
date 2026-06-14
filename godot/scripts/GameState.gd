@@ -112,6 +112,7 @@ var environ_grid: Dictionary = {}     # hex_id locale -> {"terrain","explored","
 var expedition_pos: int = 0           # esagono attuale della spedizione (0 = non sbarcata)
 var landing_hex: int = 0
 var pond_supply_used: bool = false    # 6.5: stagno usato in un Controllo del Rifornimento
+var _landing_fx_applied: Array = []   # paragrafi-area i cui effetti numerici (LSV) sono già applicati
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
@@ -1507,6 +1508,14 @@ func show_paragraph(para_num: int) -> void:
 	if area_climate != "":
 		planet_attrs["climate"] = area_climate
 		add_log("Clima dell'area: %s." % area_climate)
+	# Effetto numerico dell'area (5.1): «Aggiungi/Sottrai N al Valore di Supporto
+	# Vitale», applicato una sola volta per spedizione (guardia anti-doppione).
+	var lsv_delta := GameData.paragraph_lsv_delta(para_num)
+	if lsv_delta != 0 and not _landing_fx_applied.has(para_num):
+		_landing_fx_applied.append(para_num)
+		planet_attrs["lsv"] = int(planet_attrs.get("lsv", 0)) + lsv_delta
+		add_log("Area ¶%03d: Valore di Supporto Vitale %+d → %d." % [para_num, lsv_delta, int(planet_attrs["lsv"])])
+		state_updated.emit()
 	# Una volta arrivati a un paragrafo di destinazione la catena di snodi è conclusa:
 	# si azzera il contatore dei ri-tiri per la prossima esplorazione.
 	_expedition_reroll_depth = 0
@@ -2008,6 +2017,7 @@ func environ_neighbors(hex_id: int) -> Array:
 func generate_environ_at(landing_real: String) -> void:
 	environ_grid = {}
 	pond_supply_used = false
+	_landing_fx_applied = []
 	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
 	if place.is_empty():
 		# Fallback: environ deterministico per sistema, atterraggio al centro.

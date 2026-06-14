@@ -160,6 +160,19 @@ func paragraph_climate(num: int) -> String:
 	var m := re.search(get_paragraph_text(num))
 	return m.get_string(1).to_lower() if m else ""
 
+# Variazione del Valore di Supporto Vitale dichiarata nel testo di un paragrafo
+# d'atterraggio (5.1): «Aggiungi uno/due … al Valore di Supporto Vitale» (o «Sottrai»).
+func paragraph_lsv_delta(num: int) -> int:
+	var t := get_paragraph_text(num)
+	var re := RegEx.new()
+	re.compile("(?i)(Aggiungi|Sottrai)\\s+(uno|due|tre|\\d+)\\s+al Valore di Supporto Vitale")
+	var m := re.search(t)
+	if m == null:
+		return 0
+	var words := {"uno": 1, "due": 2, "tre": 3}
+	var n: int = words.get(m.get_string(2).to_lower(), m.get_string(2).to_int())
+	return -n if m.get_string(1).to_lower() == "sottrai" else n
+
 # Estrae le scelte/rimandi di un paragrafo (libro-gioco). Ogni rimando ¶NNN nel
 # testo diventa una scelta cliccabile; l'etichetta è la frase/riga che lo contiene.
 func get_paragraph_choices(num: int) -> Array:
