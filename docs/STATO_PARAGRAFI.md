@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 152 | 65,5% |
+| 🟢 Verde | 155 | 66,8% |
 | 🟡 Giallo | 40 | 17,2% |
-| 🔴 Rosso | 40 | 17,2% |
+| 🔴 Rosso | 37 | 15,9% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 74,1%**
-( (152 + 40/2) / 232 ).
+come metà, l'indice di completezza è **≈ 75,4%**
+( (155 + 40/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 74,1%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **152** | **40** | **40** | **232** |
+| **Totale** | **155** | **40** | **37** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -319,7 +319,7 @@ come metà, l'indice di completezza è **≈ 74,1%**
 | 186 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/027/051 — Città Aliena / Heavy Veg.+atmosfera / gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 187 | procedurale (fuga dalla struttura) | 🟢 | Pulsante «Subisci i raggi»: per ogni personaggio e robot 2 dadi vs Velocità → distruzione se superata; col rover Velocità minima 8; −2 con turbolaser, −2 con scanner, −2 per chi indossa l'armorig. |
 | 188 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (citta aliena non esplorata / Marsh+atmosfera / Liquid Surface): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
-| 189 | procedurale (furto equipaggiamento) | 🔴 | Tiro 1d6 e rimozione casuale robot/strumenti non automatizzati. |
+| 189 | procedurale (furto equipaggiamento) | 🟢 | Alieni invisibili: 1 dado di oggetti sottratti (robot per primi, poi strumenti; mai rover/armorig/enviorig). Automatizzato. |
 | 190 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/037/164 — Città Aliena / Heavy Veg. / Mountain+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 191 | procedurale (esito pirati) | 🟡 | 1 dado di personaggi uccisi + Mesi di Tour di riparazioni (−2 se MntO vivo) automatizzati. La perdita «uno per tipo con Valore di Combattimento di uccisione» è approssimata (Turbolaser/Netgun/Stunbomb). |
 | 192 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/037/159 — Città Aliena / Heavy Veg.+gravità / Mountain-Cliffs+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
@@ -356,9 +356,9 @@ come metà, l'indice di completezza è **≈ 74,1%**
 | 218 | procedurale (combattimento speciale) | 🔴 | Rilettura risultati col turbolaser o shift 2 sx non automatizzati. |
 | 219 | esito (fungo intelligente) | 🔴 | +3 PV neuroscanner/+2 Holographer e ore su dado non assegnati. |
 | 220 | incontro-creatura (Glassman fugge) | 🟡 | La logica «fuga su velocità o combatti» è simile a quella codificata altrove, ma per ¶220 non è in `paragraph_logic`: solo testo. |
-| 221 | procedurale (campo psionico) | 🔴 | Ore su dado e riduzione permanente Intelligenza a 6 non automatizzate. |
+| 221 | procedurale (campo psionico) | 🟢 | Campo psionico: 1 dado di ore di incoscienza; Intelligenza di ogni personaggio ridotta permanentemente a 6 (se superiore). Automatizzato. |
 | 222 | esito (insetti senzienti) | 🔴 | Check Aggressività con PV variabili e diramazione ¶231/¶225 non gestiti. |
-| 223 | procedurale (aeron) | 🔴 | Rapimento robot o -2 Resistenza a un personaggio non automatizzati. |
+| 223 | procedurale (aeron) | 🟢 | L'aeron afferra un robot a caso (rimosso); se nessun robot, un personaggio a caso perde 2 Resistenza. Automatizzato. |
 | 224 | procedurale (veleno fungo) | 🔴 | Perdita Resistenza a ogni controllo (modificata da MedO/medkit/armorig) non gestita. |
 | 225 | procedurale (combattimento gruppo) | 🔴 | Somma Valori di Combattimento e regole speciali risultato «E» non automatizzate. |
 | 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |

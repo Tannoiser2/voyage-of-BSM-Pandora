@@ -2036,6 +2036,45 @@ func _apply_paragraph_effect(para: int) -> int:
 					infected_chars.append(vic209)
 				if int(crew[vic209]["endurance"]) <= 0:
 					_kill_character(vic209)
+		221:
+			var hrs := randi_range(1, 6)
+			add_expedition_hours(hrs)
+			for k in crew.keys():
+				if crew[k].get("alive", false) and int(crew[k].get("intelligence", 0)) > 6:
+					crew[k]["intelligence"] = 6
+			add_log("¶221: campo psionico → %d ore di incoscienza; Intelligenza di ogni personaggio ridotta a 6." % hrs)
+		189:
+			var n189 := randi_range(1, 6)
+			var robots := ["Ambot", "Reconbot", "Imrebot", "Specibot"]
+			var stealable: Array = []
+			for g in expedition_gear:
+				if g in robots:
+					stealable.append(g)
+			for g in expedition_gear:
+				if not (g in robots) and not (g in ["Rover", "Armorig", "Enviorig"]):
+					stealable.append(g)
+			var taken := 0
+			for g in stealable:
+				if taken >= n189:
+					break
+				expedition_gear.erase(g)
+				expedition_units.erase(g)
+				taken += 1
+			add_log("¶189: gli alieni invisibili sottraggono %d oggetto/i (robot per primi)." % taken)
+		223:
+			var bots223 := _functioning_bots()
+			if not bots223.is_empty():
+				var b: String = bots223[randi_range(0, bots223.size() - 1)]
+				expedition_gear.erase(b)
+				expedition_units.erase(b)
+				if not damaged_gear.has(b):
+					damaged_gear.append(b)
+				add_log("¶223: l'aeron afferra %s e schizza via." % GameData.get_unit(b).get("name", b))
+			else:
+				var vc223 := _random_alive_char()
+				if vc223 != "":
+					crew[vc223]["endurance"] = maxi(0, int(crew[vc223].get("endurance", 0)) - 2)
+					add_log("¶223: l'aeron colpisce %s di striscio: −2 Resistenza." % crew[vc223].get("name", vc223))
 		_:
 			applied = false
 	if applied:
