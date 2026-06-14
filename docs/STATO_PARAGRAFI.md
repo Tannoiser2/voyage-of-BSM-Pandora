@@ -49,8 +49,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   uccisioni d'equipaggio, controlli d'Intelligenza, danni cerebrali) **non** sono
   automatizzate: solo testo ⇒ 🔴/🟡.
 - **snodo «Incontro di spedizione» (053, 056, …):** tabelle di salto condizionato
-  a terreno/gravità/clima/atmosfera. Il motore **non** valuta le condizioni; il
-  giocatore deve scegliere a mano il rimando corretto ⇒ 🔴.
+  a terreno/gravità/clima/atmosfera. L'interprete valuta gravità, atmosfera,
+  idrografia, geologia, vegetazione, **clima** (5.1, derivato dal testo dell'area:
+  «Il clima è X») e i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice).
+  Resta inerte la distinzione dei **terreni fini** (Cave/Cliffs/Mountain/Light
+  Vegetation/Liquid Surface/Marsh/Alien City) e le sotto-feature: le mappe environ
+  codificano solo 5 classi grezze, quindi nessuno dei 36 snodi è ancora pienamente
+  valutabile ⇒ 🔴/🟡 finché non si arricchisce il terreno per-esagono.
 - **procedurale-vario:** tiri/condizioni con effetti su Resistenza, PV, ore,
   equipaggiamento. Quasi sempre solo testo ⇒ 🔴 (🟡 se in parte coperto).
 

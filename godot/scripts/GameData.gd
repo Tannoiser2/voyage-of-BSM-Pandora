@@ -152,6 +152,14 @@ func get_paragraph(num: int) -> Dictionary:
 func get_paragraph_text(num: int) -> String:
 	return get_paragraph(num).get("it", "")
 
+# Clima dell'area dichiarato nel testo del paragrafo (5.1): «Il clima è X».
+# Restituisce "artico"|"temperato"|"tropicale"|"sahariano" oppure "" se assente.
+func paragraph_climate(num: int) -> String:
+	var re := RegEx.new()
+	re.compile("(?i)clima.{1,6}?(artico|temperato|tropicale|sahariano)")
+	var m := re.search(get_paragraph_text(num))
+	return m.get_string(1).to_lower() if m else ""
+
 # Estrae le scelte/rimandi di un paragrafo (libro-gioco). Ogni rimando ¶NNN nel
 # testo diventa una scelta cliccabile; l'etichetta è la frase/riga che lo contiene.
 func get_paragraph_choices(num: int) -> Array:

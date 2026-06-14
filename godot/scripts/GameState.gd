@@ -1358,6 +1358,12 @@ func show_paragraph(para_num: int) -> void:
 	current_paragraph = para_num
 	encounter_outcome_text = ""
 	pending_goto = 0
+	# Clima dell'area (5.1): se il paragrafo mostrato dichiara «Il clima è X», aggiorna
+	# l'attributo del pianeta usato dagli snodi 6.5 (climate/climate_not).
+	var area_climate := GameData.paragraph_climate(para_num)
+	if area_climate != "":
+		planet_attrs["climate"] = area_climate
+		add_log("Clima dell'area: %s." % area_climate)
 	# Una volta arrivati a un paragrafo di destinazione la catena di snodi è conclusa:
 	# si azzera il contatore dei ri-tiri per la prossima esplorazione.
 	_expedition_reroll_depth = 0
