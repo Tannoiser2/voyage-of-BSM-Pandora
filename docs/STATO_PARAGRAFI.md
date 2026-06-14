@@ -62,13 +62,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 68 | 29,3% |
-| 🟡 Giallo | 43 | 18,5% |
+| 🟢 Verde | 69 | 29,7% |
+| 🟡 Giallo | 42 | 18,1% |
 | 🔴 Rosso | 121 | 52,2% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 38,6%**
-( (68 + 43/2) / 232 ).
+come metà, l'indice di completezza è **≈ 38,8%**
+( (69 + 42/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -77,11 +77,11 @@ come metà, l'indice di completezza è **≈ 38,6%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 12 | 13 | 4 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 7 | 22 | 19 | 48 |
+| incontro-creatura (intro) | 8 | 21 | 19 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
 | snodo «Incontro di spedizione» | 0 | 0 | 36 | 36 |
 | procedurale-vario / rimandi-testuali | 6 | 5 | 42 | 53 |
-| **Totale** | **68** | **43** | **121** | **232** |
+| **Totale** | **69** | **42** | **121** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -102,7 +102,7 @@ come metà, l'indice di completezza è **≈ 38,6%**
 | 002 | procedurale (atterraggio) | 🔴 | Salto condizionato al navigatore (¶070/¶148) non automatizzato; mostrato come testo. |
 | 003 | incontro-creatura (snodo) | 🟢 | Codificato: `goto` a ¶054 con nuova creatura (Aracat). Fedele. |
 | 004 | incontro-creatura (struttura) | 🔴 | Scelta fuga(¶187)/combatti(¶193) non gestita; nessuna logica codificata. |
-| 005 | incontro-creatura (X-Wasp) | 🟡 | Creatura preparata e strategia offerta; il morso velenoso e la perdita di PV su dado non sono applicati. |
+| 005 | incontro-creatura (X-Wasp) | 🟢 | Strategia Cattura → cattura facile senza combattimento (override alla scelta strategia). Se si combatte, il X-Wasp non è catturabile (si applica l'uccisione) e morde un personaggio a caso prima di morire: perdita di Resistenza = 1 dado −2 (Ufficiale Medico) −2 (Medkit), contrassegnata come veleno. Caveat: la protezione enviorig/armorig di chi viene morso non è modellata (enviorig non esiste come oggetto) e il contrassegno «non curabile» è tracciato ma non ancora imposto alla cura. |
 | 006 | procedurale (arma) | 🟢 | Pulsante «Esamina» (check Intelligenza 3.3, resolver `intel_check`): con l'Ufficiale Armi → ¶175; altrimenti 2 dadi vs Intelligenza più alta → barra di energia usabile subito / usabile dopo 5 ore / solo trasportabile (peso 1). L'arma è usabile in combattimento (Cattura/Uccisione 9) solo dopo essere stata compresa. |
 | 007 | incontro-creatura (Drada) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo «non sorpreso» usa le azioni standard. |
 | 008 | procedurale (caduta) | 🔴 | Morte/danni casuali con eccezioni (gravità/armorig/climbkit) non gestiti. |

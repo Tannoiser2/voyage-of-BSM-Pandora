@@ -60,6 +60,9 @@
     {"cond": [], "act": {"type":"combat","shift_left_max_mods":["aggr_mod","intel_mod","speed_mod"],"resistance_only":true}}
   ],
   "003": [ {"cond": [], "act": {"type":"goto","para":54,"new_creature":true}} ],
+  "005": [
+    {"cond": [["strategy","==","capture_kill"]], "act": {"type":"capture"}}
+  ],
   "009": [
     {"cond": [["strategy","==","communicate"],["intel",">=",6],["has_gear","==","Neuroscan"]], "act": {"type":"release","vp":3,"vp_holographer":1}},
     {"cond": [["strategy","==","communicate"]], "act": {"type":"goto","para":16}}

@@ -99,6 +99,7 @@ var acquired_artifacts: Array = []    # paragrafi degli artefatti acquisiti (reg
 var pending_artifact_vp: Array = []   # artefatti raccolti ma non ancora riportati sulla Pandora (PV assegnati al rientro, 2.6/9.1)
 var weapon_usable: bool = false       # l'Arma aliena (¶006) è usabile in combattimento solo dopo averla compresa (¶006/¶175)
 var intel_checks_done: Array = []     # paragrafi con check Intelligenza (3.3) già risolti (¶006/¶175/...)
+var poison_endurance_lost: int = 0    # Punti Resistenza persi da veleno (¶005), contrassegnati in modo speciale
 var recorded_creatures: Array = []    # tipi di creatura registrati sul Registro Attributi (PV per attributi a zero, 9.1)
 var explored_planets: Array = []      # sistemi i cui pianeti sono stati esplorati (1 PV ciascuno, 9.1)
 
@@ -152,6 +153,7 @@ func start_new_game(p_tour_length: int) -> void:
 	pending_artifact_vp = []
 	weapon_usable = false
 	intel_checks_done = []
+	poison_endurance_lost = 0
 	recorded_creatures = []
 	explored_planets = []
 	supply_track_pos = 0
@@ -240,6 +242,7 @@ func save_game(silent := false) -> bool:
 		"damage_points": damage_points, "captured_creatures": captured_creatures,
 		"acquired_artifacts": acquired_artifacts,
 		"weapon_usable": weapon_usable, "intel_checks_done": intel_checks_done,
+		"poison_endurance_lost": poison_endurance_lost,
 		"pending_artifact_vp": pending_artifact_vp,
 		"recorded_creatures": recorded_creatures,
 		"explored_planets": explored_planets,
@@ -324,6 +327,7 @@ func load_game() -> bool:
 	acquired_artifacts = d.get("acquired_artifacts", [])
 	weapon_usable = bool(d.get("weapon_usable", false))
 	intel_checks_done = d.get("intel_checks_done", [])
+	poison_endurance_lost = int(d.get("poison_endurance_lost", 0))
 	pending_artifact_vp = d.get("pending_artifact_vp", [])
 	recorded_creatures = d.get("recorded_creatures", [])
 	explored_planets = d.get("explored_planets", [])
@@ -2123,7 +2127,10 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 
 	match result:
 		"AE":  # l'attaccante elimina/cattura il difensore
-			if mode == "capture" or pending_kill_as_capture:
+			# Una creatura col morso velenoso (¶005) non può essere catturata in
+			# combattimento: si applica comunque l'uccisione (e morde prima di morire).
+			var venomous: bool = GameData.get_creature(current_creature).has("poison_bite")
+			if (mode == "capture" or pending_kill_as_capture) and not venomous:
 				_capture_creature(current_creature)
 			else:
 				_kill_creature(current_creature)
@@ -2149,9 +2156,42 @@ func _capture_creature(name: String) -> void:
 	_end_encounter()
 
 func _kill_creature(name: String) -> void:
+	# Morso velenoso (¶005): la creatura morde un personaggio prima di morire.
+	var cd := GameData.get_creature(name)
+	if cd.has("poison_bite"):
+		_apply_poison_bite(name, cd["poison_bite"])
 	_record_creature_attributes(name)
 	add_log("%s eliminata." % name)
 	_end_encounter()
+
+# Morso velenoso (¶005): un personaggio scelto a caso perde Punti Resistenza
+# (un dado, −2 con l'Ufficiale Medico, −2 col Medkit); la perdita è da veleno e
+# va contrassegnata (poison_endurance_lost). Nota: l'eventuale protezione di
+# enviorig/armorig non è modellata (l'enviorig non esiste come oggetto).
+func _apply_poison_bite(name: String, cfg: Dictionary) -> void:
+	var loss := randi_range(1, int(cfg.get("die", 6)))
+	if "MedO" in expedition_units:
+		loss -= int(cfg.get("minus_medic", 0))
+	if _gear_has("Medkit"):
+		loss -= int(cfg.get("minus_medkit", 0))
+	loss = maxi(0, loss)
+	if loss <= 0:
+		add_log("%s tenta di mordere, ma il veleno è neutralizzato (medico/medkit)." % name)
+		return
+	var who := _pick_random_alive()
+	if who == "":
+		return
+	poison_endurance_lost += loss
+	add_log("Morso velenoso di %s: %s perde %d Punti Resistenza da veleno (contrassegnati)." % [name, crew[who]["name"], loss])
+	_damage_character(who, loss)
+
+# Personaggio imbarcato vivo scelto a caso ("" se nessuno).
+func _pick_random_alive() -> String:
+	var alive: Array = []
+	for k in expedition_units:
+		if crew.get(k, {}).get("alive", false):
+			alive.append(k)
+	return alive[randi_range(0, alive.size() - 1)] if not alive.is_empty() else ""
 
 # Registra un tipo di creatura sul Registro degli Attributi (9.1): la prima volta
 # che la si studia (uccisione/cattura/studio) si guadagna 1 PV per ogni modificatore
