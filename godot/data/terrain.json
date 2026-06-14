@@ -23,7 +23,9 @@
     "Alien City": "Alien City",
     "Light Vegetation": "Light Vegetation",
     "Cliffs": "Cliffs",
-    "Cave": "Cave"
+    "Cave": "Cave",
+    "River": "River",
+    "Abyss": "Abyss"
   },
   "terrain_it": {
     "Flat": "Pianura",

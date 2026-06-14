@@ -56,8 +56,12 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   i **Cliffs** (3) e le **Cave** (1), tutte mappate dalle 8 mappe environ e
   verificate sulle immagini. **19 dei 36 snodi sono così pienamente valutabili ⇒
   🟢.** Resta 1 snodo (068) in attesa del terreno **Marsh** (non ancora trovato) e
-  16 bloccati da sotto-feature (lava fluente, ecc.) ⇒ 🔴. Le mappe contengono anche
-  i tipi **River** e **Abyss**, non usati da alcuno snodo (da modellare a parte).
+  16 bloccati da sotto-feature (lava fluente, ecc.) ⇒ 🔴.
+  Regola **6.7** (un esagono può contenere più terreni): il motore supporta un campo
+  `extra` per i terreni aggiuntivi sovrapposti al terreno base; `_current_terrain_is`
+  soddisfa sia il base sia gli extra. Sono così tagliati per fedeltà anche **River**
+  (12, env3), **Abyss** (11, env1/2/6) e **Glacial Ice** (12, env5), non usati dagli
+  snodi ma fedeli alle mappe.
 - **procedurale-vario:** tiri/condizioni con effetti su Resistenza, PV, ore,
   equipaggiamento. Quasi sempre solo testo ⇒ 🔴 (🟡 se in parte coperto).
 

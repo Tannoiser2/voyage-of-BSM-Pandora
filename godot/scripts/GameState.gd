@@ -1258,9 +1258,16 @@ func _show_snodo_text(para_num: int) -> void:
 	state_updated.emit()
 
 # Vero se il terreno reale dell'esagono attualmente esplorato/occupato è `real`.
+# Regola 6.7: un esagono può contenere più tipi di terreno; oltre al terreno base
+# si considerano i terreni aggiuntivi elencati in `extra` (es. fiume, stagno, ghiaccio).
 func _current_terrain_is(real: String) -> bool:
 	var cell: Dictionary = environ_grid.get(expedition_pos, {})
-	return GameData.terrain_real(cell.get("terrain", "Open")) == real
+	if GameData.terrain_real(cell.get("terrain", "Open")) == real:
+		return true
+	for e in cell.get("extra", []):
+		if GameData.terrain_real(e) == real:
+			return true
+	return false
 
 # Vero se `real` è stato attraversato durante l'ultimo movimento affrettato (6.3).
 func _hasty_has(real: String) -> bool:
@@ -1274,8 +1281,13 @@ func _current_has_vegetation() -> bool:
 func _unexplored_alien_city_in_area() -> bool:
 	for hid in environ_grid:
 		var cell: Dictionary = environ_grid[hid]
-		if GameData.terrain_real(cell.get("terrain", "Open")) == "Alien City" and not cell.get("explored", false):
+		if cell.get("explored", false):
+			continue
+		if GameData.terrain_real(cell.get("terrain", "Open")) == "Alien City":
 			return true
+		for e in cell.get("extra", []):
+			if GameData.terrain_real(e) == "Alien City":
+				return true
 	return false
 
 # Valuta una condizione di snodo. Il dizionario contiene UNA chiave (o "all" per
@@ -1877,6 +1889,7 @@ func generate_environ_at(landing_real: String) -> void:
 		var hid := int(str(key))
 		environ_grid[hid] = {
 			"terrain": h.get("terrain", "Open"),
+			"extra": h.get("extra", []),
 			"explored": false,
 			"real": h.get("real", ""),
 			"x": h.get("x", 0.0),
