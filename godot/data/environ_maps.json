@@ -12,7 +12,8 @@
 "lr": 6,
 "x": 293.5,
 "y": 1170.9,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "46": {
 "real": "0406",
@@ -20,7 +21,8 @@
 "lr": 6,
 "x": 631.6,
 "y": 1168.2,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "66": {
 "real": "0606",
@@ -28,7 +30,8 @@
 "lr": 6,
 "x": 965.6,
 "y": 1167.9,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "35": {
 "real": "0305",
@@ -36,7 +39,8 @@
 "lr": 5,
 "x": 463.5,
 "y": 901.9,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "25": {
 "real": "0205",
@@ -44,7 +48,8 @@
 "lr": 5,
 "x": 292.5,
 "y": 992.2,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "36": {
 "real": "0306",
@@ -52,7 +57,8 @@
 "lr": 6,
 "x": 459.8,
 "y": 1079.2,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "55": {
 "real": "0505",
@@ -60,7 +66,10 @@
 "lr": 5,
 "x": 797.9,
 "y": 890.5,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Light Vegetation"
+]
 },
 "65": {
 "real": "0605",
@@ -68,7 +77,8 @@
 "lr": 5,
 "x": 964.6,
 "y": 989.2,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "45": {
 "real": "0405",
@@ -76,7 +86,8 @@
 "lr": 5,
 "x": 630.9,
 "y": 991.2,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "24": {
 "real": "0204",
@@ -84,7 +95,8 @@
 "lr": 4,
 "x": 291.1,
 "y": 805.2,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": []
 },
 "15": {
 "real": "0105",
@@ -92,7 +104,8 @@
 "lr": 5,
 "x": 123.4,
 "y": 901.2,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "16": {
 "real": "0106",
@@ -100,7 +113,8 @@
 "lr": 6,
 "x": 127.1,
 "y": 1078.5,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "56": {
 "real": "0506",
@@ -108,7 +122,8 @@
 "lr": 6,
 "x": 799.6,
 "y": 1080.5,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "67": {
 "real": "0607",
@@ -116,7 +131,8 @@
 "lr": 7,
 "x": 963.6,
 "y": 1348.9,
-"terrain": "Cliffs"
+"terrain": "Cliffs",
+"extra": []
 },
 "57": {
 "real": "0507",
@@ -124,7 +140,8 @@
 "lr": 7,
 "x": 795.6,
 "y": 1263.6,
-"terrain": "Cliffs"
+"terrain": "Cliffs",
+"extra": []
 },
 "47": {
 "real": "0407",
@@ -132,7 +149,8 @@
 "lr": 7,
 "x": 630.9,
 "y": 1348.6,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "37": {
 "real": "0307",
@@ -140,7 +158,8 @@
 "lr": 7,
 "x": 460.8,
 "y": 1261.9,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "27": {
 "real": "0207",
@@ -148,7 +167,8 @@
 "lr": 7,
 "x": 298.5,
 "y": 1350.9,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "17": {
 "real": "0107",
@@ -156,7 +176,8 @@
 "lr": 7,
 "x": 126.1,
 "y": 1259.3,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "53": {
 "real": "0503",
@@ -164,7 +185,8 @@
 "lr": 3,
 "x": 796.6,
 "y": 531.5,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "33": {
 "real": "0303",
@@ -183,10 +205,8 @@
 "lr": 3,
 "x": 629.6,
 "y": 620.5,
-"terrain": "Open",
-"extra": [
-"Abyss"
-]
+"terrain": "Abyss",
+"extra": []
 },
 "34": {
 "real": "0304",
@@ -194,7 +214,8 @@
 "lr": 4,
 "x": 459.8,
 "y": 713.1,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": []
 },
 "44": {
 "real": "0404",
@@ -202,7 +223,8 @@
 "lr": 4,
 "x": 627.6,
 "y": 798.9,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": []
 },
 "63": {
 "real": "0603",
@@ -210,7 +232,8 @@
 "lr": 3,
 "x": 962.9,
 "y": 619.5,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "54": {
 "real": "0504",
@@ -218,7 +241,8 @@
 "lr": 4,
 "x": 796.3,
 "y": 710.8,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "64": {
 "real": "0604",
@@ -226,7 +250,8 @@
 "lr": 4,
 "x": 962.3,
 "y": 797.9,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "14": {
 "real": "0104",
@@ -234,7 +259,8 @@
 "lr": 4,
 "x": 127.4,
 "y": 713.1,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "23": {
 "real": "0203",
@@ -242,7 +268,8 @@
 "lr": 3,
 "x": 288.8,
 "y": 624.8,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "22": {
 "real": "0202",
@@ -250,10 +277,8 @@
 "lr": 2,
 "x": 289.5,
 "y": 443.8,
-"terrain": "Open",
-"extra": [
-"Abyss"
-]
+"terrain": "Abyss",
+"extra": []
 },
 "13": {
 "real": "0103",
@@ -261,7 +286,8 @@
 "lr": 3,
 "x": 124.1,
 "y": 537.5,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "12": {
 "real": "0102",
@@ -269,10 +295,8 @@
 "lr": 2,
 "x": 122.7,
 "y": 355.1,
-"terrain": "Open",
-"extra": [
-"Abyss"
-]
+"terrain": "Abyss",
+"extra": []
 },
 "42": {
 "real": "0402",
@@ -280,7 +304,8 @@
 "lr": 2,
 "x": 628.2,
 "y": 439.5,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": []
 },
 "61": {
 "real": "0601",
@@ -288,7 +313,8 @@
 "lr": 1,
 "x": 960.6,
 "y": 262.1,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "32": {
 "real": "0302",
@@ -296,7 +322,8 @@
 "lr": 2,
 "x": 459.8,
 "y": 352.5,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "52": {
 "real": "0502",
@@ -304,7 +331,8 @@
 "lr": 2,
 "x": 793.9,
 "y": 353.1,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": []
 },
 "62": {
 "real": "0602",
@@ -312,7 +340,8 @@
 "lr": 2,
 "x": 960.6,
 "y": 440.1,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "31": {
 "real": "0301",
@@ -320,7 +349,8 @@
 "lr": 1,
 "x": 458.1,
 "y": 176.4,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "21": {
 "real": "0201",
@@ -328,7 +358,8 @@
 "lr": 1,
 "x": 286.8,
 "y": 268.4,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "51": {
 "real": "0501",
@@ -336,7 +367,8 @@
 "lr": 1,
 "x": 792.2,
 "y": 175.4,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "41": {
 "real": "0401",
@@ -344,7 +376,8 @@
 "lr": 1,
 "x": 626.2,
 "y": 264.4,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 },
 "11": {
 "real": "0101",
@@ -352,7 +385,8 @@
 "lr": 1,
 "x": 118.4,
 "y": 177.4,
-"terrain": "Open"
+"terrain": "Open",
+"extra": []
 }
 }
 },
@@ -369,7 +403,8 @@
 "lr": 6,
 "x": 293.1,
 "y": 1262.5,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "46": {
 "real": "1006",
@@ -377,7 +412,7 @@
 "lr": 6,
 "x": 625.6,
 "y": 1260.8,
-"terrain": "Ice",
+"terrain": "Open",
 "extra": [
 "Abyss"
 ]
@@ -388,7 +423,8 @@
 "lr": 6,
 "x": 957.9,
 "y": 1262.5,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "35": {
 "real": "0905",
@@ -396,7 +432,8 @@
 "lr": 5,
 "x": 460.8,
 "y": 972.8,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "25": {
 "real": "0805",
@@ -404,7 +441,8 @@
 "lr": 5,
 "x": 294.8,
 "y": 1070.5,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "36": {
 "real": "0906",
@@ -412,7 +450,7 @@
 "lr": 6,
 "x": 460.5,
 "y": 1161.5,
-"terrain": "Ice",
+"terrain": "Open",
 "extra": [
 "Abyss"
 ]
@@ -423,7 +461,8 @@
 "lr": 5,
 "x": 796.9,
 "y": 958.5,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 },
 "65": {
 "real": "1205",
@@ -431,7 +470,8 @@
 "lr": 5,
 "x": 958.3,
 "y": 1063.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "45": {
 "real": "1005",
@@ -439,7 +479,8 @@
 "lr": 5,
 "x": 625.6,
 "y": 1068.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "24": {
 "real": "0804",
@@ -447,7 +488,8 @@
 "lr": 4,
 "x": 290.1,
 "y": 859.8,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "15": {
 "real": "0705",
@@ -455,7 +497,7 @@
 "lr": 5,
 "x": 124.1,
 "y": 974.5,
-"terrain": "Ice",
+"terrain": "Open",
 "extra": [
 "Abyss"
 ]
@@ -466,7 +508,8 @@
 "lr": 6,
 "x": 124.4,
 "y": 1165.5,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "56": {
 "real": "1106",
@@ -474,7 +517,8 @@
 "lr": 6,
 "x": 794.2,
 "y": 1158.8,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "67": {
 "real": "1207",
@@ -482,7 +526,8 @@
 "lr": 7,
 "x": 959.6,
 "y": 1457.9,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "57": {
 "real": "1107",
@@ -490,7 +535,8 @@
 "lr": 7,
 "x": 791.6,
 "y": 1351.6,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "47": {
 "real": "1007",
@@ -498,7 +544,8 @@
 "lr": 7,
 "x": 628.2,
 "y": 1458.9,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "37": {
 "real": "0907",
@@ -506,7 +553,8 @@
 "lr": 7,
 "x": 461.1,
 "y": 1356.9,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "27": {
 "real": "0807",
@@ -514,7 +562,8 @@
 "lr": 7,
 "x": 294.8,
 "y": 1456.6,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "17": {
 "real": "0707",
@@ -522,7 +571,8 @@
 "lr": 7,
 "x": 126.4,
 "y": 1359.6,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "53": {
 "real": "1103",
@@ -530,7 +580,10 @@
 "lr": 3,
 "x": 795.9,
 "y": 571.4,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": [
+"Cave"
+]
 },
 "33": {
 "real": "0903",
@@ -538,7 +591,8 @@
 "lr": 3,
 "x": 457.5,
 "y": 578.1,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 },
 "43": {
 "real": "1003",
@@ -546,7 +600,8 @@
 "lr": 3,
 "x": 624.6,
 "y": 673.1,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "34": {
 "real": "0904",
@@ -554,7 +609,10 @@
 "lr": 4,
 "x": 455.8,
 "y": 769.1,
-"terrain": "Cliffs"
+"terrain": "Cliffs",
+"extra": [
+"Mountain"
+]
 },
 "44": {
 "real": "1004",
@@ -562,7 +620,8 @@
 "lr": 4,
 "x": 624.9,
 "y": 863.5,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "63": {
 "real": "1203",
@@ -570,7 +629,8 @@
 "lr": 3,
 "x": 959.6,
 "y": 670.4,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "54": {
 "real": "1104",
@@ -578,7 +638,8 @@
 "lr": 4,
 "x": 795.2,
 "y": 764.4,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 },
 "64": {
 "real": "1204",
@@ -586,7 +647,8 @@
 "lr": 4,
 "x": 959.9,
 "y": 859.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "14": {
 "real": "0704",
@@ -594,7 +656,8 @@
 "lr": 4,
 "x": 120.1,
 "y": 768.4,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "23": {
 "real": "0803",
@@ -602,7 +665,8 @@
 "lr": 3,
 "x": 292.8,
 "y": 670.1,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 },
 "22": {
 "real": "0802",
@@ -610,7 +674,8 @@
 "lr": 2,
 "x": 290.8,
 "y": 475.8,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 },
 "13": {
 "real": "0703",
@@ -618,7 +683,8 @@
 "lr": 3,
 "x": 119.1,
 "y": 577.4,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "12": {
 "real": "0702",
@@ -626,7 +692,8 @@
 "lr": 2,
 "x": 119.1,
 "y": 382.4,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 },
 "42": {
 "real": "1002",
@@ -634,7 +701,8 @@
 "lr": 2,
 "x": 622.6,
 "y": 478.8,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "61": {
 "real": "1201",
@@ -642,7 +710,8 @@
 "lr": 1,
 "x": 957.9,
 "y": 285.4,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 },
 "32": {
 "real": "0902",
@@ -650,7 +719,8 @@
 "lr": 2,
 "x": 457.8,
 "y": 383.1,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "52": {
 "real": "1102",
@@ -658,7 +728,10 @@
 "lr": 2,
 "x": 794.6,
 "y": 379.4,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": [
+"Cave"
+]
 },
 "62": {
 "real": "1202",
@@ -666,7 +739,8 @@
 "lr": 2,
 "x": 959.6,
 "y": 475.4,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "31": {
 "real": "0901",
@@ -674,7 +748,10 @@
 "lr": 1,
 "x": 457.5,
 "y": 193.4,
-"terrain": "Mountain"
+"terrain": "Cliffs",
+"extra": [
+"Mountain"
+]
 },
 "21": {
 "real": "0801",
@@ -682,7 +759,10 @@
 "lr": 1,
 "x": 290.5,
 "y": 284.4,
-"terrain": "Mountain"
+"terrain": "Cliffs",
+"extra": [
+"Mountain"
+]
 },
 "51": {
 "real": "1101",
@@ -690,7 +770,10 @@
 "lr": 1,
 "x": 792.6,
 "y": 189.0,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": [
+"Cave"
+]
 },
 "41": {
 "real": "1001",
@@ -698,7 +781,8 @@
 "lr": 1,
 "x": 621.9,
 "y": 287.4,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 },
 "11": {
 "real": "0701",
@@ -706,7 +790,8 @@
 "lr": 1,
 "x": 118.1,
 "y": 192.4,
-"terrain": "Mountain"
+"terrain": "Mountain",
+"extra": []
 }
 }
 },
@@ -723,7 +808,10 @@
 "lr": 6,
 "x": 291.5,
 "y": 1261.3,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "46": {
 "real": "1606",
@@ -731,8 +819,9 @@
 "lr": 6,
 "x": 626.6,
 "y": 1257.9,
-"terrain": "Open",
+"terrain": "Forest",
 "extra": [
+"Hill",
 "River"
 ]
 },
@@ -742,7 +831,10 @@
 "lr": 6,
 "x": 959.3,
 "y": 1256.3,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "35": {
 "real": "1505",
@@ -750,7 +842,10 @@
 "lr": 5,
 "x": 454.1,
 "y": 964.6,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "25": {
 "real": "1405",
@@ -758,8 +853,9 @@
 "lr": 5,
 "x": 291.5,
 "y": 1064.3,
-"terrain": "Open",
+"terrain": "Forest",
 "extra": [
+"Hill",
 "River"
 ]
 },
@@ -771,6 +867,7 @@
 "y": 1163.6,
 "terrain": "Forest",
 "extra": [
+"Hill",
 "River"
 ]
 },
@@ -780,8 +877,9 @@
 "lr": 5,
 "x": 787.6,
 "y": 966.9,
-"terrain": "Light Vegetation",
+"terrain": "Mountain",
 "extra": [
+"Light Vegetation",
 "River"
 ]
 },
@@ -791,7 +889,10 @@
 "lr": 5,
 "x": 955.9,
 "y": 1062.6,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "45": {
 "real": "1605",
@@ -799,7 +900,10 @@
 "lr": 5,
 "x": 625.2,
 "y": 1059.9,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "24": {
 "real": "1404",
@@ -807,7 +911,10 @@
 "lr": 4,
 "x": 289.1,
 "y": 865.3,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "15": {
 "real": "1305",
@@ -817,6 +924,7 @@
 "y": 966.3,
 "terrain": "Forest",
 "extra": [
+"Hill",
 "River"
 ]
 },
@@ -826,7 +934,8 @@
 "lr": 6,
 "x": 120.7,
 "y": 1162.6,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "56": {
 "real": "1706",
@@ -834,8 +943,9 @@
 "lr": 6,
 "x": 791.2,
 "y": 1163.3,
-"terrain": "Open",
+"terrain": "Forest",
 "extra": [
+"Hill",
 "River"
 ]
 },
@@ -845,7 +955,10 @@
 "lr": 7,
 "x": 959.6,
 "y": 1452.3,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "57": {
 "real": "1707",
@@ -853,7 +966,10 @@
 "lr": 7,
 "x": 792.9,
 "y": 1356.0,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "47": {
 "real": "1607",
@@ -861,7 +977,10 @@
 "lr": 7,
 "x": 624.9,
 "y": 1452.7,
-"terrain": "Light Vegetation"
+"terrain": "Rough",
+"extra": [
+"Light Vegetation"
+]
 },
 "37": {
 "real": "1507",
@@ -869,8 +988,10 @@
 "lr": 7,
 "x": 456.5,
 "y": 1354.3,
-"terrain": "Rough",
+"terrain": "Mountain",
 "extra": [
+"Heavy Vegetation",
+"Hill",
 "River"
 ]
 },
@@ -880,7 +1001,10 @@
 "lr": 7,
 "x": 291.5,
 "y": 1456.0,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "17": {
 "real": "1307",
@@ -888,7 +1012,10 @@
 "lr": 7,
 "x": 123.1,
 "y": 1356.7,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "53": {
 "real": "1703",
@@ -896,7 +1023,10 @@
 "lr": 3,
 "x": 785.9,
 "y": 574.9,
-"terrain": "Light Vegetation"
+"terrain": "Mountain",
+"extra": [
+"Light Vegetation"
+]
 },
 "33": {
 "real": "1503",
@@ -904,7 +1034,10 @@
 "lr": 3,
 "x": 452.8,
 "y": 573.9,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "43": {
 "real": "1603",
@@ -912,8 +1045,9 @@
 "lr": 3,
 "x": 623.9,
 "y": 674.2,
-"terrain": "Rough",
+"terrain": "Mountain",
 "extra": [
+"Heavy Vegetation",
 "River"
 ]
 },
@@ -923,7 +1057,10 @@
 "lr": 4,
 "x": 453.5,
 "y": 764.2,
-"terrain": "Rough"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "44": {
 "real": "1604",
@@ -931,7 +1068,10 @@
 "lr": 4,
 "x": 625.2,
 "y": 864.6,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "63": {
 "real": "1803",
@@ -939,7 +1079,10 @@
 "lr": 3,
 "x": 957.6,
 "y": 672.9,
-"terrain": "Light Vegetation"
+"terrain": "Rough",
+"extra": [
+"Light Vegetation"
+]
 },
 "54": {
 "real": "1704",
@@ -947,8 +1090,9 @@
 "lr": 4,
 "x": 787.6,
 "y": 765.9,
-"terrain": "Rough",
+"terrain": "Mountain",
 "extra": [
+"Heavy Vegetation",
 "River"
 ]
 },
@@ -958,7 +1102,10 @@
 "lr": 4,
 "x": 956.6,
 "y": 864.3,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "14": {
 "real": "1304",
@@ -966,7 +1113,10 @@
 "lr": 4,
 "x": 119.7,
 "y": 767.2,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "23": {
 "real": "1403",
@@ -976,8 +1126,8 @@
 "y": 675.2,
 "terrain": "Forest",
 "extra": [
-"Pond",
-"Hill"
+"Hill",
+"Pond"
 ]
 },
 "22": {
@@ -986,7 +1136,10 @@
 "lr": 2,
 "x": 288.1,
 "y": 479.5,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "13": {
 "real": "1303",
@@ -994,7 +1147,8 @@
 "lr": 3,
 "x": 121.7,
 "y": 577.9,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": []
 },
 "12": {
 "real": "1302",
@@ -1002,7 +1156,10 @@
 "lr": 2,
 "x": 120.7,
 "y": 383.5,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "42": {
 "real": "1602",
@@ -1010,8 +1167,9 @@
 "lr": 2,
 "x": 625.9,
 "y": 479.5,
-"terrain": "Light Vegetation",
+"terrain": "Mountain",
 "extra": [
+"Light Vegetation",
 "River"
 ]
 },
@@ -1021,7 +1179,10 @@
 "lr": 1,
 "x": 956.9,
 "y": 288.5,
-"terrain": "Forest"
+"terrain": "Mountain",
+"extra": [
+"Heavy Vegetation"
+]
 },
 "32": {
 "real": "1502",
@@ -1029,7 +1190,10 @@
 "lr": 2,
 "x": 453.1,
 "y": 378.5,
-"terrain": "Light Vegetation"
+"terrain": "Rough",
+"extra": [
+"Light Vegetation"
+]
 },
 "52": {
 "real": "1702",
@@ -1037,8 +1201,9 @@
 "lr": 2,
 "x": 787.6,
 "y": 379.9,
-"terrain": "Light Vegetation",
+"terrain": "Mountain",
 "extra": [
+"Light Vegetation",
 "River"
 ]
 },
@@ -1048,8 +1213,9 @@
 "lr": 2,
 "x": 956.3,
 "y": 478.9,
-"terrain": "Forest",
+"terrain": "Mountain",
 "extra": [
+"Heavy Vegetation",
 "River"
 ]
 },
@@ -1059,7 +1225,10 @@
 "lr": 1,
 "x": 453.1,
 "y": 189.5,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "21": {
 "real": "1401",
@@ -1067,7 +1236,10 @@
 "lr": 1,
 "x": 287.1,
 "y": 290.1,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "51": {
 "real": "1701",
@@ -1075,7 +1247,10 @@
 "lr": 1,
 "x": 787.2,
 "y": 189.1,
-"terrain": "Rough"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "41": {
 "real": "1601",
@@ -1083,7 +1258,10 @@
 "lr": 1,
 "x": 625.6,
 "y": 289.1,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "11": {
 "real": "1301",
@@ -1091,7 +1269,10 @@
 "lr": 1,
 "x": 117.7,
 "y": 192.8,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 }
 }
 },
@@ -1108,7 +1289,8 @@
 "lr": 6,
 "x": 296.8,
 "y": 1246.0,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "46": {
 "real": "0413",
@@ -1116,7 +1298,8 @@
 "lr": 6,
 "x": 633.6,
 "y": 1240.3,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "66": {
 "real": "0613",
@@ -1124,7 +1307,10 @@
 "lr": 6,
 "x": 975.9,
 "y": 1237.6,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "35": {
 "real": "0312",
@@ -1132,7 +1318,10 @@
 "lr": 5,
 "x": 466.1,
 "y": 952.6,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "25": {
 "real": "0212",
@@ -1140,7 +1329,8 @@
 "lr": 5,
 "x": 295.1,
 "y": 1052.0,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "36": {
 "real": "0313",
@@ -1148,7 +1338,10 @@
 "lr": 6,
 "x": 467.1,
 "y": 1149.6,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "55": {
 "real": "0512",
@@ -1156,7 +1349,8 @@
 "lr": 5,
 "x": 803.6,
 "y": 944.0,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "65": {
 "real": "0612",
@@ -1164,7 +1358,8 @@
 "lr": 5,
 "x": 971.6,
 "y": 1040.6,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "45": {
 "real": "0412",
@@ -1172,7 +1367,8 @@
 "lr": 5,
 "x": 631.2,
 "y": 1043.0,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "24": {
 "real": "0211",
@@ -1180,7 +1376,8 @@
 "lr": 4,
 "x": 294.1,
 "y": 862.0,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "15": {
 "real": "0112",
@@ -1188,7 +1385,8 @@
 "lr": 5,
 "x": 124.4,
 "y": 951.3,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "16": {
 "real": "0113",
@@ -1196,7 +1394,8 @@
 "lr": 6,
 "x": 127.7,
 "y": 1147.0,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "56": {
 "real": "0513",
@@ -1204,7 +1403,10 @@
 "lr": 6,
 "x": 806.9,
 "y": 1140.6,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "67": {
 "real": "0614",
@@ -1212,7 +1414,10 @@
 "lr": 7,
 "x": 973.9,
 "y": 1435.7,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "57": {
 "real": "0514",
@@ -1220,7 +1425,10 @@
 "lr": 7,
 "x": 808.3,
 "y": 1338.4,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "47": {
 "real": "0414",
@@ -1228,7 +1436,8 @@
 "lr": 7,
 "x": 633.2,
 "y": 1441.4,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "37": {
 "real": "0314",
@@ -1236,7 +1445,10 @@
 "lr": 7,
 "x": 467.8,
 "y": 1350.4,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "27": {
 "real": "0214",
@@ -1244,7 +1456,8 @@
 "lr": 7,
 "x": 297.5,
 "y": 1443.7,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "17": {
 "real": "0114",
@@ -1252,7 +1465,8 @@
 "lr": 7,
 "x": 131.4,
 "y": 1347.4,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "53": {
 "real": "0510",
@@ -1260,7 +1474,8 @@
 "lr": 3,
 "x": 800.6,
 "y": 561.6,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "33": {
 "real": "0310",
@@ -1268,7 +1483,10 @@
 "lr": 3,
 "x": 459.8,
 "y": 559.6,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "43": {
 "real": "0410",
@@ -1276,7 +1494,8 @@
 "lr": 3,
 "x": 631.2,
 "y": 653.9,
-"terrain": "Desert"
+"terrain": "Mountain",
+"extra": []
 },
 "34": {
 "real": "0311",
@@ -1284,7 +1503,10 @@
 "lr": 4,
 "x": 465.1,
 "y": 761.6,
-"terrain": "Rough"
+"terrain": "Cliffs",
+"extra": [
+"Mountain"
+]
 },
 "44": {
 "real": "0411",
@@ -1292,7 +1514,8 @@
 "lr": 4,
 "x": 628.9,
 "y": 853.3,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "63": {
 "real": "0610",
@@ -1300,7 +1523,8 @@
 "lr": 3,
 "x": 969.6,
 "y": 653.2,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "54": {
 "real": "0511",
@@ -1308,7 +1532,8 @@
 "lr": 4,
 "x": 803.3,
 "y": 753.6,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "64": {
 "real": "0611",
@@ -1316,7 +1541,10 @@
 "lr": 4,
 "x": 971.9,
 "y": 852.0,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "14": {
 "real": "0111",
@@ -1324,7 +1552,10 @@
 "lr": 4,
 "x": 121.7,
 "y": 760.9,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "23": {
 "real": "0210",
@@ -1332,7 +1563,8 @@
 "lr": 3,
 "x": 298.1,
 "y": 657.2,
-"terrain": "Rough"
+"terrain": "Mountain",
+"extra": []
 },
 "22": {
 "real": "0209",
@@ -1340,7 +1572,8 @@
 "lr": 2,
 "x": 295.1,
 "y": 467.2,
-"terrain": "Rough"
+"terrain": "Mountain",
+"extra": []
 },
 "13": {
 "real": "0110",
@@ -1348,7 +1581,8 @@
 "lr": 3,
 "x": 125.7,
 "y": 560.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "12": {
 "real": "0109",
@@ -1356,7 +1590,8 @@
 "lr": 2,
 "x": 121.4,
 "y": 367.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "42": {
 "real": "0409",
@@ -1364,7 +1599,8 @@
 "lr": 2,
 "x": 629.6,
 "y": 460.9,
-"terrain": "Desert"
+"terrain": "Mountain",
+"extra": []
 },
 "61": {
 "real": "0608",
@@ -1372,7 +1608,10 @@
 "lr": 1,
 "x": 969.6,
 "y": 265.8,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "32": {
 "real": "0309",
@@ -1380,7 +1619,8 @@
 "lr": 2,
 "x": 459.1,
 "y": 366.6,
-"terrain": "Rough"
+"terrain": "Mountain",
+"extra": []
 },
 "52": {
 "real": "0509",
@@ -1388,7 +1628,10 @@
 "lr": 2,
 "x": 798.9,
 "y": 368.6,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "62": {
 "real": "0609",
@@ -1396,7 +1639,8 @@
 "lr": 2,
 "x": 968.6,
 "y": 461.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "31": {
 "real": "0308",
@@ -1404,7 +1648,8 @@
 "lr": 1,
 "x": 454.1,
 "y": 170.5,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "21": {
 "real": "0208",
@@ -1412,7 +1657,8 @@
 "lr": 1,
 "x": 292.1,
 "y": 272.8,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "51": {
 "real": "0508",
@@ -1420,7 +1666,8 @@
 "lr": 1,
 "x": 795.9,
 "y": 170.8,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "41": {
 "real": "0408",
@@ -1428,7 +1675,8 @@
 "lr": 1,
 "x": 628.9,
 "y": 267.5,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "11": {
 "real": "0108",
@@ -1436,7 +1684,8 @@
 "lr": 1,
 "x": 119.1,
 "y": 173.5,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 }
 }
 },
@@ -1453,7 +1702,10 @@
 "lr": 6,
 "x": 297.1,
 "y": 1262.7,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "46": {
 "real": "1013",
@@ -1461,7 +1713,10 @@
 "lr": 6,
 "x": 643.2,
 "y": 1265.7,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "66": {
 "real": "1213",
@@ -1469,7 +1724,10 @@
 "lr": 6,
 "x": 996.9,
 "y": 1265.1,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "35": {
 "real": "0912",
@@ -1477,7 +1735,10 @@
 "lr": 5,
 "x": 472.1,
 "y": 962.1,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "25": {
 "real": "0812",
@@ -1487,7 +1748,8 @@
 "y": 1060.7,
 "terrain": "Forest",
 "extra": [
-"Ice"
+"Flat",
+"Glacial Ice"
 ]
 },
 "36": {
@@ -1496,7 +1758,10 @@
 "lr": 6,
 "x": 469.1,
 "y": 1163.7,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "55": {
 "real": "1112",
@@ -1504,7 +1769,10 @@
 "lr": 5,
 "x": 817.9,
 "y": 958.4,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "65": {
 "real": "1212",
@@ -1512,9 +1780,9 @@
 "lr": 5,
 "x": 996.3,
 "y": 1063.1,
-"terrain": "Open",
+"terrain": "Ice",
 "extra": [
-"Ice"
+"Flat"
 ]
 },
 "45": {
@@ -1523,7 +1791,10 @@
 "lr": 5,
 "x": 644.6,
 "y": 1063.7,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "24": {
 "real": "0811",
@@ -1531,7 +1802,10 @@
 "lr": 4,
 "x": 294.8,
 "y": 863.4,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "15": {
 "real": "0712",
@@ -1541,7 +1815,8 @@
 "y": 963.1,
 "terrain": "Forest",
 "extra": [
-"Ice"
+"Flat",
+"Glacial Ice"
 ]
 },
 "16": {
@@ -1552,7 +1827,8 @@
 "y": 1163.1,
 "terrain": "Forest",
 "extra": [
-"Ice"
+"Flat",
+"Glacial Ice"
 ]
 },
 "56": {
@@ -1561,7 +1837,10 @@
 "lr": 6,
 "x": 817.9,
 "y": 1160.1,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "67": {
 "real": "1214",
@@ -1571,7 +1850,8 @@
 "y": 1464.1,
 "terrain": "Forest",
 "extra": [
-"Ice"
+"Flat",
+"Glacial Ice"
 ]
 },
 "57": {
@@ -1580,9 +1860,9 @@
 "lr": 7,
 "x": 819.9,
 "y": 1365.1,
-"terrain": "Open",
+"terrain": "Ice",
 "extra": [
-"Ice"
+"Flat"
 ]
 },
 "47": {
@@ -1591,7 +1871,10 @@
 "lr": 7,
 "x": 644.9,
 "y": 1462.8,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "37": {
 "real": "0914",
@@ -1601,7 +1884,8 @@
 "y": 1367.8,
 "terrain": "Forest",
 "extra": [
-"Ice"
+"Flat",
+"Glacial Ice"
 ]
 },
 "27": {
@@ -1612,7 +1896,8 @@
 "y": 1469.1,
 "terrain": "Forest",
 "extra": [
-"Ice"
+"Flat",
+"Glacial Ice"
 ]
 },
 "17": {
@@ -1621,7 +1906,10 @@
 "lr": 7,
 "x": 122.1,
 "y": 1370.8,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "53": {
 "real": "1110",
@@ -1629,7 +1917,10 @@
 "lr": 3,
 "x": 814.6,
 "y": 565.3,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Flat"
+]
 },
 "33": {
 "real": "0910",
@@ -1639,7 +1930,8 @@
 "y": 567.0,
 "terrain": "Forest",
 "extra": [
-"Ice"
+"Flat",
+"Glacial Ice"
 ]
 },
 "43": {
@@ -1648,7 +1940,8 @@
 "lr": 3,
 "x": 651.6,
 "y": 669.6,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": []
 },
 "34": {
 "real": "0911",
@@ -1656,9 +1949,9 @@
 "lr": 4,
 "x": 471.1,
 "y": 767.6,
-"terrain": "Open",
+"terrain": "Ice",
 "extra": [
-"Ice"
+"Flat"
 ]
 },
 "44": {
@@ -1667,7 +1960,10 @@
 "lr": 4,
 "x": 645.9,
 "y": 868.1,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "63": {
 "real": "1210",
@@ -1675,7 +1971,8 @@
 "lr": 3,
 "x": 994.6,
 "y": 670.3,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "54": {
 "real": "1111",
@@ -1683,9 +1980,9 @@
 "lr": 4,
 "x": 815.6,
 "y": 764.0,
-"terrain": "Open",
+"terrain": "Ice",
 "extra": [
-"Ice"
+"Flat"
 ]
 },
 "64": {
@@ -1694,7 +1991,10 @@
 "lr": 4,
 "x": 996.3,
 "y": 866.1,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "14": {
 "real": "0711",
@@ -1702,7 +2002,10 @@
 "lr": 4,
 "x": 124.7,
 "y": 769.0,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "23": {
 "real": "0810",
@@ -1710,9 +2013,9 @@
 "lr": 3,
 "x": 295.5,
 "y": 670.3,
-"terrain": "Open",
+"terrain": "Ice",
 "extra": [
-"Ice"
+"Flat"
 ]
 },
 "22": {
@@ -1721,7 +2024,8 @@
 "lr": 2,
 "x": 294.8,
 "y": 472.0,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "13": {
 "real": "0710",
@@ -1729,7 +2033,8 @@
 "lr": 3,
 "x": 126.1,
 "y": 571.0,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "12": {
 "real": "0709",
@@ -1737,7 +2042,8 @@
 "lr": 2,
 "x": 124.4,
 "y": 372.6,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "42": {
 "real": "1009",
@@ -1745,7 +2051,10 @@
 "lr": 2,
 "x": 647.9,
 "y": 473.0,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "61": {
 "real": "1208",
@@ -1753,7 +2062,11 @@
 "lr": 1,
 "x": 993.3,
 "y": 272.3,
-"terrain": "Desert"
+"terrain": "Mountain",
+"extra": [
+"Flat",
+"Solid Lava"
+]
 },
 "32": {
 "real": "0909",
@@ -1761,7 +2074,8 @@
 "lr": 2,
 "x": 468.1,
 "y": 370.0,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "52": {
 "real": "1109",
@@ -1769,7 +2083,8 @@
 "lr": 2,
 "x": 814.9,
 "y": 368.3,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "62": {
 "real": "1209",
@@ -1777,7 +2092,8 @@
 "lr": 2,
 "x": 994.3,
 "y": 473.6,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "31": {
 "real": "0908",
@@ -1785,7 +2101,8 @@
 "lr": 1,
 "x": 468.5,
 "y": 169.9,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "21": {
 "real": "0808",
@@ -1793,7 +2110,10 @@
 "lr": 1,
 "x": 294.8,
 "y": 272.6,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Flat"
+]
 },
 "51": {
 "real": "1108",
@@ -1801,7 +2121,8 @@
 "lr": 1,
 "x": 816.3,
 "y": 166.9,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "41": {
 "real": "1008",
@@ -1809,7 +2130,10 @@
 "lr": 1,
 "x": 646.2,
 "y": 272.9,
-"terrain": "Alien City"
+"terrain": "Alien City",
+"extra": [
+"Flat"
+]
 },
 "11": {
 "real": "0708",
@@ -1817,7 +2141,8 @@
 "lr": 1,
 "x": 123.1,
 "y": 171.9,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 }
 }
 },
@@ -1834,9 +2159,10 @@
 "lr": 6,
 "x": 303.1,
 "y": 1271.7,
-"terrain": "Desert",
+"terrain": "Cliffs",
 "extra": [
-"Abyss"
+"Abyss",
+"Solid Lava"
 ]
 },
 "46": {
@@ -1845,7 +2171,8 @@
 "lr": 6,
 "x": 650.9,
 "y": 1274.0,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "66": {
 "real": "1813",
@@ -1853,7 +2180,8 @@
 "lr": 6,
 "x": 1003.9,
 "y": 1272.7,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "35": {
 "real": "1512",
@@ -1861,7 +2189,10 @@
 "lr": 5,
 "x": 472.8,
 "y": 974.0,
-"terrain": "Cave"
+"terrain": "Desert",
+"extra": [
+"Cave"
+]
 },
 "25": {
 "real": "1412",
@@ -1869,9 +2200,10 @@
 "lr": 5,
 "x": 302.5,
 "y": 1070.0,
-"terrain": "Desert",
+"terrain": "Cliffs",
 "extra": [
-"Abyss"
+"Abyss",
+"Hill"
 ]
 },
 "36": {
@@ -1880,7 +2212,8 @@
 "lr": 6,
 "x": 472.8,
 "y": 1175.3,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "55": {
 "real": "1712",
@@ -1888,7 +2221,8 @@
 "lr": 5,
 "x": 823.2,
 "y": 973.3,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "65": {
 "real": "1812",
@@ -1896,7 +2230,8 @@
 "lr": 5,
 "x": 1002.6,
 "y": 1072.3,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "45": {
 "real": "1612",
@@ -1904,7 +2239,8 @@
 "lr": 5,
 "x": 648.6,
 "y": 1074.7,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "24": {
 "real": "1411",
@@ -1912,7 +2248,8 @@
 "lr": 4,
 "x": 300.5,
 "y": 873.3,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "15": {
 "real": "1312",
@@ -1920,9 +2257,10 @@
 "lr": 5,
 "x": 129.1,
 "y": 975.7,
-"terrain": "Ice",
+"terrain": "Cliffs",
 "extra": [
-"Abyss"
+"Abyss",
+"Flat"
 ]
 },
 "16": {
@@ -1931,7 +2269,10 @@
 "lr": 6,
 "x": 128.4,
 "y": 1176.7,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Flat"
+]
 },
 "56": {
 "real": "1713",
@@ -1939,7 +2280,10 @@
 "lr": 6,
 "x": 822.9,
 "y": 1174.3,
-"terrain": "Desert"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "67": {
 "real": "1814",
@@ -1947,7 +2291,8 @@
 "lr": 7,
 "x": 1002.3,
 "y": 1471.1,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "57": {
 "real": "1714",
@@ -1955,7 +2300,8 @@
 "lr": 7,
 "x": 824.9,
 "y": 1370.4,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "47": {
 "real": "1614",
@@ -1963,7 +2309,8 @@
 "lr": 7,
 "x": 650.6,
 "y": 1474.7,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "37": {
 "real": "1514",
@@ -1971,9 +2318,10 @@
 "lr": 7,
 "x": 472.8,
 "y": 1375.4,
-"terrain": "Rough",
+"terrain": "Cliffs",
 "extra": [
-"Abyss"
+"Abyss",
+"Flat"
 ]
 },
 "27": {
@@ -1982,7 +2330,8 @@
 "lr": 7,
 "x": 303.5,
 "y": 1477.1,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "17": {
 "real": "1314",
@@ -1990,7 +2339,8 @@
 "lr": 7,
 "x": 128.1,
 "y": 1377.1,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "53": {
 "real": "1710",
@@ -1998,7 +2348,8 @@
 "lr": 3,
 "x": 823.2,
 "y": 576.9,
-"terrain": "Desert"
+"terrain": "Mountain",
+"extra": []
 },
 "33": {
 "real": "1510",
@@ -2006,7 +2357,8 @@
 "lr": 3,
 "x": 473.8,
 "y": 575.3,
-"terrain": "Rough"
+"terrain": "Liquid Surface",
+"extra": []
 },
 "43": {
 "real": "1610",
@@ -2014,7 +2366,10 @@
 "lr": 3,
 "x": 647.6,
 "y": 676.9,
-"terrain": "Rough"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "34": {
 "real": "1511",
@@ -2022,7 +2377,8 @@
 "lr": 4,
 "x": 473.1,
 "y": 777.9,
-"terrain": "Rough"
+"terrain": "Liquid Surface",
+"extra": []
 },
 "44": {
 "real": "1611",
@@ -2030,7 +2386,8 @@
 "lr": 4,
 "x": 648.6,
 "y": 877.0,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "63": {
 "real": "1810",
@@ -2038,7 +2395,8 @@
 "lr": 3,
 "x": 1000.6,
 "y": 676.6,
-"terrain": "Rough"
+"terrain": "Mountain",
+"extra": []
 },
 "54": {
 "real": "1711",
@@ -2046,7 +2404,10 @@
 "lr": 4,
 "x": 821.9,
 "y": 777.9,
-"terrain": "Rough"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "64": {
 "real": "1811",
@@ -2054,7 +2415,8 @@
 "lr": 4,
 "x": 1000.9,
 "y": 875.0,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "14": {
 "real": "1311",
@@ -2062,7 +2424,8 @@
 "lr": 4,
 "x": 126.1,
 "y": 779.6,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "23": {
 "real": "1410",
@@ -2070,7 +2433,10 @@
 "lr": 3,
 "x": 299.1,
 "y": 679.3,
-"terrain": "Desert"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "22": {
 "real": "1409",
@@ -2078,7 +2444,10 @@
 "lr": 2,
 "x": 294.1,
 "y": 484.7,
-"terrain": "Rough"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "13": {
 "real": "1310",
@@ -2086,7 +2455,8 @@
 "lr": 3,
 "x": 128.1,
 "y": 576.3,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "12": {
 "real": "1309",
@@ -2094,7 +2464,8 @@
 "lr": 2,
 "x": 125.7,
 "y": 378.9,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "42": {
 "real": "1609",
@@ -2102,7 +2473,10 @@
 "lr": 2,
 "x": 646.6,
 "y": 480.6,
-"terrain": "Rough"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "61": {
 "real": "1808",
@@ -2110,7 +2484,10 @@
 "lr": 1,
 "x": 994.9,
 "y": 277.5,
-"terrain": "Desert"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "32": {
 "real": "1509",
@@ -2118,7 +2495,10 @@
 "lr": 2,
 "x": 471.5,
 "y": 376.9,
-"terrain": "Rough"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "52": {
 "real": "1709",
@@ -2126,7 +2506,10 @@
 "lr": 2,
 "x": 821.9,
 "y": 379.3,
-"terrain": "Desert"
+"terrain": "Liquid Surface",
+"extra": [
+"Solid Lava"
+]
 },
 "62": {
 "real": "1809",
@@ -2134,7 +2517,8 @@
 "lr": 2,
 "x": 997.6,
 "y": 477.6,
-"terrain": "Rough"
+"terrain": "Mountain",
+"extra": []
 },
 "31": {
 "real": "1508",
@@ -2142,7 +2526,8 @@
 "lr": 1,
 "x": 468.8,
 "y": 177.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "21": {
 "real": "1408",
@@ -2150,7 +2535,8 @@
 "lr": 1,
 "x": 297.5,
 "y": 281.5,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "51": {
 "real": "1708",
@@ -2158,7 +2544,8 @@
 "lr": 1,
 "x": 820.6,
 "y": 179.9,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "41": {
 "real": "1608",
@@ -2166,7 +2553,8 @@
 "lr": 1,
 "x": 643.2,
 "y": 278.5,
-"terrain": "Desert"
+"terrain": "Desert",
+"extra": []
 },
 "11": {
 "real": "1308",
@@ -2174,7 +2562,8 @@
 "lr": 1,
 "x": 122.4,
 "y": 178.9,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 }
 }
 },
@@ -2191,7 +2580,11 @@
 "lr": 6,
 "x": 295.8,
 "y": 1242.4,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "46": {
 "real": "1020",
@@ -2199,7 +2592,11 @@
 "lr": 6,
 "x": 620.6,
 "y": 1231.0,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "66": {
 "real": "1220",
@@ -2207,7 +2604,8 @@
 "lr": 6,
 "x": 961.9,
 "y": 1226.4,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "35": {
 "real": "0919",
@@ -2215,7 +2613,8 @@
 "lr": 5,
 "x": 450.1,
 "y": 947.4,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "25": {
 "real": "0819",
@@ -2223,7 +2622,12 @@
 "lr": 5,
 "x": 293.1,
 "y": 1052.0,
-"terrain": "Rough"
+"terrain": "Cliffs",
+"extra": [
+"Flat",
+"Mountain",
+"River"
+]
 },
 "36": {
 "real": "0920",
@@ -2231,7 +2635,12 @@
 "lr": 6,
 "x": 450.1,
 "y": 1132.0,
-"terrain": "Rough"
+"terrain": "Cliffs",
+"extra": [
+"Flat",
+"Mountain",
+"River"
+]
 },
 "55": {
 "real": "1119",
@@ -2239,7 +2648,12 @@
 "lr": 5,
 "x": 787.9,
 "y": 951.4,
-"terrain": "Rough"
+"terrain": "Cliffs",
+"extra": [
+"Flat",
+"Mountain",
+"River"
+]
 },
 "65": {
 "real": "1219",
@@ -2247,7 +2661,12 @@
 "lr": 5,
 "x": 960.6,
 "y": 1039.7,
-"terrain": "Rough"
+"terrain": "Cliffs",
+"extra": [
+"Flat",
+"Mountain",
+"River"
+]
 },
 "45": {
 "real": "1019",
@@ -2255,7 +2674,12 @@
 "lr": 5,
 "x": 620.9,
 "y": 1043.0,
-"terrain": "Rough"
+"terrain": "Cliffs",
+"extra": [
+"Flat",
+"Mountain",
+"River"
+]
 },
 "24": {
 "real": "0818",
@@ -2263,7 +2687,10 @@
 "lr": 4,
 "x": 290.1,
 "y": 857.7,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "15": {
 "real": "0719",
@@ -2271,7 +2698,10 @@
 "lr": 5,
 "x": 125.1,
 "y": 951.0,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "16": {
 "real": "0720",
@@ -2279,7 +2709,12 @@
 "lr": 6,
 "x": 118.7,
 "y": 1143.7,
-"terrain": "Rough"
+"terrain": "Cliffs",
+"extra": [
+"Flat",
+"Mountain",
+"River"
+]
 },
 "56": {
 "real": "1120",
@@ -2287,7 +2722,8 @@
 "lr": 6,
 "x": 786.9,
 "y": 1132.4,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "67": {
 "real": "1221",
@@ -2295,7 +2731,11 @@
 "lr": 7,
 "x": 959.9,
 "y": 1429.4,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "57": {
 "real": "1121",
@@ -2303,7 +2743,11 @@
 "lr": 7,
 "x": 792.6,
 "y": 1331.7,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "47": {
 "real": "1021",
@@ -2311,7 +2755,11 @@
 "lr": 7,
 "x": 625.2,
 "y": 1428.7,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "37": {
 "real": "0921",
@@ -2319,7 +2767,8 @@
 "lr": 7,
 "x": 461.5,
 "y": 1333.4,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "27": {
 "real": "0821",
@@ -2327,7 +2776,11 @@
 "lr": 7,
 "x": 291.5,
 "y": 1437.1,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "17": {
 "real": "0721",
@@ -2335,7 +2788,11 @@
 "lr": 7,
 "x": 127.4,
 "y": 1339.4,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "53": {
 "real": "1117",
@@ -2343,7 +2800,8 @@
 "lr": 3,
 "x": 787.6,
 "y": 558.9,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "33": {
 "real": "0917",
@@ -2351,7 +2809,10 @@
 "lr": 3,
 "x": 447.8,
 "y": 563.9,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "43": {
 "real": "1017",
@@ -2359,7 +2820,10 @@
 "lr": 3,
 "x": 616.6,
 "y": 658.6,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "34": {
 "real": "0918",
@@ -2367,7 +2831,10 @@
 "lr": 4,
 "x": 441.5,
 "y": 746.9,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "44": {
 "real": "1018",
@@ -2375,7 +2842,10 @@
 "lr": 4,
 "x": 619.6,
 "y": 848.0,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "63": {
 "real": "1217",
@@ -2383,7 +2853,10 @@
 "lr": 3,
 "x": 956.9,
 "y": 653.3,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "54": {
 "real": "1118",
@@ -2391,7 +2864,10 @@
 "lr": 4,
 "x": 789.6,
 "y": 747.9,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "64": {
 "real": "1218",
@@ -2399,7 +2875,11 @@
 "lr": 4,
 "x": 960.3,
 "y": 841.4,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "14": {
 "real": "0718",
@@ -2407,7 +2887,11 @@
 "lr": 4,
 "x": 122.1,
 "y": 756.6,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "23": {
 "real": "0817",
@@ -2415,7 +2899,10 @@
 "lr": 3,
 "x": 287.8,
 "y": 665.9,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "22": {
 "real": "0816",
@@ -2423,7 +2910,10 @@
 "lr": 2,
 "x": 286.8,
 "y": 472.3,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "13": {
 "real": "0717",
@@ -2431,7 +2921,11 @@
 "lr": 3,
 "x": 118.7,
 "y": 564.9,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "12": {
 "real": "0716",
@@ -2439,7 +2933,12 @@
 "lr": 2,
 "x": 118.1,
 "y": 369.9,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill",
+"Light Vegetation"
+]
 },
 "42": {
 "real": "1016",
@@ -2447,7 +2946,10 @@
 "lr": 2,
 "x": 616.6,
 "y": 464.6,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "61": {
 "real": "1215",
@@ -2455,7 +2957,11 @@
 "lr": 1,
 "x": 956.3,
 "y": 267.5,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "32": {
 "real": "0916",
@@ -2463,7 +2969,10 @@
 "lr": 2,
 "x": 448.5,
 "y": 367.3,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "52": {
 "real": "1116",
@@ -2471,7 +2980,12 @@
 "lr": 2,
 "x": 786.6,
 "y": 362.3,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill",
+"Light Vegetation"
+]
 },
 "62": {
 "real": "1216",
@@ -2479,7 +2993,10 @@
 "lr": 2,
 "x": 956.6,
 "y": 457.6,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "31": {
 "real": "0915",
@@ -2487,7 +3004,11 @@
 "lr": 1,
 "x": 447.8,
 "y": 177.5,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "21": {
 "real": "0815",
@@ -2495,7 +3016,11 @@
 "lr": 1,
 "x": 289.1,
 "y": 283.9,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "51": {
 "real": "1115",
@@ -2503,7 +3028,11 @@
 "lr": 1,
 "x": 786.6,
 "y": 173.9,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"Hill"
+]
 },
 "41": {
 "real": "1015",
@@ -2511,7 +3040,10 @@
 "lr": 1,
 "x": 614.9,
 "y": 272.5,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 },
 "11": {
 "real": "0715",
@@ -2519,7 +3051,10 @@
 "lr": 1,
 "x": 118.1,
 "y": 179.2,
-"terrain": "Rough"
+"terrain": "Light Vegetation",
+"extra": [
+"Flat"
+]
 }
 }
 },
@@ -2536,9 +3071,9 @@
 "lr": 4,
 "x": 124.1,
 "y": 773.2,
-"terrain": "Light Vegetation",
+"terrain": "Forest",
 "extra": [
-"Marsh",
+"Flat",
 "Pond"
 ]
 },
@@ -2548,7 +3083,10 @@
 "lr": 6,
 "x": 292.5,
 "y": 1256.3,
-"terrain": "Open"
+"terrain": "Rough",
+"extra": [
+"River"
+]
 },
 "46": {
 "real": "1620",
@@ -2556,8 +3094,9 @@
 "lr": 6,
 "x": 626.2,
 "y": 1257.0,
-"terrain": "Light Vegetation",
+"terrain": "Forest",
 "extra": [
+"Flat",
 "Pond"
 ]
 },
@@ -2567,7 +3106,8 @@
 "lr": 6,
 "x": 964.3,
 "y": 1252.0,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": []
 },
 "35": {
 "real": "1519",
@@ -2575,9 +3115,10 @@
 "lr": 5,
 "x": 448.1,
 "y": 968.0,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat",
+"River"
 ]
 },
 "25": {
@@ -2586,7 +3127,11 @@
 "lr": 5,
 "x": 290.5,
 "y": 1066.3,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"River"
+]
 },
 "36": {
 "real": "1520",
@@ -2594,7 +3139,8 @@
 "lr": 6,
 "x": 450.1,
 "y": 1159.3,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "55": {
 "real": "1719",
@@ -2602,9 +3148,10 @@
 "lr": 5,
 "x": 793.2,
 "y": 962.0,
-"terrain": "Forest",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat",
+"River"
 ]
 },
 "65": {
@@ -2613,9 +3160,9 @@
 "lr": 5,
 "x": 964.3,
 "y": 1060.3,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "45": {
@@ -2624,7 +3171,11 @@
 "lr": 5,
 "x": 627.2,
 "y": 1065.0,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"River"
+]
 },
 "24": {
 "real": "1418",
@@ -2632,9 +3183,10 @@
 "lr": 4,
 "x": 289.5,
 "y": 869.0,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat",
+"River"
 ]
 },
 "15": {
@@ -2643,7 +3195,10 @@
 "lr": 5,
 "x": 125.1,
 "y": 972.0,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat"
+]
 },
 "16": {
 "real": "1320",
@@ -2651,7 +3206,10 @@
 "lr": 6,
 "x": 125.7,
 "y": 1161.3,
-"terrain": "Rough"
+"terrain": "River",
+"extra": [
+"Flat"
+]
 },
 "56": {
 "real": "1720",
@@ -2659,7 +3217,11 @@
 "lr": 6,
 "x": 792.9,
 "y": 1155.6,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"River"
+]
 },
 "67": {
 "real": "1821",
@@ -2667,7 +3229,11 @@
 "lr": 7,
 "x": 964.6,
 "y": 1455.0,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Hill",
+"River"
+]
 },
 "57": {
 "real": "1721",
@@ -2675,7 +3241,10 @@
 "lr": 7,
 "x": 794.6,
 "y": 1362.7,
-"terrain": "Ice"
+"terrain": "River",
+"extra": [
+"Flat"
+]
 },
 "47": {
 "real": "1621",
@@ -2683,7 +3252,10 @@
 "lr": 7,
 "x": 626.6,
 "y": 1464.4,
-"terrain": "Forest"
+"terrain": "Rough",
+"extra": [
+"River"
+]
 },
 "37": {
 "real": "1521",
@@ -2691,7 +3263,11 @@
 "lr": 7,
 "x": 457.8,
 "y": 1359.0,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Hill",
+"River"
+]
 },
 "27": {
 "real": "1421",
@@ -2699,7 +3275,11 @@
 "lr": 7,
 "x": 294.1,
 "y": 1463.4,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Flat",
+"River"
+]
 },
 "17": {
 "real": "1321",
@@ -2707,7 +3287,8 @@
 "lr": 7,
 "x": 125.4,
 "y": 1368.4,
-"terrain": "Rough"
+"terrain": "Open",
+"extra": []
 },
 "53": {
 "real": "1717",
@@ -2715,9 +3296,9 @@
 "lr": 3,
 "x": 787.9,
 "y": 573.6,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "33": {
@@ -2726,7 +3307,10 @@
 "lr": 3,
 "x": 447.5,
 "y": 578.2,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 },
 "43": {
 "real": "1617",
@@ -2734,9 +3318,9 @@
 "lr": 3,
 "x": 623.6,
 "y": 674.2,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "34": {
@@ -2745,9 +3329,9 @@
 "lr": 4,
 "x": 447.1,
 "y": 770.9,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "44": {
@@ -2756,9 +3340,9 @@
 "lr": 4,
 "x": 623.2,
 "y": 866.6,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "63": {
@@ -2767,9 +3351,9 @@
 "lr": 3,
 "x": 961.3,
 "y": 668.2,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "54": {
@@ -2778,9 +3362,9 @@
 "lr": 4,
 "x": 791.2,
 "y": 764.9,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "64": {
@@ -2789,9 +3373,9 @@
 "lr": 4,
 "x": 962.6,
 "y": 862.3,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "23": {
@@ -2800,9 +3384,9 @@
 "lr": 3,
 "x": 287.1,
 "y": 677.2,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "22": {
@@ -2811,9 +3395,9 @@
 "lr": 2,
 "x": 285.1,
 "y": 479.9,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "13": {
@@ -2822,9 +3406,9 @@
 "lr": 3,
 "x": 118.7,
 "y": 580.9,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "12": {
@@ -2833,7 +3417,10 @@
 "lr": 2,
 "x": 119.4,
 "y": 382.9,
-"terrain": "Rough"
+"terrain": "Marsh",
+"extra": [
+"Flat"
+]
 },
 "42": {
 "real": "1616",
@@ -2841,7 +3428,10 @@
 "lr": 2,
 "x": 622.9,
 "y": 477.9,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 },
 "61": {
 "real": "1815",
@@ -2849,7 +3439,10 @@
 "lr": 1,
 "x": 959.3,
 "y": 280.2,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 },
 "32": {
 "real": "1516",
@@ -2857,7 +3450,10 @@
 "lr": 2,
 "x": 445.8,
 "y": 379.9,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 },
 "52": {
 "real": "1716",
@@ -2865,7 +3461,10 @@
 "lr": 2,
 "x": 787.9,
 "y": 377.6,
-"terrain": "Light Vegetation"
+"terrain": "Forest",
+"extra": [
+"Hill"
+]
 },
 "62": {
 "real": "1816",
@@ -2873,9 +3472,9 @@
 "lr": 2,
 "x": 960.3,
 "y": 473.2,
-"terrain": "Rough",
+"terrain": "Marsh",
 "extra": [
-"Marsh"
+"Flat"
 ]
 },
 "31": {
@@ -2884,7 +3483,10 @@
 "lr": 1,
 "x": 447.5,
 "y": 188.8,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 },
 "21": {
 "real": "1415",
@@ -2892,7 +3494,10 @@
 "lr": 1,
 "x": 285.5,
 "y": 287.8,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 },
 "51": {
 "real": "1715",
@@ -2900,7 +3505,10 @@
 "lr": 1,
 "x": 785.9,
 "y": 183.8,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 },
 "41": {
 "real": "1615",
@@ -2908,7 +3516,10 @@
 "lr": 1,
 "x": 618.9,
 "y": 284.8,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 },
 "11": {
 "real": "1315",
@@ -2916,7 +3527,10 @@
 "lr": 1,
 "x": 118.4,
 "y": 189.8,
-"terrain": "Open"
+"terrain": "Liquid Surface",
+"extra": [
+"Flat"
+]
 }
 }
 }

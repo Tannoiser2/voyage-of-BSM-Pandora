@@ -506,7 +506,14 @@
       "cond": {
         "all": [
           {
-            "_subfeature": "pianeggiante con vegetazione rada"
+            "all": [
+              {
+                "terrain": "Flat"
+              },
+              {
+                "terrain": "Light Vegetation"
+              }
+            ]
           },
           {
             "hydro": [
@@ -552,7 +559,14 @@
       "cond": {
         "all": [
           {
-            "_subfeature": "collina con vegetazione rada"
+            "all": [
+              {
+                "terrain": "Hill"
+              },
+              {
+                "terrain": "Light Vegetation"
+              }
+            ]
           },
           {
             "gravity": [
@@ -605,7 +619,14 @@
       "cond": {
         "all": [
           {
-            "_subfeature": "pianeggiante con vegetazione rada"
+            "all": [
+              {
+                "terrain": "Flat"
+              },
+              {
+                "terrain": "Light Vegetation"
+              }
+            ]
           },
           {
             "atmosphere": [
@@ -769,7 +790,14 @@
       "cond": {
         "all": [
           {
-            "_subfeature": "pianeggiante senza vegetazione"
+            "all": [
+              {
+                "terrain": "Flat"
+              },
+              {
+                "no_vegetation": true
+              }
+            ]
           },
           {
             "atmosphere": [
@@ -1234,7 +1262,14 @@
       "cond": {
         "all": [
           {
-            "_subfeature": "pianeggiante con vegetazione rada"
+            "all": [
+              {
+                "terrain": "Flat"
+              },
+              {
+                "terrain": "Light Vegetation"
+              }
+            ]
           },
           {
             "gravity": [

@@ -51,21 +51,21 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 - **snodo «Incontro di spedizione» (053, 056, …):** tabelle di salto condizionato
   a terreno/gravità/clima/atmosfera. L'interprete valuta gravità, atmosfera,
   idrografia, geologia, vegetazione, **clima** (5.1, derivato dal testo dell'area:
-  «Il clima è X»), i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice) e
-  ora le **Città Aliene** (23), la **Light Vegetation** (60), le **Montagne** (14),
-  i **Cliffs** (3), le **Cave** (1) e le **Marsh** (16), tutte mappate dalle 8 mappe
-  environ e verificate sulle immagini. Inoltre, grazie al modello multi-terreno (6.7)
-  e ai tipi River/Abyss/Pond/Marsh ora mappati, sono stati convertiti in condizioni
-  reali anche i segnaposto di 4 snodi (059/078/110/194). **24 dei 36 snodi sono
-  così pienamente valutabili ⇒ 🟢.** Restano **12 snodi** che richiedono meccaniche
+  «Il clima è X») e l'intero set di **terreni per esagono** rimappato e verificato
+  dall'utente sulle 8 mappe environ (modello multi-terreno 6.7): Flat 177, Hill 88,
+  Heavy Veg. 87, Mountain 40, Light Veg. 37, River 31, Solid Lava 24, Città Aliena 23,
+  Liquid Surface 20, Cliffs 16, Marsh 16, Glacial Ice 12, Abyss 11, Cave 4, Pond 3.
+  Inoltre, grazie al modello multi-terreno (6.7) e ai tipi River/Abyss/Pond/Marsh
+  ora mappati, sono stati convertiti in condizioni
+  reali anche i segnaposto di 7 snodi (059/078/110/194 e 143/146/154). I dati di
+  terreno delle 8 mappe sono stati rimappati per intero e verificati uno a uno in un
+  foglio esagono×terreno (modello multi-terreno completo). **27 dei 36 snodi sono
+  così pienamente valutabili ⇒ 🟢.** Restano **9 snodi** che richiedono meccaniche
   non-terreno: esagoni sottomarini/immersione (065/130/188/198/200), adiacenza a
-  lava fluente (056/202), combinazioni base+vegetazione-rada con base ignota
-  (143/146/154), stato stagno/shuttle (168/182) ⇒ 🔴.
+  lava fluente (056/202), stato stagno/shuttle (168/182) ⇒ 🔴.
   Regola **6.7** (un esagono può contenere più terreni): il motore supporta un campo
   `extra` per i terreni aggiuntivi sovrapposti al terreno base; `_current_terrain_is`
-  soddisfa sia il base sia gli extra. Sono così tagliati per fedeltà anche **River**
-  (12, env3), **Abyss** (11, env1/2/6) e **Glacial Ice** (12, env5), non usati dagli
-  snodi ma fedeli alle mappe.
+  soddisfa sia il base sia gli extra.
 - **procedurale-vario:** tiri/condizioni con effetti su Resistenza, PV, ore,
   equipaggiamento. Quasi sempre solo testo ⇒ 🔴 (🟡 se in parte coperto).
 
@@ -77,13 +77,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 96 | 41,4% |
+| 🟢 Verde | 99 | 42,7% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 95 | 40,9% |
+| 🔴 Rosso | 92 | 39,7% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 50,2%**
-( (96 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 51,5%**
+( (99 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -94,9 +94,9 @@ come metà, l'indice di completezza è **≈ 50,2%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 24 | 0 | 12 | 36 |
+| snodo «Incontro di spedizione» | 27 | 0 | 9 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **96** | **41** | **95** | **232** |
+| **Totale** | **99** | **41** | **92** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -265,10 +265,10 @@ come metà, l'indice di completezza è **≈ 50,2%**
 | 140 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶006/003/170 — Città Aliena / Flat+atmosfera / Glacial Ice+gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 141 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 142 | incontro-creatura (Decapus) | 🟡 | Sorpresa+strategia gestite dal motore; nessun effetto extra ⇒ vicino al 🟢, ma lo shift di sorpresa è applicato solo dentro `paragraph_logic` (assente per 142). |
-| 143 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶006/003/162) non valutata. |
+| 143 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+idrografia / Cave+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 144 | evento-interstellare (esito) | 🔴 | Mesi di tour, reinfezione e rimando a ¶058 non automatizzati. |
 | 145 | incontro-creatura (Erequito) | 🟡 | Creatura preparata; il filtro «solo unità più veloci possono combattere» non è imposto. |
-| 146 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶030/045/179) non valutata. |
+| 146 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cave / Hill+Light Veg+gravita): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 147 | incontro-creatura (Promite, procedurale) | 🔴 | Perdite di Resistenza da sorpresa (con modificatori) e rimando a ¶212 non gestiti. |
 | 148 | procedurale (atterraggio) | 🔴 | Due esiti di schianto (5/12 Punti Danno) su check Intelligenza non automatizzati. |
 | 149 | incontro-creatura (Bisape) | 🟡 | Sorpresa shift 1 sx (citata nel testo) non applicata; strategia offerta. |
@@ -281,7 +281,7 @@ come metà, l'indice di completezza è **≈ 50,2%**
 | 151 | incontro-creatura (Ursamax) | 🟡 | Sorpresa shift 2 sx non applicata automaticamente; strategia offerta. |
 | 152 | procedurale (virus dello stagno) | 🔴 | Morte/sedazione con eccezioni MedO/medkit e ore non automatizzate. |
 | 153 | incontro-creatura (Bubbler) | 🟡 | Strategia offerta; sorpresa shift 1 sx e «risultato D/E → tutti morti» non applicati. |
-| 154 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶040/156/167) non valutata. |
+| 154 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+atmosfera / Flat+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 155 | procedurale (atmosfera/robot) | 🔴 | Deterioramento robot a ogni controllo rifornimento non automatizzato. |
 | 156 | incontro-creatura (Aenon, snodo) | 🔴 | Filtro ambot/turbolaser → fuga o ¶223 non gestito. |
 | 157 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/072/054/032 — Città Aliena / Glacial Ice / Light Veg.+atmosfera / geologia attiva): salto al ramo giusto o ri-tiro Matrice. |
