@@ -288,13 +288,13 @@ func move_pandora_to(hex_id: int) -> void:
 	if sys_name != "":
 		current_system = sys_name
 		add_log("Pandora arriva a %s. Mesi usati: %d/%d." % [sys_name, tour_months_used, tour_length])
-		# Evento interstellare (4.2): tiro manuale del giocatore o automatico.
+		# Evento interstellare (4.2): tiro di DUE dadi (2-12), manuale o automatico.
 		if manual_dice:
 			pending_die_purpose = "interstellar_event"
 			awaiting_die_roll = true
-			message_posted.emit("Tira un dado per evento interstellare (regola 4.2).")
+			message_posted.emit("Tira due dadi per l'evento interstellare (regola 4.2).")
 		else:
-			var d := randi_range(1, 6)
+			var d := randi_range(1, 6) + randi_range(1, 6)
 			die_rolled.emit(d, "interstellar_event")
 			resolve_interstellar_event(d)
 	else:
