@@ -53,10 +53,10 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   idrografia, geologia, vegetazione, **clima** (5.1, derivato dal testo dell'area:
   «Il clima è X»), i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice) e
   ora le **Città Aliene** (23), la **Light Vegetation** (60), le **Montagne** (14),
-  i **Cliffs** (3) e le **Cave** (1), tutte mappate dalle 8 mappe environ e
-  verificate sulle immagini. **19 dei 36 snodi sono così pienamente valutabili ⇒
-  🟢.** Resta 1 snodo (068) in attesa del terreno **Marsh** (non ancora trovato) e
-  16 bloccati da sotto-feature (lava fluente, ecc.) ⇒ 🔴.
+  i **Cliffs** (3), le **Cave** (1) e le **Marsh** (16), tutte mappate dalle 8 mappe
+  environ e verificate sulle immagini. **20 dei 36 snodi sono così pienamente valutabili ⇒
+  🟢.** Tutti i 20 snodi terreno-dipendenti sono ora coperti; restano **16 snodi**
+  bloccati solo da **sotto-feature** (lava fluente adiacente, immersione, ecc.) ⇒ 🔴.
   Regola **6.7** (un esagono può contenere più terreni): il motore supporta un campo
   `extra` per i terreni aggiuntivi sovrapposti al terreno base; `_current_terrain_is`
   soddisfa sia il base sia gli extra. Sono così tagliati per fedeltà anche **River**
@@ -73,13 +73,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 91 | 39,2% |
+| 🟢 Verde | 92 | 39,7% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 100 | 43,1% |
+| 🔴 Rosso | 99 | 42,7% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 48,1%**
-( (91 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 48,5%**
+( (92 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -90,9 +90,9 @@ come metà, l'indice di completezza è **≈ 48,1%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 19 | 0 | 17 | 36 |
+| snodo «Incontro di spedizione» | 20 | 0 | 16 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **91** | **41** | **100** | **232** |
+| **Totale** | **92** | **41** | **99** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -181,7 +181,7 @@ come metà, l'indice di completezza è **≈ 48,1%**
 | 065 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶030/170/075) non valutata. |
 | 066 | incontro-creatura (nebbia, senza pedina) | 🔴 | Creatura «senza counter» con modificatori espliciti e +4 PV Holographer: non gestita (nessun segnalino in dati). |
 | 067 | evento-interstellare (esito) | 🔴 | «+1 mese di tour» (follia temporanea) non applicato; solo testo. |
-| 068 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶004/173/181) non valutata. |
+| 068 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶004/173/181 — Città Aliena / Heavy Veg. / Marsh): salto al ramo giusto o ri-tiro Matrice. |
 | 069 | incontro-creatura (Glassman, snodo) | 🔴 | Comunica/Combatti con tiri 1d6 → ¶213/217/220 non gestiti. |
 | 070 | procedurale (atterraggio shuttle) | 🔴 | Tre esiti su Intelligenza navigatore (danni/robot/5 Punti Danno) non automatizzati. |
 | 071 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/051/043 — Città Aliena / gravità quasi assente / atmosfera velenosa): il motore salta al ramo giusto o ri-tira la Matrice. |

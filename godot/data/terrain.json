@@ -25,7 +25,8 @@
     "Cliffs": "Cliffs",
     "Cave": "Cave",
     "River": "River",
-    "Abyss": "Abyss"
+    "Abyss": "Abyss",
+    "Marsh": "Marsh"
   },
   "terrain_it": {
     "Flat": "Pianura",

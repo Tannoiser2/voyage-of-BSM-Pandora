@@ -2532,7 +2532,10 @@
 "lr": 4,
 "x": 124.1,
 "y": 773.2,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": [
+"Marsh"
+]
 },
 "26": {
 "real": "1420",
@@ -2564,7 +2567,10 @@
 "lr": 5,
 "x": 448.1,
 "y": 968.0,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "25": {
 "real": "1419",
@@ -2588,7 +2594,10 @@
 "lr": 5,
 "x": 793.2,
 "y": 962.0,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Marsh"
+]
 },
 "65": {
 "real": "1819",
@@ -2596,7 +2605,10 @@
 "lr": 5,
 "x": 964.3,
 "y": 1060.3,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "45": {
 "real": "1619",
@@ -2612,7 +2624,10 @@
 "lr": 4,
 "x": 289.5,
 "y": 869.0,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "15": {
 "real": "1319",
@@ -2692,7 +2707,10 @@
 "lr": 3,
 "x": 787.9,
 "y": 573.6,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "33": {
 "real": "1517",
@@ -2708,7 +2726,10 @@
 "lr": 3,
 "x": 623.6,
 "y": 674.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "34": {
 "real": "1518",
@@ -2716,7 +2737,10 @@
 "lr": 4,
 "x": 447.1,
 "y": 770.9,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "44": {
 "real": "1618",
@@ -2724,7 +2748,10 @@
 "lr": 4,
 "x": 623.2,
 "y": 866.6,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "63": {
 "real": "1817",
@@ -2732,7 +2759,10 @@
 "lr": 3,
 "x": 961.3,
 "y": 668.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "54": {
 "real": "1718",
@@ -2740,7 +2770,10 @@
 "lr": 4,
 "x": 791.2,
 "y": 764.9,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "64": {
 "real": "1818",
@@ -2748,7 +2781,10 @@
 "lr": 4,
 "x": 962.6,
 "y": 862.3,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "23": {
 "real": "1417",
@@ -2756,7 +2792,10 @@
 "lr": 3,
 "x": 287.1,
 "y": 677.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "22": {
 "real": "1416",
@@ -2764,7 +2803,10 @@
 "lr": 2,
 "x": 285.1,
 "y": 479.9,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "13": {
 "real": "1317",
@@ -2772,7 +2814,10 @@
 "lr": 3,
 "x": 118.7,
 "y": 580.9,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "12": {
 "real": "1316",
@@ -2820,7 +2865,10 @@
 "lr": 2,
 "x": 960.3,
 "y": 473.2,
-"terrain": "Rough"
+"terrain": "Rough",
+"extra": [
+"Marsh"
+]
 },
 "31": {
 "real": "1515",
