@@ -49,13 +49,13 @@ signal die_rolled(value: int, purpose: String)
 # I Punti Danno riducono la Resistenza; a 0 il personaggio è ucciso (8.8).
 const MAX_ENDURANCE := 5
 var crew: Dictionary = {
-	"CO":   {"name": "Comandante",            "alive": true, "endurance": 5},
-	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 5},
-	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "endurance": 5},
-	"GSO":  {"name": "Ufficiale Scienze",     "alive": true, "endurance": 5},
-	"MedO": {"name": "Ufficiale Medico",      "alive": true, "endurance": 5},
-	"WO":   {"name": "Ufficiale Armi",        "alive": true, "endurance": 5},
-	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "endurance": 5}
+	"CO":   {"name": "Comandante",            "alive": true, "endurance": 5, "intelligence": 0},
+	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 5, "intelligence": 0},
+	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "endurance": 5, "intelligence": 0},
+	"GSO":  {"name": "Ufficiale Scienze",     "alive": true, "endurance": 5, "intelligence": 0},
+	"MedO": {"name": "Ufficiale Medico",      "alive": true, "endurance": 5, "intelligence": 0},
+	"WO":   {"name": "Ufficiale Armi",        "alive": true, "endurance": 5, "intelligence": 0},
+	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "endurance": 5, "intelligence": 0}
 }
 
 var visited_systems: Array = []
@@ -122,6 +122,8 @@ func start_new_game(p_tour_length: int) -> void:
 	for k in crew:
 		crew[k]["alive"] = true
 		crew[k]["endurance"] = MAX_ENDURANCE
+		# Valore di Intelligenza determinato a inizio gioco (3.3), fisso per la partita.
+		crew[k]["intelligence"] = _roll_intelligence()
 
 	# Set initial VP based on tour length (from rules)
 	match tour_length:
@@ -132,6 +134,25 @@ func start_new_game(p_tour_length: int) -> void:
 
 	set_phase(Phase.INTERSTELLAR)
 	add_log("Nuovo viaggio iniziato. Tour: %d mesi. Pandora in orbita attorno a Sol." % tour_length)
+
+# Valore di Intelligenza di un personaggio (3.3): un dado -> 1:6, 2-3:7, 4-5:8, 6:9.
+func _roll_intelligence() -> int:
+	var d := randi_range(1, 6)
+	return 6 if d == 1 else (7 if d <= 3 else (8 if d <= 5 else 9))
+
+# Valore di Intelligenza corrente del personaggio (0 se non determinato).
+func character_intelligence(key: String) -> int:
+	return int(crew.get(key, {}).get("intelligence", 0))
+
+# Valore di Intelligenza più alto tra i personaggi indicati ancora vivi (per i
+# paragrafi che fanno riferimento "all'ufficiale con Intelligenza più alta").
+func highest_intelligence(keys: Array) -> int:
+	var best := 0
+	for k in keys:
+		var c: Dictionary = crew.get(k, {})
+		if c.get("alive", false):
+			best = maxi(best, int(c.get("intelligence", 0)))
+	return best
 
 # --- Salvataggio / caricamento della partita -------------------------------
 const SAVE_PATH := "user://savegame.json"
@@ -220,6 +241,7 @@ func load_game() -> bool:
 			if crew.has(k):
 				crew[k]["alive"] = bool(cr[k].get("alive", true))
 				crew[k]["endurance"] = int(cr[k].get("endurance", MAX_ENDURANCE))
+				crew[k]["intelligence"] = int(cr[k].get("intelligence", 0))
 	visited_systems = d.get("visited_systems", [])
 	log_entries = d.get("log_entries", [])
 	vp_ledger = d.get("vp_ledger", [])

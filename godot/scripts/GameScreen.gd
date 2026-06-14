@@ -551,6 +551,10 @@ func _refresh_crew_counters() -> void:
 		var alive: bool = c.get("alive", true)
 		var e: int = int(c.get("endurance", GameState.MAX_ENDURANCE))
 		var onboard: bool = key in GameState.expedition_units
+		# Tooltip: nome + Valore Intelligenza (3.3).
+		var box_ctrl := box as Control
+		if box_ctrl:
+			box_ctrl.tooltip_text = "%s — Intelligenza %d" % [c.get("name", key), int(c.get("intelligence", 0))]
 		var tex := box.get_node_or_null("Tok") as TextureRect
 		var hp := box.get_node_or_null("HP") as Label
 		if tex:
