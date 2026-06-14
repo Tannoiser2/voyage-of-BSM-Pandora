@@ -1578,6 +1578,9 @@ const RATING_TABLE := {2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11
 var pending_combat_shift: int = 0      # colonne a sinistra (+) sulla tabella combattimento
 var pending_no_capture: bool = false   # cattura non permessa
 var pending_kill_as_capture: bool = false  # i risultati di uccisione contano come cattura
+var pending_combat_remap: Dictionary = {}  # rimappa i risultati di combattimento (¶218)
+var pending_combat_remap_destroy: String = ""  # equipaggiamento distrutto quando il remap scatta (¶218: turbolaser)
+var pending_combat_kill_on: Array = []     # risultati su cui un personaggio a caso è ucciso (¶227)
 var encounter_outcome_text: String = ""    # esito risolto dal sistema, per la UI
 # Paragrafo di destinazione impostato da un ramo «goto» (rimando narrativo).
 var pending_goto: int = 0
@@ -2272,6 +2275,34 @@ func _apply_paragraph_effect(para: int) -> int:
 		231:
 			hostile_race = true
 			add_log("¶231: la razza locale è ora ostile: rischio d'imboscata a ogni Controllo del Rifornimento in quest'area.")
+		215:
+			var dmgd := 0
+			for g in expedition_gear.duplicate():
+				if not damaged_gear.has(g) and not (g in ["Armorig", "Enviorig", "Rover"]):
+					damaged_gear.append(g)
+					dmgd += 1
+			add_log("¶215: il campo di forza mentale del Garbrist danneggia %d tra robot e strumenti; poi si conduce il combattimento." % dmgd)
+		216:
+			if _gear_has("Rover") or _gear_has("Armorig"):
+				add_log("¶216: col rover o con l'armorig, si conduce il combattimento con l'Abomnid.")
+			else:
+				var slow216 := _slowest_unit()
+				if slow216 != "":
+					add_log("¶216: %s (il più lento, senza armorig) è fatto a pezzi dall'Abomnid, che poi fugge." % slow216)
+					_kill_unit(slow216)
+				_clear_encounter_state()
+				encounter_outcome_text = "L'Abomnid fugge: scegli un'azione di spedizione."
+		218:
+			if _gear_has("Turbolaser"):
+				pending_combat_remap = {"AR": "AE", "EX": "AE", "DR": "AE"}
+				pending_combat_remap_destroy = "Turbolaser"
+				add_log("¶218: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto). Conduci il combattimento di uccisione.")
+			else:
+				pending_combat_shift = 2
+				add_log("¶218: senza turbolaser, combattimento di uccisione con spostamento di 2 colonne a sinistra.")
+		227:
+			pending_combat_kill_on = ["EX", "DR", "DE"]
+			add_log("¶227: combattimento col glosper — sui risultati C/D/E un personaggio a caso è fatto a pezzi; conduci il combattimento.")
 		_:
 			applied = false
 	if applied:
@@ -2408,6 +2439,9 @@ func _begin_creature(name: String) -> void:
 	pending_combat_shift = 0
 	pending_no_capture = false
 	pending_kill_as_capture = false
+	pending_combat_remap = {}
+	pending_combat_remap_destroy = ""
+	pending_combat_kill_on = []
 	encounter_outcome_text = ""
 	chosen_strategy = ""
 	creature_rating = GameData.roll_creature_combat_rating(name)
@@ -3065,6 +3099,23 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 	# Spostamento di colonne dai rami del paragrafo (8.5): a sinistra = a favore.
 	var differential := player_total - creature_rating + pending_combat_shift
 	var result := GameData.get_combat_result(differential)
+	# Rimappa il risultato per i paragrafi speciali (¶218: col turbolaser B/C/D → A,
+	# con il turbolaser considerato distrutto).
+	if pending_combat_remap.has(result):
+		var newr: String = str(pending_combat_remap[result])
+		if pending_combat_remap_destroy != "" and _gear_has(pending_combat_remap_destroy):
+			expedition_gear.erase(pending_combat_remap_destroy)
+			if not damaged_gear.has(pending_combat_remap_destroy):
+				damaged_gear.append(pending_combat_remap_destroy)
+			add_log("%s è considerato distrutto." % pending_combat_remap_destroy)
+		add_log("Risultato di combattimento %s rimappato a %s." % [result, newr])
+		result = newr
+	# Vittime extra su certi risultati (¶227: il glosper fa a pezzi un personaggio).
+	if result in pending_combat_kill_on:
+		var vk := _random_alive_char()
+		if vk != "":
+			add_log("Il mostro fa a pezzi %s." % crew[vk].get("name", vk))
+			_kill_character(vk)
 	var shift_txt := (" [%+d col.]" % pending_combat_shift) if pending_combat_shift != 0 else ""
 	var detail := "%s: %d (val.%d +1d6) vs creatura %d → diff %+d%s → %s" % [
 		mode, player_total, player_combat, creature_rating, differential, shift_txt, result

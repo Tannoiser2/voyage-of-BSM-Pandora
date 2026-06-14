@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 169 | 72,8% |
-| 🟡 Giallo | 45 | 19,4% |
-| 🔴 Rosso | 18 | 7,8% |
+| 🟢 Verde | 172 | 74,1% |
+| 🟡 Giallo | 46 | 19,8% |
+| 🔴 Rosso | 14 | 6,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 82,5%**
-( (169 + 45/2) / 232 ).
+come metà, l'indice di completezza è **≈ 84,1%**
+( (172 + 46/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 82,5%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **169** | **45** | **18** | **232** |
+| **Totale** | **172** | **46** | **14** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -350,10 +350,10 @@ come metà, l'indice di completezza è **≈ 82,5%**
 | 212 | procedurale (cattura verme) | 🟢 | Con l'Ufficiale Scienze cattura automatica; altrimenti 2 dadi < Int max spedizione. Automatizzato. |
 | 213 | esito (Glassman comunica) | 🟢 | +4 col neuroscanner, +2 con Holographer, +2 con Ufficiale Scienze (cumulativi). Automatizzato. |
 | 214 | esito (creatura svanisce) | 🟢 | +3 con Holographer, +2 col neuroscanner. Automatizzato. |
-| 215 | procedurale (Garbrist combatte) | 🔴 | Danno a tutti i robot/strumenti, poi combattimento: non gestito. |
-| 216 | procedurale (Abomnid insegue) | 🔴 | Esito su rover/armorig o uccisione del più lento non automatizzato. |
+| 215 | procedurale (campo mentale Garbrist) | 🟢 | Il campo mentale danneggia tutti i robot/strumenti (non armorig/enviorig/rover), poi si conduce il combattimento normale. Automatizzato. |
+| 216 | procedurale (Abomnid insegue) | 🟡 | Col rover o armorig si combatte; a piedi il membro più lento (senza armorig) viene ucciso e la creatura fugge. Caveat: «tutti armorig» approssimato come presenza di armorig. |
 | 217 | procedurale (Glassman ostile) | 🟡 | Distrugge un personaggio e un robot a caso, poi combattimento di uccisione (shift impostato per il +3). Caveat: modificatore di Combattimento approssimato come shift. |
-| 218 | procedurale (combattimento speciale) | 🔴 | Rilettura risultati col turbolaser o shift 2 sx non automatizzati. |
+| 218 | procedurale (combattimento Glosper) | 🟢 | Combattimento di uccisione: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto); senza, spostamento di 2 colonne a sinistra. Hook remap nel motore (mappatura A/B/C/D/E ≈ AE/AR/EX/DR/DE). |
 | 219 | esito (fungo intelligente) | 🟢 | +3 col neuroscanner, +2 con Holographer; 1 dado di ore spese. Automatizzato. |
 | 220 | incontro-creatura (Glassman fugge) | 🟡 | La logica «fuga su velocità o combatti» è simile a quella codificata altrove, ma per ¶220 non è in `paragraph_logic`: solo testo. |
 | 221 | procedurale (campo psionico) | 🟢 | Campo psionico: 1 dado di ore di incoscienza; Intelligenza di ogni personaggio ridotta permanentemente a 6 (se superiore). Automatizzato. |
@@ -362,7 +362,7 @@ come metà, l'indice di completezza è **≈ 82,5%**
 | 224 | procedurale (veleno fungo) | 🟢 | Personaggio investigatore avvelenato: −3 Resistenza a ogni Controllo del Rifornimento (−2 con Medico o medkit, −1 con entrambi), curato al rientro; armorig annulla. Automatizzato. |
 | 225 | procedurale (combattimento gruppo) | 🔴 | Somma Valori di Combattimento e regole speciali risultato «E» non automatizzate. |
 | 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
-| 227 | procedurale (combattimento Glosper) | 🔴 | Rilettura risultati C/D/E (un personaggio fatto a pezzi) non automatizzata. |
+| 227 | procedurale (combattimento speciale) | 🟢 | Sui risultati C/D/E (EX/DR/DE) un personaggio a caso è fatto a pezzi prima di applicare il risultato. Hook kill_on nel motore di combattimento. |
 | 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |
 | 229 | esito (monoke amichevole) | 🟡 | Cattura facoltativa e 1 ora: il flusso «scegli azione» è ok ma la cattura/ora non sono automatizzate. |
 | 230 | procedurale (radrod) | 🟢 | Studio: 2 dadi (−2 con SO) vs Int max: < → +3 PV e cattura (1 ora); ≥ → neuroscanner+creatura distrutti, un personaggio −2 Resistenza e svenuto (2 dadi di ore). Automatizzato. |
