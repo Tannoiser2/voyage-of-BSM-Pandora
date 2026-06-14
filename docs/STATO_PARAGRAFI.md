@@ -62,13 +62,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 62 | 26,7% |
-| 🟡 Giallo | 43 | 18,5% |
-| 🔴 Rosso | 127 | 54,7% |
+| 🟢 Verde | 64 | 27,6% |
+| 🟡 Giallo | 45 | 19,4% |
+| 🔴 Rosso | 123 | 53,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 36,0%**
-( (62 + 43/2) / 232 ).
+come metà, l'indice di completezza è **≈ 37,3%**
+( (64 + 45/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -76,12 +76,12 @@ come metà, l'indice di completezza è **≈ 36,0%**
 |---|---|---|---|---|
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 12 | 13 | 4 | 29 |
-| esito-strategia/combattimento (010–026) | 15 | 2 | 0 | 17 |
+| esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 6 | 22 | 20 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
 | snodo «Incontro di spedizione» | 0 | 0 | 36 | 36 |
-| procedurale-vario / rimandi-testuali | 2 | 4 | 47 | 53 |
-| **Totale** | **62** | **43** | **127** | **232** |
+| procedurale-vario / rimandi-testuali | 3 | 7 | 43 | 53 |
+| **Totale** | **64** | **45** | **123** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -103,7 +103,7 @@ come metà, l'indice di completezza è **≈ 36,0%**
 | 003 | incontro-creatura (snodo) | 🟢 | Codificato: `goto` a ¶054 con nuova creatura (Aracat). Fedele. |
 | 004 | incontro-creatura (struttura) | 🔴 | Scelta fuga(¶187)/combatti(¶193) non gestita; nessuna logica codificata. |
 | 005 | incontro-creatura (X-Wasp) | 🟡 | Creatura preparata e strategia offerta; il morso velenoso e la perdita di PV su dado non sono applicati. |
-| 006 | procedurale (arma) | 🔴 | Confronto Intelligenza/2 dadi e i tre esiti non automatizzati: solo testo. |
+| 006 | procedurale (arma) | 🟡 | L'arma aliena è acquisibile (pulsante «Raccogli») con PV al rientro e usabile in combattimento (Cattura/Uccisione 9); il check Intelligenza/2 dadi che ne determina l'usabilità (subito / dopo 5 ore / solo trasportabile) e il rimando all'ufficiale alle armi (¶175) non sono ancora automatizzati. |
 | 007 | incontro-creatura (Drada) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo «non sorpreso» usa le azioni standard. |
 | 008 | procedurale (caduta) | 🔴 | Morte/danni casuali con eccezioni (gravità/armorig/climbkit) non gestiti. |
 | 009 | incontro-creatura (snodo) | 🔴 | Comunica con check Intelligenza+neuroscanner e PV, o ¶016: nessuna logica codificata. |
@@ -116,7 +116,7 @@ come metà, l'indice di completezza è **≈ 36,0%**
 | 016 | esito-strategia | 🟢 | Codificato: ristrategia con 1 ora (CO/GSO) o 3 ore. |
 | 017 | esito-strategia | 🟢 | Codificato: rami aggressività + shift su Intelligenza +2/+3. |
 | 018 | esito-strategia | 🟢 | Codificato: combattimento shift 1 sx, nessuna cattura; altrimenti 2 ore. |
-| 019 | esito-strategia | 🟡 | Codificato (intel/aggr_mod→fuga/cattura/combatti); l'«1 ora per allestire la E-cage» non viene addebitata. |
+| 019 | esito-strategia | 🟢 | Codificato (intel/aggr_mod→fuga/cattura/combatti); l'ora di allestimento della E-cage è ora addebitata in tutti i rami (`hours:1`). |
 | 020 | esito-strategia | 🟢 | Codificato: shift ±2 secondo somma modificatori. |
 | 021 | esito-strategia | 🟢 | Codificato: combattimento shift 2 sx, nessuna cattura; altrimenti 3 ore. |
 | 022 | esito-strategia | 🟢 | Codificato: intel≥8 rilascio +2 PV e 1 ora; altrimenti uccisione=cattura. |
@@ -127,19 +127,19 @@ come metà, l'indice di completezza è **≈ 36,0%**
 | 027 | incontro-creatura (Folisaur) | 🟡 | Creatura preparata e strategia offerta; lo stordimento da sorpresa e lo «shift = 1 dado» del ramo combattimento non sono applicati. |
 | 028 | procedurale (alieni invisibili) | 🔴 | Check neuroscanner→+4 PV o ¶189 non gestito; solo testo. |
 | 029 | incontro-creatura (Ivy Five) | 🟢 | Sorpresa→combattimento shift 3 sx codificata; ramo «non sorpreso» con azioni standard. |
-| 030 | procedurale (globo) | 🔴 | Tre esiti su check Intelligenza (E-cage / -3 Resistenza / morte) non automatizzati. |
+| 030 | procedurale (globo) | 🟡 | Il globo è acquisibile come artefatto (PV al rientro); i tre esiti del check Intelligenza (E-cage / -3 Resistenza+enviorig / morte) e il vincolo «serve una E-cage» non sono ancora automatizzati. |
 | 031 | incontro-creatura (Spiker) | 🟡 | Creatura preparata; l'uccisione automatica da sorpresa e il divieto netgun/stunbomb non sono modellati. |
 | 032 | procedurale (sisma) | 🔴 | 2 dadi di Punti Danno (1 se tutti armorig) non automatizzati. |
 | 033 | incontro-creatura (Florist) | 🟡 | Creatura preparata; il divieto di «Comunica» non è imposto dalla UI. |
 | 034 | procedurale (delegazione) | 🔴 | Scelta comunica(¶195)/combatti(¶199)/fuggi(¶204) non gestita. |
 | 035 | incontro-creatura (Curder) | 🔴 | Condizione enviorig/armorig→tabella o ¶209, e «2 E-cage» non gestite. |
-| 036 | procedurale (scultura) | 🟡 | Narrativo «riportabile sulla Pandora (peso 3)»: il PV/artefatto non è tracciato, ma il flusso «scegli azione» è ok. |
+| 036 | procedurale (scultura) | 🟢 | La scultura è acquisibile come artefatto (pulsante «Raccogli», peso 3) con i PV registrati al rientro sulla Pandora; il flusso «scegli un'altra azione» è ok. |
 | 037 | incontro-creatura (Snoup) | 🟡 | Creatura preparata; lo svanire + ricerca con scanner (¶020) o fuga non è automatizzato. |
 | 038 | procedurale (vulcano) | 🔴 | Perdita di 12 (o 6) Resistenza e danno al rover non automatizzati. |
 | 039 | incontro-creatura (Allidon) | 🔴 | «Qualsiasi strategia» con tiro 1d6→tabella poi ¶197/¶205 non gestito. |
 | 040 | procedurale (rettiliani) | 🔴 | PV = Intelligenza CO (+4 Holographer) e divieto esagoni città non automatizzati. |
 | 041 | incontro-creatura (Abomnid) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo Fuga (¶216) usa il rimando. |
-| 042 | procedurale (uovo) | 🔴 | Tiro 1d6→trasporto/¶178/¶205 non gestito; solo testo. |
+| 042 | procedurale (uovo) | 🟡 | L'uovo è acquisibile come artefatto (PV al rientro); il tiro 1d6 al momento del trasporto (1-2 ok / 3-4 → ¶178 / 5-6 → ¶205) non è ancora gestito. |
 | 043 | incontro-creatura (Crusher) | 🔴 | Restrizione armi (solo armorig/specibot/turbolaser), distruzione robot, «2 E-cage» non gestite. |
 | 044 | evento-interstellare | 🔴 | Check MntO/Intelligenza per mesi di tour spesi non automatizzato. |
 | 045 | incontro-creatura (Armeetle) | 🟡 | Creatura preparata; inefficacia di stunbomb/reconbot/specibot e fuga «2 ore» non gestite. |
@@ -305,7 +305,7 @@ come metà, l'indice di completezza è **≈ 36,0%**
 | 190 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶172/037/164) non valutata. |
 | 191 | procedurale (esito pirati) | 🔴 | Uccisioni casuali, perdita robot/strumenti e mesi di tour non automatizzati. |
 | 192 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/037/159) non valutata. |
-| 193 | procedurale (combattimento struttura) | 🔴 | Combattimento speciale via Intelligenza (solo col turbolaser) o -10 Resistenza→¶187 non gestiti. |
+| 193 | procedurale (combattimento struttura) | 🟡 | Il pezzo di struttura è ora acquisibile come artefatto (¶193, peso 3, PV al rientro — chiave artefatto spostata da ¶004 a ¶193); il combattimento speciale via Intelligenza (solo col turbolaser) e il ramo -10 Resistenza→¶187 restano da automatizzare. |
 | 194 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶172/063/069) non valutata. |
 | 195 | procedurale (comunicazione alieni) | 🔴 | Tiro 1d6 con modificatori CO/GSO/neuroscanner e PV/¶210 non gestiti. |
 | 196 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/079/048) non valutata. |

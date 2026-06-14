@@ -1319,6 +1319,7 @@ func _apply_act(act: Dictionary) -> void:
 			_clear_encounter_state()
 		"capture":
 			if str(act.get("hours", "")) == "sum_pos_mods": add_expedition_hours(_sum_pos_mods())
+			elif int(act.get("hours", 0)) > 0: add_expedition_hours(int(act["hours"]))  # ore fisse (es. E-cage ¶019)
 			var nm := current_creature
 			captured_creatures.append(nm)
 			_record_creature_attributes(nm)
@@ -1343,6 +1344,8 @@ func _apply_act(act: Dictionary) -> void:
 			if act.has("hours_if_co_gso"):
 				var inteam: bool = ("CO" in expedition_units) or ("GSO" in expedition_units)
 				add_expedition_hours(int(act["hours_if_co_gso"]) if inteam else int(act.get("hours_else", 0)))
+			if act.has("hours"):
+				add_expedition_hours(int(act["hours"]))  # ore fisse (es. allestimento E-cage, ¶019)
 			pending_combat_shift = _compute_shift(act)
 			pending_no_capture = bool(act.get("no_capture", false))
 			pending_kill_as_capture = bool(act.get("kill_as_capture", false))

@@ -31,10 +31,10 @@
     {"cond": [], "act": {"type":"leave","hours":2}}
   ],
   "019": [
-    {"cond": [["intel",">=",7]], "act": {"type":"flee"}},
-    {"cond": [["aggr_mod","==",-3]], "act": {"type":"flee"}},
-    {"cond": [["aggr_mod",">=",2]], "act": {"type":"combat"}},
-    {"cond": [], "act": {"type":"capture"}}
+    {"cond": [["intel",">=",7]], "act": {"type":"flee","hours":1}},
+    {"cond": [["aggr_mod","==",-3]], "act": {"type":"flee","hours":1}},
+    {"cond": [["aggr_mod",">=",2]], "act": {"type":"combat","hours":1}},
+    {"cond": [], "act": {"type":"capture","hours":1}}
   ],
   "020": [ {"cond": [], "act": {"type":"combat","shift_sum_mods":true}} ],
   "021": [
