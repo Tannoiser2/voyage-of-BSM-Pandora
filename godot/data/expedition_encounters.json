@@ -1,0 +1,1255 @@
+{
+  "_legend": {
+    "_descr": "Snodi 'Incontro di spedizione' (regola 6.5). Per ogni snodo, regole valutate IN ORDINE: il primo cond TRUE determina il goto. Se nessuno e' TRUE -> ri-tiro Matrice di Esplorazione.",
+    "terrain": "il terreno dell'esagono attualmente esplorato/occupato e' = a questo valore (chiave terrain.json canonica)",
+    "terrain_or_hasty": "il terreno e' X OPPURE X e' stato attraversato durante l'ultimo movimento affrettato",
+    "terrain_in": "il terreno e' uno tra la lista",
+    "terrain_or_hasty_in": "il terreno (o un terreno attraversato nel mov. affrettato) e' uno tra la lista",
+    "gravity": "planet_attrs.gravity e' uno tra la lista (chiavi: Near weightless/Light/Earth like/Heavy/Oppressive)",
+    "atmosphere": "planet_attrs.atmosphere e' uno tra la lista (Normal/Thin/Poison/Corrosive/None)",
+    "geology": "planet_attrs.geology == valore (Quiet/Active)",
+    "hydro": "planet_attrs.hydro (numerico %) e' uno tra la lista",
+    "climate": "INERTE: il clima non e' memorizzato; valuta SEMPRE FALSE (regola 6.5 - clima)",
+    "vegetation": "l'esagono ha vegetazione (terreno Light/Heavy Vegetation)",
+    "vegetation_or_hasty": "vegetazione nell'esagono o attraversata nel mov. affrettato",
+    "no_vegetation": "non c'e' vegetazione (terreno != Light/Heavy Vegetation) - approssimazione 'area'",
+    "landing_hex": "l'esagono esplorato e' l'esagono di atterraggio",
+    "terrain_in_alias": "Alien City include 'struttura aliena' e 'citta aliena'",
+    "inert": "condizione non valutabile col modello attuale (sotto-feature: stagno/fiume/sottomarino/abisso/lava fluente/stato shuttle). Valuta SEMPRE FALSE.",
+    "_subfeature": "sotto-feature non modellata (combinata con altre condizioni): valuta SEMPRE FALSE",
+    "robot_in_expedition": "almeno un robot e' nella spedizione (expedition_gear contiene un bot)",
+    "not_immersion_underground": "la spedizione non e' in immersione ne' sottoterra: SEMPRE TRUE col modello attuale",
+    "unexplored_alien_city_in_area": "esiste un esagono Alien City non esplorato nell'area",
+    "lava_in_area": "INERTE: 'lava fusa che scorre' nell'area non modellata -> FALSE",
+    "climate_not": "INERTE come climate -> FALSE",
+    "all": "AND di tutte le condizioni elencate"
+  },
+  "053": [
+    {
+      "cond": {
+        "terrain_or_hasty": "Cliffs"
+      },
+      "goto": 8
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 4
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Flat"
+          },
+          {
+            "climate": "sahariano"
+          }
+        ]
+      },
+      "goto": 31
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "gravity": [
+              "Oppressive"
+            ]
+          },
+          {
+            "climate": "tropicale"
+          }
+        ]
+      },
+      "goto": 153
+    }
+  ],
+  "056": [
+    {
+      "cond": {
+        "inert": "adiacente a esagono di lava fluente (lava che scorre): sotto-feature non modellata"
+      },
+      "goto": 38
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 4
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Heavy Vegetation"
+      },
+      "goto": 27
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Flat"
+          },
+          {
+            "hydro": [
+              50
+            ]
+          }
+        ]
+      },
+      "goto": 151
+    }
+  ],
+  "059": [
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 28
+    },
+    {
+      "cond": {
+        "inert": "esagono con uno stagno o una palude: stagno non modellato (palude=Marsh non in environ data)"
+      },
+      "goto": 39
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Cave"
+          },
+          {
+            "hydro": [
+              50,
+              75
+            ]
+          }
+        ]
+      },
+      "goto": 147
+    }
+  ],
+  "062": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 30
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Light Vegetation"
+          },
+          {
+            "gravity": [
+              "Heavy",
+              "Oppressive"
+            ]
+          }
+        ]
+      },
+      "goto": 179
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Hill"
+          },
+          {
+            "gravity": [
+              "Heavy"
+            ]
+          }
+        ]
+      },
+      "goto": 66
+    }
+  ],
+  "065": [
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 30
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Cliffs"
+      },
+      "goto": 170
+    },
+    {
+      "cond": {
+        "inert": "esagono sottomarino con vegetazione: sottomarino non modellato"
+      },
+      "goto": 75
+    }
+  ],
+  "068": [
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 4
+    },
+    {
+      "cond": {
+        "terrain": "Heavy Vegetation"
+      },
+      "goto": 173
+    },
+    {
+      "cond": {
+        "terrain": "Marsh"
+      },
+      "goto": 181
+    }
+  ],
+  "071": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 42
+    },
+    {
+      "cond": {
+        "gravity": [
+          "Near weightless"
+        ]
+      },
+      "goto": 51
+    },
+    {
+      "cond": {
+        "atmosphere": [
+          "Poison"
+        ]
+      },
+      "goto": 43
+    }
+  ],
+  "074": [
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 28
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Flat"
+          },
+          {
+            "gravity": [
+              "Heavy",
+              "Oppressive"
+            ]
+          }
+        ]
+      },
+      "goto": 9
+    },
+    {
+      "cond": {
+        "terrain": "Cave"
+      },
+      "goto": 57
+    }
+  ],
+  "078": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 9
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Flat"
+          },
+          {
+            "climate": "tropicale"
+          }
+        ]
+      },
+      "goto": 9
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "_subfeature": "palude/stagno/fiume"
+          },
+          {
+            "climate": "tropicale"
+          }
+        ]
+      },
+      "goto": 5
+    }
+  ],
+  "100": [
+    {
+      "cond": {
+        "landing_hex": true
+      },
+      "goto": 2
+    },
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 6
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "vegetation": true
+          },
+          {
+            "gravity": [
+              "Heavy",
+              "Oppressive"
+            ]
+          }
+        ]
+      },
+      "goto": 207
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Heavy Vegetation"
+          },
+          {
+            "atmosphere": [
+              "Thin"
+            ]
+          }
+        ]
+      },
+      "goto": 5
+    }
+  ],
+  "110": [
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 28
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_in": [
+              "Flat",
+              "Hill"
+            ]
+          },
+          {
+            "gravity": [
+              "Near weightless"
+            ]
+          }
+        ]
+      },
+      "goto": 159
+    },
+    {
+      "cond": {
+        "inert": "esagono di abisso (solo abisso, non 'dirupo o abisso'): abisso non modellato"
+      },
+      "goto": 176
+    }
+  ],
+  "120": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 6
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Cave"
+          },
+          {
+            "atmosphere": [
+              "Thin",
+              "Normal"
+            ]
+          }
+        ]
+      },
+      "goto": 181
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_in": [
+              "Flat",
+              "Hill"
+            ]
+          },
+          {
+            "gravity": [
+              "Earth like"
+            ]
+          },
+          {
+            "climate_not": "artico"
+          }
+        ]
+      },
+      "goto": 60
+    }
+  ],
+  "130": [
+    {
+      "cond": {
+        "gravity": [
+          "Near weightless",
+          "Oppressive"
+        ]
+      },
+      "goto": 166
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 42
+    },
+    {
+      "cond": {
+        "inert": "esagono sottomarino: non modellato"
+      },
+      "goto": 142
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Heavy Vegetation"
+      },
+      "goto": 29
+    }
+  ],
+  "140": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 6
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Flat"
+          },
+          {
+            "atmosphere": [
+              "Normal",
+              "Poison"
+            ]
+          }
+        ]
+      },
+      "goto": 3
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Glacial Ice"
+          },
+          {
+            "gravity": [
+              "Earth like"
+            ]
+          }
+        ]
+      },
+      "goto": 170
+    }
+  ],
+  "143": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 6
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "_subfeature": "pianeggiante con vegetazione rada"
+          },
+          {
+            "hydro": [
+              50,
+              75
+            ]
+          }
+        ]
+      },
+      "goto": 3
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Cave"
+          },
+          {
+            "atmosphere": [
+              "Poison",
+              "Corrosive"
+            ]
+          }
+        ]
+      },
+      "goto": 162
+    }
+  ],
+  "146": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 30
+    },
+    {
+      "cond": {
+        "terrain": "Cave"
+      },
+      "goto": 45
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "_subfeature": "collina con vegetazione rada"
+          },
+          {
+            "gravity": [
+              "Heavy"
+            ]
+          }
+        ]
+      },
+      "goto": 179
+    }
+  ],
+  "150": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 30
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Cave"
+          },
+          {
+            "gravity": [
+              "Light",
+              "Earth like"
+            ]
+          }
+        ]
+      },
+      "goto": 45
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Solid Lava"
+      },
+      "goto": 162
+    }
+  ],
+  "154": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 40
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "_subfeature": "pianeggiante con vegetazione rada"
+          },
+          {
+            "atmosphere": [
+              "Normal"
+            ]
+          }
+        ]
+      },
+      "goto": 156
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Flat"
+          },
+          {
+            "atmosphere": [
+              "None"
+            ]
+          }
+        ]
+      },
+      "goto": 167
+    }
+  ],
+  "157": [
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 30
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Glacial Ice"
+      },
+      "goto": 72
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Light Vegetation"
+          },
+          {
+            "atmosphere": [
+              "Normal"
+            ]
+          }
+        ]
+      },
+      "goto": 54
+    },
+    {
+      "cond": {
+        "geology": "Active"
+      },
+      "goto": 32
+    }
+  ],
+  "160": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 36
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Flat"
+          },
+          {
+            "vegetation": true
+          },
+          {
+            "gravity": [
+              "Heavy"
+            ]
+          }
+        ]
+      },
+      "goto": 60
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "atmosphere": [
+              "Corrosive"
+            ]
+          },
+          {
+            "climate": "sahariano"
+          }
+        ]
+      },
+      "goto": 153
+    }
+  ],
+  "165": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 36
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Light Vegetation"
+          },
+          {
+            "gravity": [
+              "Earth like"
+            ]
+          }
+        ]
+      },
+      "goto": 145
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Hill"
+          },
+          {
+            "hydro": [
+              25
+            ]
+          }
+        ]
+      },
+      "goto": 151
+    }
+  ],
+  "168": [
+    {
+      "cond": {
+        "inert": "Modificatore di Rifornimento di uno stagno usato durante la spedizione: stato non tracciato"
+      },
+      "goto": 152
+    },
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 36
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Glacial Ice"
+      },
+      "goto": 41
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "_subfeature": "pianeggiante senza vegetazione"
+          },
+          {
+            "atmosphere": [
+              "Normal"
+            ]
+          }
+        ]
+      },
+      "goto": 66
+    }
+  ],
+  "171": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 36
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Light Vegetation"
+          },
+          {
+            "gravity": [
+              "Light"
+            ]
+          }
+        ]
+      },
+      "goto": 145
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Mountain"
+      },
+      "goto": 147
+    }
+  ],
+  "174": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 161
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "vegetation": true
+          },
+          {
+            "climate": "tropicale"
+          }
+        ]
+      },
+      "goto": 48
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Flat"
+          },
+          {
+            "no_vegetation": true
+          }
+        ]
+      },
+      "goto": 167
+    }
+  ],
+  "177": [
+    {
+      "cond": {
+        "terrain_or_hasty": "Alien City"
+      },
+      "goto": 42
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Mountain"
+          },
+          {
+            "gravity": [
+              "Near weightless",
+              "Light"
+            ]
+          }
+        ]
+      },
+      "goto": 7
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "vegetation_or_hasty": true
+          },
+          {
+            "climate": "tropicale"
+          }
+        ]
+      },
+      "goto": 149
+    }
+  ],
+  "182": [
+    {
+      "cond": {
+        "inert": "shuttle in esagono non occupato da personaggio funzionante: stato shuttle non tracciato"
+      },
+      "goto": 163
+    },
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 36
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty_in": [
+              "Mountain",
+              "Cliffs"
+            ]
+          },
+          {
+            "climate": "artico"
+          }
+        ]
+      },
+      "goto": 41
+    },
+    {
+      "cond": {
+        "atmosphere": [
+          "Corrosive"
+        ]
+      },
+      "goto": 43
+    }
+  ],
+  "184": [
+    {
+      "cond": {
+        "all": [
+          {
+            "atmosphere": [
+              "Poison",
+              "Corrosive"
+            ]
+          },
+          {
+            "robot_in_expedition": true
+          }
+        ]
+      },
+      "goto": 155
+    },
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 42
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Hill"
+          },
+          {
+            "climate": "sahariano"
+          }
+        ]
+      },
+      "goto": 31
+    },
+    {
+      "cond": {
+        "terrain_or_hasty": "Heavy Vegetation"
+      },
+      "goto": 29
+    }
+  ],
+  "186": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 42
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Heavy Vegetation"
+          },
+          {
+            "atmosphere": [
+              "Normal"
+            ]
+          }
+        ]
+      },
+      "goto": 27
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "not_immersion_underground": true
+          },
+          {
+            "gravity": [
+              "Light"
+            ]
+          }
+        ]
+      },
+      "goto": 51
+    }
+  ],
+  "188": [
+    {
+      "cond": {
+        "unexplored_alien_city_in_area": true
+      },
+      "goto": 34
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_or_hasty": "Marsh"
+          },
+          {
+            "atmosphere": [
+              "Poison",
+              "Corrosive"
+            ]
+          }
+        ]
+      },
+      "goto": 39
+    },
+    {
+      "cond": {
+        "inert": "esagono sottomarino: non modellato"
+      },
+      "goto": 142
+    }
+  ],
+  "190": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 172
+    },
+    {
+      "cond": {
+        "terrain": "Heavy Vegetation"
+      },
+      "goto": 37
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Mountain"
+          },
+          {
+            "atmosphere": [
+              "None"
+            ]
+          }
+        ]
+      },
+      "goto": 164
+    }
+  ],
+  "192": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 161
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Heavy Vegetation"
+          },
+          {
+            "gravity": [
+              "Light"
+            ]
+          }
+        ]
+      },
+      "goto": 37
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain_in": [
+              "Mountain",
+              "Cliffs"
+            ]
+          },
+          {
+            "atmosphere": [
+              "None"
+            ]
+          }
+        ]
+      },
+      "goto": 159
+    }
+  ],
+  "194": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 172
+    },
+    {
+      "cond": {
+        "terrain": "Liquid Surface"
+      },
+      "goto": 63
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "_subfeature": "fiume"
+          },
+          {
+            "climate": "tropicale"
+          }
+        ]
+      },
+      "goto": 69
+    }
+  ],
+  "196": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 161
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Glacial Ice"
+          },
+          {
+            "gravity": [
+              "Light",
+              "Earth like"
+            ]
+          }
+        ]
+      },
+      "goto": 79
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "vegetation": true
+          },
+          {
+            "climate": "temperato"
+          }
+        ]
+      },
+      "goto": 48
+    }
+  ],
+  "198": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 40
+    },
+    {
+      "cond": {
+        "inert": "esagono sottomarino: non modellato"
+      },
+      "goto": 77
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "vegetation": true
+          },
+          {
+            "atmosphere": [
+              "Normal"
+            ]
+          }
+        ]
+      },
+      "goto": 79
+    }
+  ],
+  "200": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 28
+    },
+    {
+      "cond": {
+        "inert": "esagono sottomarino con dirupi o un abisso: sottomarino non modellato"
+      },
+      "goto": 77
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "terrain": "Light Vegetation"
+          },
+          {
+            "atmosphere": [
+              "Normal",
+              "Thin"
+            ]
+          }
+        ]
+      },
+      "goto": 35
+    }
+  ],
+  "202": [
+    {
+      "cond": {
+        "terrain": "Alien City"
+      },
+      "goto": 34
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "_subfeature": "pianeggiante con vegetazione rada"
+          },
+          {
+            "gravity": [
+              "Earth like"
+            ]
+          }
+        ]
+      },
+      "goto": 35
+    },
+    {
+      "cond": {
+        "all": [
+          {
+            "lava_in_area": true
+          },
+          {
+            "climate": "sahariano"
+          }
+        ]
+      },
+      "goto": 57
+    }
+  ]
+}

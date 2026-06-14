@@ -85,6 +85,13 @@ var environ_grid: Dictionary = {}     # hex_id locale -> {"terrain","explored","
 var expedition_pos: int = 0           # esagono attuale della spedizione (0 = non sbarcata)
 var landing_hex: int = 0
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
+# Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
+# (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
+# affrettato» degli snodi «Incontro di spedizione» (6.5).
+var hasty_path_terrains: Array = []
+# Guardia anti-ricorsione per i ri-tiri della Matrice di Esplorazione negli snodi (6.5).
+var _expedition_reroll_depth: int = 0
+const MAX_EXPEDITION_REROLLS := 8
 signal environ_changed
 
 func _ready() -> void:
@@ -163,6 +170,7 @@ func save_game(silent := false) -> bool:
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
 		"landing_hex": landing_hex, "current_environ_id": current_environ_id,
+		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f == null:
@@ -245,6 +253,7 @@ func load_game() -> bool:
 	expedition_pos = int(d.get("expedition_pos", 0))
 	landing_hex = int(d.get("landing_hex", 0))
 	current_environ_id = int(d.get("current_environ_id", 0))
+	hasty_path_terrains = d.get("hasty_path_terrains", [])
 	add_log("Partita caricata.")
 	return true
 
@@ -526,10 +535,134 @@ func combat_odds(mode: String) -> Dictionary:
 		dist[res] = int(dist.get(res, 0)) + 1
 	return dist
 
-func show_paragraph(para_num: int) -> void:
+# --- Interprete degli snodi «Incontro di spedizione» (regola 6.5) ------------
+
+# Valuta le regole di uno snodo nell'ordine dato e salta al primo goto la cui
+# condizione è vera. Se nessuna è vera, ri-tira la Matrice di Esplorazione (6.4)
+# per ottenere un altro snodo; con una guardia anti-ricorsione, oltre il limite si
+# mostra comunque il testo dello snodo corrente (fallback prudente).
+func _route_expedition_encounter(snodo: int, rules: Array) -> void:
+	for r in rules:
+		if _exp_cond_holds(r.get("cond", {})):
+			var dest := int(r.get("goto", 0))
+			add_log("Incontro di spedizione ¶%03d (6.5) → condizione soddisfatta → ¶%03d." % [snodo, dest])
+			show_paragraph(dest)
+			return
+	# Nessuna condizione vera: si ri-tira la Matrice di Esplorazione (6.5).
+	if _expedition_reroll_depth >= MAX_EXPEDITION_REROLLS:
+		add_log("Incontro di spedizione ¶%03d (6.5): nessuna condizione e troppi ri-tiri; mostro lo snodo." % snodo)
+		_expedition_reroll_depth = 0
+		_show_snodo_text(snodo)
+		return
+	_expedition_reroll_depth += 1
+	var d1 := randi_range(1, 6)
+	var d2 := randi_range(1, 6)
+	var other := GameData.get_exploration_2d6(d1, d2)
+	add_log("Incontro di spedizione ¶%03d (6.5): nessuna condizione vera; ri-tiro Matrice %d/%d → ¶%03d." % [snodo, d1, d2, other])
+	show_paragraph(other)
+
+# Mostra il testo grezzo di uno snodo (fallback quando si esauriscono i ri-tiri).
+func _show_snodo_text(para_num: int) -> void:
 	current_paragraph = para_num
 	encounter_outcome_text = ""
 	pending_goto = 0
+	set_phase(Phase.PARAGRAPH)
+	paragraph_request.emit(para_num)
+	state_updated.emit()
+
+# Vero se il terreno reale dell'esagono attualmente esplorato/occupato è `real`.
+func _current_terrain_is(real: String) -> bool:
+	var cell: Dictionary = environ_grid.get(expedition_pos, {})
+	return GameData.terrain_real(cell.get("terrain", "Open")) == real
+
+# Vero se `real` è stato attraversato durante l'ultimo movimento affrettato (6.3).
+func _hasty_has(real: String) -> bool:
+	return real in hasty_path_terrains
+
+# L'esagono attuale ha vegetazione (terreno rado o fitto).
+func _current_has_vegetation() -> bool:
+	return _current_terrain_is("Light Vegetation") or _current_terrain_is("Heavy Vegetation")
+
+# Esiste un esagono Alien City non esplorato nell'area (6.5).
+func _unexplored_alien_city_in_area() -> bool:
+	for hid in environ_grid:
+		var cell: Dictionary = environ_grid[hid]
+		if GameData.terrain_real(cell.get("terrain", "Open")) == "Alien City" and not cell.get("explored", false):
+			return true
+	return false
+
+# Valuta una condizione di snodo. Il dizionario contiene UNA chiave (o "all" per
+# combinare in AND). Le sotto-feature non modellate e il clima → FALSE (prudenza).
+func _exp_cond_holds(cond: Dictionary) -> bool:
+	if cond.has("all"):
+		for c in cond["all"]:
+			if not _exp_cond_holds(c):
+				return false
+		return true
+	if cond.has("terrain"):
+		return _current_terrain_is(str(cond["terrain"]))
+	if cond.has("terrain_or_hasty"):
+		var t := str(cond["terrain_or_hasty"])
+		return _current_terrain_is(t) or _hasty_has(t)
+	if cond.has("terrain_in"):
+		for t2 in cond["terrain_in"]:
+			if _current_terrain_is(str(t2)):
+				return true
+		return false
+	if cond.has("terrain_or_hasty_in"):
+		for t3 in cond["terrain_or_hasty_in"]:
+			if _current_terrain_is(str(t3)) or _hasty_has(str(t3)):
+				return true
+		return false
+	if cond.has("gravity"):
+		return str(planet_attrs.get("gravity", planet_gravity)) in cond["gravity"]
+	if cond.has("atmosphere"):
+		return str(planet_attrs.get("atmosphere", "Normal")) in cond["atmosphere"]
+	if cond.has("geology"):
+		return str(planet_attrs.get("geology", "Quiet")) == str(cond["geology"])
+	if cond.has("hydro"):
+		var h := int(planet_attrs.get("hydro", 0))
+		for hv in cond["hydro"]:
+			if int(hv) == h:
+				return true
+		return false
+	if cond.has("vegetation"):
+		return _current_has_vegetation()
+	if cond.has("vegetation_or_hasty"):
+		return _current_has_vegetation() or _hasty_has("Light Vegetation") or _hasty_has("Heavy Vegetation")
+	if cond.has("no_vegetation"):
+		return not _current_has_vegetation()
+	if cond.has("landing_hex"):
+		return expedition_pos == landing_hex
+	if cond.has("robot_in_expedition"):
+		for k in expedition_gear:
+			if GameData.get_bot_keys().has(k):
+				return true
+		return false
+	if cond.has("not_immersion_underground"):
+		# La spedizione non è mai in immersione né sottoterra nel modello attuale: vero.
+		return true
+	if cond.has("unexplored_alien_city_in_area"):
+		return _unexplored_alien_city_in_area()
+	# climate / climate_not / inert / _subfeature / lava_in_area: non valutabili → FALSE (6.5).
+	return false
+
+func show_paragraph(para_num: int) -> void:
+	# Snodi «Incontro di spedizione» (regola 6.5): se il paragrafo è uno snodo della
+	# Matrice di Esplorazione, non lo si mostra. Si valutano le sue condizioni in ordine
+	# e si salta al primo goto vero; se nessuna è vera si ri-tira la Matrice (con guardia
+	# anti-ricorsione). Vale solo durante una spedizione sulla superficie.
+	if expedition_pos > 0:
+		var rules := GameData.get_expedition_encounter(para_num)
+		if not rules.is_empty():
+			_route_expedition_encounter(para_num, rules)
+			return
+	current_paragraph = para_num
+	encounter_outcome_text = ""
+	pending_goto = 0
+	# Una volta arrivati a un paragrafo di destinazione la catena di snodi è conclusa:
+	# si azzera il contatore dei ri-tiri per la prossima esplorazione.
+	_expedition_reroll_depth = 0
 	# Se il paragrafo è l'incontro di una creatura (retro del segnalino, 2.6) e la
 	# spedizione è sulla superficie, prepara l'incontro: i comandi di combattimento
 	# compaiono sopra al testo del paragrafo (le meccaniche seguono il libro-gioco).
@@ -858,6 +991,8 @@ func reset_expedition_state() -> void:
 	expedition_pos = 0
 	landing_hex = 0
 	current_environ_id = 0
+	hasty_path_terrains = []
+	_expedition_reroll_depth = 0
 
 # --- Superficie planetaria (environ) -----------------------------------------
 
@@ -920,6 +1055,8 @@ func explore_current_hex() -> void:
 	if cell.get("explored", false):
 		add_log("Questo esagono è già stato esplorato.")
 		return
+	# Esplorazione dell'esagono occupato: nuova azione, niente percorso affrettato (6.5).
+	hasty_path_terrains = []
 	explore_environ_hex(expedition_pos, cell.get("terrain", "Open"))
 
 # Versione legacy (atterraggio al centro) mantenuta per compatibilità.
@@ -979,6 +1116,9 @@ func hasty_move_to(hex_id: int) -> void:
 	var cost := _hasty_path_cost(expedition_pos, hex_id)
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
+	# Memorizza i terreni reali attraversati lungo il percorso più economico: servono
+	# alla variante «oppure vi si è entrati durante il movimento affrettato» (6.5).
+	hasty_path_terrains = _hasty_path_terrains(expedition_pos, hex_id)
 	expedition_pos = hex_id
 	add_expedition_hours(cost)
 	add_log("Movimento affrettato fino a %s — %d ore." % [cell.get("real", str(hex_id)), cost])
@@ -1014,9 +1154,50 @@ func _hasty_path_cost(from_hex: int, to_hex: int) -> int:
 					queue.append(nb)
 	return dist.get(to_hex, 99)
 
+# Ricostruisce i terreni reali (es. "Mountain") attraversati lungo il percorso più
+# economico di un movimento affrettato (escluso l'esagono di partenza, incluso l'arrivo).
+# Usa lo stesso costo d'ingresso di _hasty_path_cost (Dijkstra con predecessori).
+func _hasty_path_terrains(from_hex: int, to_hex: int) -> Array:
+	var dist := {from_hex: 0}
+	var prev := {}
+	var queue := [from_hex]
+	while queue.size() > 0:
+		var bi := 0
+		for i in range(1, queue.size()):
+			if dist[queue[i]] < dist[queue[bi]]:
+				bi = i
+		var cur: int = queue[bi]
+		queue.remove_at(bi)
+		if cur == to_hex:
+			break
+		for nb in environ_neighbors(cur):
+			if not environ_grid.has(nb):
+				continue
+			var nterr: String = environ_grid[nb].get("terrain", "Open")
+			var nd: int = dist[cur] + enter_cost_for(nterr)
+			if not dist.has(nb) or nd < dist[nb]:
+				dist[nb] = nd
+				prev[nb] = cur
+				if not (nb in queue):
+					queue.append(nb)
+	# Risali la catena dei predecessori fino alla partenza, raccogliendo i terreni reali.
+	var terrains: Array = []
+	if not prev.has(to_hex) and to_hex != from_hex:
+		return terrains
+	var node: int = to_hex
+	while node != from_hex and prev.has(node):
+		var t: String = environ_grid.get(node, {}).get("terrain", "Open")
+		var real := GameData.terrain_real(t)
+		if not (real in terrains):
+			terrains.append(real)
+		node = prev[node]
+	return terrains
+
 func move_expedition(hex_id: int) -> void:
 	if not can_move_expedition(hex_id):
 		return
+	# Un movimento normale azzera la traccia del movimento affrettato (nuova azione, 6.5).
+	hasty_path_terrains = []
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
 	var real_id: String = cell.get("real", str(hex_id))
