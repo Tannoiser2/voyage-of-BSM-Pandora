@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 155 | 66,8% |
+| 🟢 Verde | 160 | 69,0% |
 | 🟡 Giallo | 43 | 18,5% |
-| 🔴 Rosso | 34 | 14,7% |
+| 🔴 Rosso | 29 | 12,5% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 76,1%**
-( (155 + 43/2) / 232 ).
+come metà, l'indice di completezza è **≈ 78,2%**
+( (160 + 43/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 76,1%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **155** | **43** | **34** | **232** |
+| **Totale** | **160** | **43** | **29** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -325,7 +325,7 @@ come metà, l'indice di completezza è **≈ 76,1%**
 | 192 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/037/159 — Città Aliena / Heavy Veg.+gravità / Mountain-Cliffs+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 193 | procedurale (combattimento struttura) | 🟢 | Pulsante «Affronta la struttura»: col turbolaser combattimento via Intelligenza (solo uccisione) → struttura distrutta e pezzo recuperato (artefatto ¶193, peso 3, PV al rientro); senza turbolaser −10 Punti Resistenza e fuga obbligata a ¶187. Caveat: la colonna-Intelligenza della Tabella Combattimento è modellata in modo approssimato. |
 | 194 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/063/069 — Città Aliena / Liquid Surface / River+clima tropicale): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
-| 195 | procedurale (comunicazione alieni) | 🔴 | Tiro 1d6 con modificatori CO/GSO/neuroscanner e PV/¶210 non gestiti. |
+| 195 | procedurale (comunicazione alieni) | 🟢 | 1 dado (−1 per CO/SO/neuroscan): ≤1 +7 PV; 2-4 armi dissolte +6 PV; 5-6 → ¶210. Automatizzato. |
 | 196 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/079/048 — Città Aliena / Glacial Ice+gravità / veg.+clima temperato): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 197 | procedurale (fungo parassita) | 🟢 | Personaggio a caso infettato: −1 Resistenza a ogni Controllo del Rifornimento fino al rientro (curato sulla Pandora); l'armorig previene l'infezione. Automatizzato. |
 | 198 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Liquid Surface / vegetazione+atmosfera): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
@@ -347,14 +347,14 @@ come metà, l'indice di completezza è **≈ 76,1%**
 | 209 | procedurale (infezione germe) | 🟢 | Personaggio a caso: −2 Resistenza subito e −1 a ogni Controllo del Rifornimento (salvo Ufficiale Medico presente), curato al rientro. Automatizzato. |
 | 210 | procedurale (teletrasporto) | 🟢 | Teletrasporto allo shuttle: +5 PV (una volta per spedizione). Automatizzato. |
 | 211 | esito (Garbrist amichevole) | 🟢 | +4 PV, +2 con l'Holographer. Automatizzato. |
-| 212 | procedurale (cattura verme) | 🔴 | Cattura su GSO/check Intelligenza e blocco PV non gestiti. |
+| 212 | procedurale (cattura verme) | 🟢 | Con l'Ufficiale Scienze cattura automatica; altrimenti 2 dadi < Int max spedizione. Automatizzato. |
 | 213 | esito (Glassman comunica) | 🟢 | +4 col neuroscanner, +2 con Holographer, +2 con Ufficiale Scienze (cumulativi). Automatizzato. |
 | 214 | esito (creatura svanisce) | 🟢 | +3 con Holographer, +2 col neuroscanner. Automatizzato. |
 | 215 | procedurale (Garbrist combatte) | 🔴 | Danno a tutti i robot/strumenti, poi combattimento: non gestito. |
 | 216 | procedurale (Abomnid insegue) | 🔴 | Esito su rover/armorig o uccisione del più lento non automatizzato. |
 | 217 | procedurale (Glassman ostile) | 🟡 | Distrugge un personaggio e un robot a caso, poi combattimento di uccisione (shift impostato per il +3). Caveat: modificatore di Combattimento approssimato come shift. |
 | 218 | procedurale (combattimento speciale) | 🔴 | Rilettura risultati col turbolaser o shift 2 sx non automatizzati. |
-| 219 | esito (fungo intelligente) | 🔴 | +3 PV neuroscanner/+2 Holographer e ore su dado non assegnati. |
+| 219 | esito (fungo intelligente) | 🟢 | +3 col neuroscanner, +2 con Holographer; 1 dado di ore spese. Automatizzato. |
 | 220 | incontro-creatura (Glassman fugge) | 🟡 | La logica «fuga su velocità o combatti» è simile a quella codificata altrove, ma per ¶220 non è in `paragraph_logic`: solo testo. |
 | 221 | procedurale (campo psionico) | 🟢 | Campo psionico: 1 dado di ore di incoscienza; Intelligenza di ogni personaggio ridotta permanentemente a 6 (se superiore). Automatizzato. |
 | 222 | esito (insetti senzienti) | 🔴 | Check Aggressività con PV variabili e diramazione ¶231/¶225 non gestiti. |
@@ -363,9 +363,9 @@ come metà, l'indice di completezza è **≈ 76,1%**
 | 225 | procedurale (combattimento gruppo) | 🔴 | Somma Valori di Combattimento e regole speciali risultato «E» non automatizzate. |
 | 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
 | 227 | procedurale (combattimento Glosper) | 🔴 | Rilettura risultati C/D/E (un personaggio fatto a pezzi) non automatizzata. |
-| 228 | procedurale (trappola crollo) | 🔴 | Tiri 2 dadi vs Velocità per unità, distruzioni e +5 PV non automatizzati. |
+| 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |
 | 229 | esito (monoke amichevole) | 🟡 | Cattura facoltativa e 1 ora: il flusso «scegli azione» è ok ma la cattura/ora non sono automatizzate. |
-| 230 | procedurale (radrod) | 🔴 | Check Intelligenza con +3 PV/cattura o danni e ore non automatizzato. |
+| 230 | procedurale (radrod) | 🟢 | Studio: 2 dadi (−2 con SO) vs Int max: < → +3 PV e cattura (1 ora); ≥ → neuroscanner+creatura distrutti, un personaggio −2 Resistenza e svenuto (2 dadi di ore). Automatizzato. |
 | 231 | procedurale (razza ostile) | 🔴 | Tiro 1d6 a ogni esagono città/controllo rifornimento (rischio distruzione) non automatizzato. |
 | 232 | snodo-di-flusso (fine viaggio) | 🟢 | Attracco e calcolo PV finali: il motore mostra ¶232 a fine tour e produce il riepilogo PV (9.0/9.2). Fedele. |
 

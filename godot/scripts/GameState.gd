@@ -2119,6 +2119,82 @@ func _apply_paragraph_effect(para: int) -> int:
 				add_log("¶217: il Glassman ostile distrugge %s." % GameData.get_unit(b217).get("name", b217))
 			pending_combat_shift = 2
 			add_log("¶217: combattimento di uccisione contro il Glassman (modificatore di Combattimento +3).")
+		195:
+			var r195 := randi_range(1, 6)
+			if "CO" in expedition_units:
+				r195 -= 1
+			if "SO" in expedition_units:
+				r195 -= 1
+			if _gear_has("Neuroscan"):
+				r195 -= 1
+			if r195 <= 1:
+				gain_vp(7, "¶195 alieni: permesso pieno di esplorare")
+			elif r195 <= 4:
+				for it in ["Turbolaser", "Specibot", "Netgun", "Stunbomb"]:
+					if _gear_has(it):
+						expedition_gear.erase(it)
+						expedition_units.erase(it)
+				gain_vp(6, "¶195 alieni: armi dissolte dal prisma")
+			else:
+				redirect = 210
+		212:
+			var ok212 := ("SO" in expedition_units)
+			if not ok212:
+				ok212 = (randi_range(1, 6) + randi_range(1, 6)) < _expedition_max_intel()
+			if ok212:
+				captured_creatures.append("Verme parassita")
+				add_log("¶212: un verme parassita viene catturato con successo.")
+			else:
+				add_log("¶212: il tentativo di cattura del verme fallisce.")
+		219:
+			var v219 := 0
+			if _gear_has("Neuroscan"):
+				v219 += 3
+			if _gear_has("Holographer"):
+				v219 += 2
+			gain_vp(v219, "¶219 fungo intelligente studiato")
+			add_expedition_hours(randi_range(1, 6))
+		228:
+			var survivors := 0
+			for u in expedition_units.duplicate():
+				var sp := effective_char_stat(u, "speed")
+				var rollu := randi_range(1, 6) + randi_range(1, 6)
+				if rollu <= sp:
+					if crew.has(u):
+						survivors += 1
+				elif crew.has(u):
+					crew[u]["endurance"] = maxi(0, int(crew[u].get("endurance", 0)) - (rollu - sp))
+					if int(crew[u]["endurance"]) <= 0:
+						_kill_character(u)
+					elif crew[u].get("alive", false):
+						survivors += 1
+				else:
+					expedition_gear.erase(u)
+					expedition_units.erase(u)
+					if not damaged_gear.has(u):
+						damaged_gear.append(u)
+			if _gear_has("Rover"):
+				expedition_gear.erase("Rover")
+				if not damaged_gear.has("Rover"):
+					damaged_gear.append("Rover")
+			if survivors > 0:
+				gain_vp(5, "¶228 sopravvissuti al crollo")
+			add_log("¶228: trappola del crollo risolta (%d personaggio/i sopravvissuto/i)." % survivors)
+		230:
+			var roll230 := randi_range(1, 6) + randi_range(1, 6)
+			if "SO" in expedition_units:
+				roll230 -= 2
+			if roll230 < _expedition_max_intel():
+				gain_vp(3, "¶230 radrod catturato")
+				add_expedition_hours(1)
+				add_log("¶230: il radrod viene catturato facilmente (+3 PV, 1 ora).")
+			else:
+				expedition_gear.erase("Neuroscan")
+				var v230 := _random_alive_char()
+				if v230 != "":
+					crew[v230]["endurance"] = maxi(0, int(crew[v230].get("endurance", 0)) - 2)
+				add_expedition_hours(randi_range(1, 6) + randi_range(1, 6))
+				add_log("¶230: onde cerebrali del radrod: neuroscanner distrutto, un personaggio −2 Resistenza e privo di sensi.")
 		_:
 			applied = false
 	if applied:
