@@ -146,6 +146,7 @@ func save_game(silent := false) -> bool:
 		"pandora_hex": pandora_hex, "current_system": current_system, "current_planet": current_planet,
 		"current_phase": int(current_phase), "current_paragraph": current_paragraph,
 		"awaiting_die_roll": awaiting_die_roll, "pending_die_purpose": pending_die_purpose,
+		"pending_event_threshold": pending_event_threshold,
 		"manual_dice": manual_dice,
 		"crew": crew, "visited_systems": visited_systems, "log_entries": log_entries,
 		"vp_ledger": vp_ledger,
@@ -203,6 +204,7 @@ func load_game() -> bool:
 	current_paragraph = int(d.get("current_paragraph", 0))
 	awaiting_die_roll = bool(d.get("awaiting_die_roll", false))
 	pending_die_purpose = str(d.get("pending_die_purpose", ""))
+	pending_event_threshold = int(d.get("pending_event_threshold", 0))
 	manual_dice = bool(d.get("manual_dice", false))
 	var cr: Variant = d.get("crew", {})
 	if typeof(cr) == TYPE_DICTIONARY:
@@ -291,15 +293,18 @@ func move_pandora_to(hex_id: int) -> void:
 	if sys_name != "":
 		current_system = sys_name
 		add_log("Pandora arriva a %s. Mesi usati: %d/%d." % [sys_name, tour_months_used, tour_length])
-		# Evento interstellare (4.2): tiro di DUE dadi (2-12), manuale o automatico.
+		# Determinazione dell'evento (4.0, Procedura): si tirano DUE dadi; se il
+		# risultato è <= agli esagoni percorsi contando l'origine (cioè cost+1)
+		# si verifica un Evento Interstellare, altrimenti si va alla Tabella Pianeti.
+		pending_event_threshold = cost + 1
 		if manual_dice:
-			pending_die_purpose = "interstellar_event"
+			pending_die_purpose = "interstellar_check"
 			awaiting_die_roll = true
-			message_posted.emit("Tira due dadi per l'evento interstellare (regola 4.2).")
+			message_posted.emit("Tira due dadi per verificare se avviene un evento interstellare (regola 4.0).")
 		else:
 			var d := randi_range(1, 6) + randi_range(1, 6)
-			die_rolled.emit(d, "interstellar_event")
-			resolve_interstellar_event(d)
+			die_rolled.emit(d, "interstellar_check")
+			resolve_interstellar_check(d)
 	else:
 		current_system = ""
 		add_log("Pandora si muove all'esagono %d. Mesi usati: %d/%d." % [hex_id, tour_months_used, tour_length])
@@ -310,13 +315,36 @@ func move_pandora_to(hex_id: int) -> void:
 	if months_remaining() <= 0:
 		_end_tour()
 
+# Soglia (cost+1) per la determinazione dell'evento interstellare (4.0).
+var pending_event_threshold: int = 0
+
+# Determinazione 4.0: due dadi <= esagoni percorsi (origine inclusa) -> evento.
+func resolve_interstellar_check(die: int) -> void:
+	if die <= pending_event_threshold:
+		add_log("Controllo evento interstellare (4.0): %d ≤ %d → si verifica un evento." % [die, pending_event_threshold])
+		# L'evento è determinato dalla Tabella 4.2 con un secondo tiro di due dadi.
+		if manual_dice:
+			pending_die_purpose = "interstellar_event"
+			awaiting_die_roll = true
+			message_posted.emit("Tira due dadi per l'evento interstellare (regola 4.2).")
+		else:
+			var d := randi_range(1, 6) + randi_range(1, 6)
+			die_rolled.emit(d, "interstellar_event")
+			resolve_interstellar_event(d)
+	else:
+		add_log("Controllo evento interstellare (4.0): %d > %d → nessun evento, si va in orbita." % [die, pending_event_threshold])
+		if current_system != "" and current_system != "Sol":
+			enter_orbit()
+
 func resolve_interstellar_event(die: int) -> void:
 	var para := GameData.get_interstellar_event_para(die)
 	if para > 0:
-		add_log("Evento interstellare! (dado: %d) → Paragrafo %03d" % [die, para])
+		add_log("Evento interstellare! (2 dadi: %d) → Paragrafo %03d" % [die, para])
 		show_paragraph(para)
 	else:
-		add_log("Nessun evento interstellare (dado: %d)." % die)
+		# Con la Tabella 4.2 corretta (2-12) ogni risultato ha un paragrafo;
+		# questo ramo è una salvaguardia: in assenza di voce si va in orbita.
+		add_log("Nessuna voce in Tabella Eventi per il risultato %d." % die)
 		if current_system != "" and current_system != "Sol":
 			enter_orbit()
 

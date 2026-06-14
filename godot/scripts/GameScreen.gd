@@ -1712,14 +1712,18 @@ func _on_die_rolled(value: int, _purpose: String) -> void:
 	_set_dice_result(value)
 
 func _on_roll_dice() -> void:
-	# L'evento interstellare (4.2) usa due dadi (2-12); gli altri tiri un dado solo.
-	var two_dice := GameState.awaiting_die_roll and GameState.pending_die_purpose == "interstellar_event"
+	# Il controllo (4.0) e l'evento (4.2) interstellari usano DUE dadi (2-12);
+	# gli altri tiri usano un dado solo.
+	var p: String = GameState.pending_die_purpose
+	var two_dice := GameState.awaiting_die_roll and (p == "interstellar_event" or p == "interstellar_check")
 	var die := (randi_range(1, 6) + randi_range(1, 6)) if two_dice else randi_range(1, 6)
 	_set_dice_result(die)
 
 	if GameState.awaiting_die_roll:
 		GameState.awaiting_die_roll = false
 		match GameState.pending_die_purpose:
+			"interstellar_check":
+				GameState.resolve_interstellar_check(die)
 			"interstellar_event":
 				GameState.resolve_interstellar_event(die)
 			"landing":
