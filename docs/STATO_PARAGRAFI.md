@@ -62,13 +62,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 64 | 27,6% |
+| 🟢 Verde | 65 | 28,0% |
 | 🟡 Giallo | 45 | 19,4% |
-| 🔴 Rosso | 123 | 53,0% |
+| 🔴 Rosso | 122 | 52,6% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 37,3%**
-( (64 + 45/2) / 232 ).
+come metà, l'indice di completezza è **≈ 37,7%**
+( (65 + 45/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -77,11 +77,11 @@ come metà, l'indice di completezza è **≈ 37,3%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 12 | 13 | 4 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 6 | 22 | 20 | 48 |
+| incontro-creatura (intro) | 7 | 22 | 19 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
 | snodo «Incontro di spedizione» | 0 | 0 | 36 | 36 |
 | procedurale-vario / rimandi-testuali | 3 | 7 | 43 | 53 |
-| **Totale** | **64** | **45** | **123** | **232** |
+| **Totale** | **65** | **45** | **122** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -106,7 +106,7 @@ come metà, l'indice di completezza è **≈ 37,3%**
 | 006 | procedurale (arma) | 🟡 | L'arma aliena è acquisibile (pulsante «Raccogli») con PV al rientro e usabile in combattimento (Cattura/Uccisione 9); il check Intelligenza/2 dadi che ne determina l'usabilità (subito / dopo 5 ore / solo trasportabile) e il rimando all'ufficiale alle armi (¶175) non sono ancora automatizzati. |
 | 007 | incontro-creatura (Drada) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo «non sorpreso» usa le azioni standard. |
 | 008 | procedurale (caduta) | 🔴 | Morte/danni casuali con eccezioni (gravità/armorig/climbkit) non gestiti. |
-| 009 | incontro-creatura (snodo) | 🔴 | Comunica con check Intelligenza+neuroscanner e PV, o ¶016: nessuna logica codificata. |
+| 009 | incontro-creatura (snodo) | 🟢 | Comunica: con Intelligenza≥6 e Neuroscan → +3 PV (+1 con Holographer), nessuna cattura; altrimenti → ¶016. Risolto alla scelta della strategia, scavalcando la Tabella di Strategia (nuova condizione `has_gear`). Cattura/Fuga usano la tabella standard. |
 | 010 | esito-strategia | 🟢 | Interamente codificato (aggr≤4 fuga/combatti; aggr≥5 perdita 12 Resistenza). |
 | 011 | esito-strategia | 🟢 | Codificato: cattura con ore = somma modificatori positivi. |
 | 012 | esito-strategia | 🟢 | Codificato: la creatura non segue, scegli altra azione. |

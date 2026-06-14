@@ -1249,8 +1249,8 @@ func resolve_encounter_outcome(para: int) -> void:
 func _cond_holds(conds: Array) -> bool:
 	for c in conds:
 		var key := str(c[0])
-		# Condizioni non numeriche (sorpresa 8.1 / strategia dichiarata 8.2).
-		if key == "surprised" or key == "strategy":
+		# Condizioni non numeriche (sorpresa 8.1 / strategia dichiarata 8.2 / equipaggiamento).
+		if key == "surprised" or key == "strategy" or key == "has_gear":
 			if not _cond_holds_special(key, str(c[1]), c[2]): return false
 			continue
 		var lhs: int = _attr_or_mod(key)
@@ -1271,6 +1271,10 @@ func _cond_holds_special(key: String, op: String, rhs) -> bool:
 	if key == "strategy":
 		var want_s := str(rhs)
 		return chosen_strategy == want_s if op == "==" else chosen_strategy != want_s
+	if key == "has_gear":
+		# Presenza di uno strumento/robot nella spedizione (es. Neuroscan, Turbolaser).
+		var present := _gear_has(str(rhs))
+		return present if op == "==" else not present
 	return true
 
 func _attr_or_mod(key: String) -> int:
@@ -1956,6 +1960,23 @@ func choose_encounter_strategy(strategy: String) -> void:
 		return
 	var c := GameData.get_creature(current_creature)
 	chosen_strategy = strategy
+	var sname0: String = {"communicate": "Comunica", "capture_kill": "Cattura/Uccidi", "flee": "Fuggi"}.get(strategy, strategy)
+	# Alcuni paragrafi d'incontro intro (es. ¶009 «tartaruga») descrivono un esito
+	# specifico per una certa strategia: se il paragrafo corrente ha rami che
+	# combaciano con la strategia scelta, si risolvono direttamente, scavalcando
+	# la Tabella di Strategia d'Incontro.
+	if not GameData.get_paragraph_logic(current_paragraph).is_empty():
+		resolve_encounter_outcome(current_paragraph)
+		if pending_goto > 0:
+			var dest := pending_goto
+			pending_goto = 0
+			add_log("Strategia «%s»: il paragrafo %03d rimanda al ¶%03d." % [sname0, current_paragraph, dest])
+			show_paragraph(dest)
+			return
+		if encounter_outcome_text != "":
+			add_log("Strategia «%s»: esito specifico del paragrafo %03d." % [sname0, current_paragraph])
+			state_updated.emit()
+			return
 	var intel := int(c.get("intel", 0))
 	var aggr := int(c.get("aggression", 0))
 	var modifier := 0
@@ -1966,8 +1987,7 @@ func choose_encounter_strategy(strategy: String) -> void:
 	var roll := randi_range(1, 6)
 	var die := roll + modifier
 	var para := GameData.encounter_strategy_para(die, strategy)
-	var sname: String = {"communicate": "Comunica", "capture_kill": "Cattura/Uccidi", "flee": "Fuggi"}.get(strategy, strategy)
-	add_log("Strategia «%s»: dado %d %+d = %d → Paragrafo %03d." % [sname, roll, modifier, die, para])
+	add_log("Strategia «%s»: dado %d %+d = %d → Paragrafo %03d." % [sname0, roll, modifier, die, para])
 	if para > 0:
 		show_paragraph(para)
 
