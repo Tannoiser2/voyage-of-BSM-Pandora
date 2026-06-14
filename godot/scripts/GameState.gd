@@ -1278,6 +1278,25 @@ func _current_has_vegetation() -> bool:
 	return _current_terrain_is("Light Vegetation") or _current_terrain_is("Heavy Vegetation")
 
 # Esiste un esagono Alien City non esplorato nell'area (6.5).
+# Vero se la cella contiene il terreno `real` (base o extra, regola 6.7).
+func _cell_terrain_is(cell: Dictionary, real: String) -> bool:
+	if GameData.terrain_real(cell.get("terrain", "Open")) == real:
+		return true
+	for e in cell.get("extra", []):
+		if GameData.terrain_real(e) == real:
+			return true
+	return false
+
+# Vero se un esagono ADIACENTE a quello occupato contiene lava fluente (6.5).
+# La lava che scorre è modellata come esagono Solid Lava + Liquid Surface (colata
+# liquida), distinta dalla lava solidificata (solo Solid Lava).
+func _lava_in_area() -> bool:
+	for nb in environ_neighbors(expedition_pos):
+		var cell: Dictionary = environ_grid.get(nb, {})
+		if _cell_terrain_is(cell, "Solid Lava") and _cell_terrain_is(cell, "Liquid Surface"):
+			return true
+	return false
+
 func _unexplored_alien_city_in_area() -> bool:
 	for hid in environ_grid:
 		var cell: Dictionary = environ_grid[hid]
@@ -1352,7 +1371,9 @@ func _exp_cond_holds(cond: Dictionary) -> bool:
 		return true
 	if cond.has("unexplored_alien_city_in_area"):
 		return _unexplored_alien_city_in_area()
-	# inert / _subfeature / lava_in_area: sotto-feature non modellate → FALSE (6.5).
+	if cond.has("lava_in_area"):
+		return _lava_in_area()
+	# inert / _subfeature: sotto-feature non modellate → FALSE (6.5).
 	# (climate/climate_not sono valutati sopra, ma falsi finché i dati-pianeta non
 	# includono il Clima — vedi 5.1.)
 	return false

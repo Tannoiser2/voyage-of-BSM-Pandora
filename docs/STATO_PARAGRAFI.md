@@ -61,10 +61,11 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   terreno delle 8 mappe sono stati rimappati per intero e verificati uno a uno in un
   foglio esagono×terreno (modello multi-terreno completo). Gli esagoni **sottomarini** sono
   modellati come esagoni **Liquid Surface** (esplorazione in immersione), sbloccando
-  065/130/188/198/200. **32 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.**
-  Restano **4 snodi**: adiacenza a lava fluente (056/202, serve logica di vicinato +
-  definizione lava fluente) e stato stagno/shuttle (168/182, serve tracciamento di
-  stato) ⇒ 🔴.
+  065/130/188/198/200. La **lava fluente** (056/202) è modellata come esagono
+  adiacente Solid Lava+Liquid Surface (colata liquida), via `environ_neighbors`.
+  **34 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.** Restano solo **2 snodi**
+  (168/182) che richiedono il tracciamento di stato (modificatore stagno usato,
+  posizione shuttle) ⇒ 🔴.
   Regola **6.7** (un esagono può contenere più terreni): il motore supporta un campo
   `extra` per i terreni aggiuntivi sovrapposti al terreno base; `_current_terrain_is`
   soddisfa sia il base sia gli extra.
@@ -79,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 104 | 44,8% |
+| 🟢 Verde | 106 | 45,7% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 87 | 37,5% |
+| 🔴 Rosso | 85 | 36,6% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 53,7%**
-( (104 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 54,5%**
+( (106 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -96,9 +97,9 @@ come metà, l'indice di completezza è **≈ 53,7%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 32 | 0 | 4 | 36 |
+| snodo «Incontro di spedizione» | 34 | 0 | 2 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **104** | **41** | **87** | **232** |
+| **Totale** | **106** | **41** | **85** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -175,7 +176,7 @@ come metà, l'indice di completezza è **≈ 53,7%**
 | 053 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶008/004/031/153 — Cliffs / Città Aliena / Flat+clima sahariano / gravità+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 054 | incontro-creatura (Aracat) | 🟢 | Intro «felino»: sorpresa+strategia gestite dal motore; nessun effetto extra oltre lo shift standard di sorpresa. |
 | 055 | evento-interstellare | 🔴 | Danno cerebrale a un membro (riduzione Valori/PV) non automatizzato. |
-| 056 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶038/004/027/151) non valutata. |
+| 056 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (lava fluente adiacente / Citta Aliena / Heavy Veg / Flat+idrografia): lava fluente = esagono adiacente Solid Lava+Liquid Surface (vicinato 6.7). |
 | 057 | incontro-creatura (Eleboid) | 🔴 | «Comunica/Combatti» con danno a tutti i robot poi tabella-strategia non gestito. |
 | 058 | evento-interstellare (procedurale) | 🔴 | Check Intelligenza GSO, perdita Resistenza e dirama a ¶067/073/144 non gestito. |
 | 059 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/039/147 — Città Aliena / Pond o Marsh / Cave+idrografia): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
@@ -336,7 +337,7 @@ come metà, l'indice di completezza è **≈ 53,7%**
 | ¶ | Tipo | Stato | Nota |
 |---|---|---|---|
 | 201 | snodo-di-flusso (avvio) | 🟢 | Avvio del viaggio: il motore avvia tour, mappa interstellare e tabella pianeti. Fedele. |
-| 202 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶034/035/057) non valutata. |
+| 202 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+gravita / lava fluente adiacente+clima sahariano): lava fluente = esagono adiacente Solid Lava+Liquid Surface (vicinato 6.7). |
 | 203 | procedurale (pirati: tributo) | 🔴 | Cessione robot/strumenti o ¶183 non automatizzata. |
 | 204 | procedurale (fuga alieni) | 🔴 | Tiro 1d6 con esiti multipli (prigionia/PV/rover/¶195/¶210) non gestiti. |
 | 205 | esito-strategia (modificatore) | 🟡 | «Aggressività auto +2, ritira sulla tabella 8.2»: il motore ha la tabella 8.2 ma non applica questa correzione né il rimando-incontro. |

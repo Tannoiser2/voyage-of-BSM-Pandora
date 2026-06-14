@@ -69,7 +69,7 @@
   "056": [
     {
       "cond": {
-        "inert": "adiacente a esagono di lava fluente (lava che scorre): sotto-feature non modellata"
+        "lava_in_area": true
       },
       "goto": 38
     },
