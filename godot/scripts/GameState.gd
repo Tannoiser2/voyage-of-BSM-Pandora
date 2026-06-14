@@ -440,6 +440,7 @@ var jump_dest_hex: int = 46
 # Paragrafo-evento interstellare (4.2) in attesa di un tiro manuale del giocatore:
 # i suoi effetti meccanici si risolvono quando arriva il dado (vedi resolve_event_die).
 var pending_event_para: int = 0
+var _madness_depth: int = 0    # guardia anti-ricorsione per la reinfezione virale (¶144→¶058)
 
 # Determinazione 4.0: due dadi <= esagoni percorsi (origine inclusa) -> evento.
 func resolve_interstellar_check(die: int) -> void:
@@ -495,10 +496,104 @@ func _apply_interstellar_event_effect(para: int) -> void:
 		58:  _event_058()
 		61:  _event_061()
 		64:  _event_064()
+		67:  _event_067()
+		73:  _event_073()
 		80:  _event_080()
+		144: _event_144()
+		169: _event_169()
 		_:
 			# Nessun effetto meccanico noto per questo paragrafo: resta narrativo.
 			pass
+
+# ===== Esiti degli eventi interstellari (4.2). I dadi interni sono auto-risolti. =====
+
+# ¶067 — la follia dell'Ufficiale Scienze è temporanea: un Mese di Tour extra.
+func _event_067() -> void:
+	_spend_tour_months(1, "¶067 follia temporanea (Ufficiale Scienze)")
+
+# ¶073 — cura: 2 dadi vs Int dell'Ufficiale Medico. ≤ Int → curato; altrimenti (o
+# MedO assente) l'Ufficiale Scienze va in animazione sospesa (Resistenza persa).
+func _event_073() -> void:
+	var roll := randi_range(1, 6) + randi_range(1, 6)
+	if _officer_aboard("MedO") and roll <= character_intelligence("MedO"):
+		add_log("¶073: 2 dadi %d ≤ Int Medico → la follia è curata." % roll)
+		return
+	if crew.has("GSO") and crew["GSO"].get("alive", false):
+		crew["GSO"]["endurance"] = 0
+		crew["GSO"]["alive"] = false
+		add_log("¶073: nessuna cura → Ufficiale Scienze in animazione sospesa (inutilizzabile, Resistenza persa).")
+		state_updated.emit()
+
+# ¶144 — l'Ufficiale Scienze muore. 1 dado per i Mesi di Tour (5-6 = nessuno). Se Int
+# dell'Ufficiale Medico ≤ 6 o assente, il virus infetta un altro membro a caso → ¶058.
+func _event_144() -> void:
+	if crew.has("GSO") and crew["GSO"].get("alive", false):
+		crew["GSO"]["alive"] = false
+		crew["GSO"]["endurance"] = 0
+		lose_vp(10, "¶144 Ufficiale Scienze deceduto")
+		add_log("¶144: l'Ufficiale Scienze muore della sua afflizione.")
+	var die := randi_range(1, 6)
+	_spend_tour_months(die if die <= 4 else 0, "¶144 cure intensive (dado %d)" % die)
+	if current_phase == Phase.GAME_OVER:
+		return
+	var med_int := character_intelligence("MedO") if _officer_aboard("MedO") else 0
+	if med_int <= 6 and _madness_depth < 6:
+		_madness_depth += 1
+		var living: Array = []
+		for k in crew.keys():
+			if crew[k].get("alive", false):
+				living.append(k)
+		if not living.is_empty():
+			var victim: String = living[randi_range(0, living.size() - 1)]
+			add_log("¶144: il virus infetta %s → ¶058." % crew[victim]["name"])
+			show_paragraph(58)
+			_science_madness(victim)
+
+# Logica della «follia» (¶058) generalizzata a un membro qualunque (reinfezione ¶144):
+# 1 dado sottratto alla sua Int → Resistenza persa dagli ALTRI; 2° dado → 067/073/144.
+func _science_madness(officer_key: String) -> void:
+	var roll := randi_range(1, 6)
+	var loss := maxi(0, character_intelligence(officer_key) - roll)
+	for _i in range(loss):
+		var target := ""
+		var best_e := 0
+		for k in crew.keys():
+			if k == officer_key or not crew[k].get("alive", false):
+				continue
+			var e: int = int(crew[k].get("endurance", 0))
+			if e > best_e:
+				best_e = e
+				target = k
+		if target == "":
+			break
+		crew[target]["endurance"] = maxi(0, int(crew[target]["endurance"]) - 1)
+		if crew[target]["endurance"] <= 0 and crew[target].get("alive", false):
+			crew[target]["alive"] = false
+			lose_vp(10, "Personaggio ucciso: %s" % crew[target]["name"])
+	state_updated.emit()
+	var d2 := randi_range(1, 6)
+	var dest := 67 if d2 <= 3 else (73 if d2 <= 5 else 144)
+	add_log("¶058 (reinfezione): 2° dado %d → ¶%03d." % [d2, dest])
+	show_paragraph(dest)
+	_apply_interstellar_event_effect(dest)
+
+# ¶169 — trattativa coi pirati. CO a bordo: 2 dadi vs sua Int. roll ≤ Int−2 → se ne
+# vanno ingannati; Int−1..Int+1 → ¶203; roll ≥ Int+2 (o CO assente) → ¶183.
+func _event_169() -> void:
+	if not _officer_aboard("CO"):
+		add_log("¶169: Comandante assente → ¶183.")
+		show_paragraph(183)
+		return
+	var roll := randi_range(1, 6) + randi_range(1, 6)
+	var intel := character_intelligence("CO")
+	if roll <= intel - 2:
+		add_log("¶169: 2 dadi %d (≤ Int %d −2) → i pirati se ne vanno ingannati." % [roll, intel])
+	elif roll <= intel + 1:
+		add_log("¶169: 2 dadi %d → ¶203." % roll)
+		show_paragraph(203)
+	else:
+		add_log("¶169: 2 dadi %d (> Int %d +1) → ¶183." % [roll, intel])
+		show_paragraph(183)
 
 # Spende mesi di Tour extra (4.2/4.6); se così facendo il Tour si esaurisce, lo chiude.
 func _spend_tour_months(n: int, reason: String) -> void:
@@ -621,6 +716,7 @@ func _resolve_055(roll: int) -> void:
 # nessuna superficie ancora visitata. Altrimenti: 1 dado sottratto all'Int del GSO →
 # tanti Punti Resistenza persi dagli altri; poi un altro dado instrada a 067/073/144.
 func _event_058() -> void:
+	_madness_depth = 0
 	if not _officer_aboard("GSO") or surfaces_visited <= 0:
 		add_log("¶058: Ufficiale Scienze assente o nessuna superficie visitata → ignorato.")
 		return
@@ -662,6 +758,7 @@ func _resolve_058(roll: int) -> void:
 	var dest := 67 if d2 <= 3 else (73 if d2 <= 5 else 144)
 	add_log("¶058: secondo dado %d → ¶%03d." % [d2, dest])
 	show_paragraph(dest)
+	_apply_interstellar_event_effect(dest)
 
 # ¶061 — mercanti rinnegati: con l'Ufficiale Armi a bordo, due dadi contro la sua
 # Intelligenza. Se < Int → 1 Mese extra e fuga; altrimenti (o se assente) → ¶169.
@@ -669,6 +766,7 @@ func _event_061() -> void:
 	if not _officer_aboard("WO"):
 		add_log("¶061: Ufficiale Armi assente → ¶169.")
 		show_paragraph(169)
+		_apply_interstellar_event_effect(169)
 		return
 	if manual_dice:
 		pending_event_para = 61
@@ -685,6 +783,7 @@ func _resolve_061(roll: int) -> void:
 	else:
 		add_log("¶061: %d ≥ Int %d → ¶169." % [roll, intel])
 		show_paragraph(169)
+		_apply_interstellar_event_effect(169)
 
 # ¶064 — vicinanza a Opoplo (esagono 14). Se la rotta del salto attuale entra nel 14
 # o in un esagono adiacente, la Pandora deve deviare verso Opoplo (¶076). Modelliamo

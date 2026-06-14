@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 108 | 46,6% |
-| 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 83 | 35,8% |
+| 🟢 Verde | 124 | 53,4% |
+| 🟡 Giallo | 42 | 18,1% |
+| 🔴 Rosso | 66 | 28,4% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 55,4%**
-( (108 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 62,5%**
+( (124 + 42/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -96,10 +96,10 @@ come metà, l'indice di completezza è **≈ 55,4%**
 | atterraggio/superficie (incl. 002/070/076/148) | 12 | 13 | 4 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
-| evento-interstellare + esiti | 0 | 2 | 20 | 22 |
+| evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **108** | **41** | **83** | **232** |
+| **Totale** | **124** | **42** | **66** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -116,7 +116,7 @@ come metà, l'indice di completezza è **≈ 55,4%**
 
 | ¶ | Tipo | Stato | Nota |
 |---|---|---|---|
-| 001 | evento-interstellare | 🔴 | Routing 2d6 ok, ma il «+1 mese di tour se ≥3 esagoni» non è applicato dal motore: solo testo. |
+| 001 | evento-interstellare | 🟢 | errore di navigazione: +1 Mese di Tour se il salto e' >=3 esagoni. Automatizzato. |
 | 002 | procedurale (atterraggio) | 🔴 | Salto condizionato al navigatore (¶070/¶148) non automatizzato; mostrato come testo. |
 | 003 | incontro-creatura (snodo) | 🟢 | Codificato: `goto` a ¶054 con nuova creatura (Aracat). Fedele. |
 | 004 | incontro-creatura (struttura) | 🟢 | Le due scelte (Fuggi → ¶187 / Combatti → ¶193) sono cliccabili e portano a esiti ora automatizzati. |
@@ -159,12 +159,12 @@ come metà, l'indice di completezza è **≈ 55,4%**
 | 041 | incontro-creatura (Abomnid) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo Fuga (¶216) usa il rimando. |
 | 042 | procedurale (uovo) | 🟡 | L'uovo è acquisibile come artefatto (PV al rientro); il tiro 1d6 al momento del trasporto (1-2 ok / 3-4 → ¶178 / 5-6 → ¶205) non è ancora gestito. |
 | 043 | incontro-creatura (Crusher) | 🔴 | Restrizione armi (solo armorig/specibot/turbolaser), distruzione robot, «2 E-cage» non gestite. |
-| 044 | evento-interstellare | 🔴 | Check MntO/Intelligenza per mesi di tour spesi non automatizzato. |
+| 044 | evento-interstellare | 🟢 | sforzo FTL: 2 dadi vs Int Manutenzione -> Mesi di Tour. Automatizzato. |
 | 045 | incontro-creatura (Armeetle) | 🟡 | Creatura preparata; inefficacia di stunbomb/reconbot/specibot e fuga «2 ore» non gestite. |
-| 046 | evento-interstellare | 🔴 | «+1 mese di tour extra» non applicato dal motore: solo testo. |
-| 047 | evento-interstellare | 🔴 | «9 − Intelligenza (GSO/MntO/GTO)» mesi extra non automatizzato. |
+| 046 | evento-interstellare | 🟢 | brillamenti stellari: +1 Mese di Tour. Automatizzato. |
+| 047 | evento-interstellare | 🟢 | avaria Processore Fuji: 9 - Int(Scienze/Manut). Automatizzato. |
 | 048 | incontro-creatura (Ornifly) | 🟡 | Creatura preparata; ramo «la creatura sfreccia via» (niente combattimento) non forzato. |
-| 049 | evento-interstellare | 🔴 | «9 − Intelligenza (CO/Nav/MntO)» mesi extra non automatizzato. |
+| 049 | evento-interstellare | 🟢 | tempesta di asteroidi: 9 - Int(CO/Nav/Manut). Automatizzato. |
 | 050 | snodo-di-flusso | 🟡 | Il rientro alla Pandora e il movimento interstellare esistono; il paragrafo come «hub» (Azioni di Bordo 4.5) non è esplicitamente collegato. |
 
 ### 051–100 — creature, eventi, atterraggi, snodi
@@ -172,39 +172,39 @@ come metà, l'indice di completezza è **≈ 55,4%**
 | ¶ | Tipo | Stato | Nota |
 |---|---|---|---|
 | 051 | incontro-creatura (Paraboid) | 🟡 | Creatura preparata; «qualsiasi strategia → la creatura se ne va» non forzato come esito automatico. |
-| 052 | evento-interstellare | 🔴 | Morte di una creatura a bordo (a caso) non automatizzata. |
+| 052 | evento-interstellare | 🟢 | una creatura catturata a bordo (a caso) muore, con perdita dei suoi PV. Automatizzato. |
 | 053 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶008/004/031/153 — Cliffs / Città Aliena / Flat+clima sahariano / gravità+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 054 | incontro-creatura (Aracat) | 🟢 | Intro «felino»: sorpresa+strategia gestite dal motore; nessun effetto extra oltre lo shift standard di sorpresa. |
-| 055 | evento-interstellare | 🔴 | Danno cerebrale a un membro (riduzione Valori/PV) non automatizzato. |
+| 055 | evento-interstellare | 🟡 | danno cerebrale a un membro a caso: Intelligenza -1 dado e, se Int<=2, perdita di 4 PV e ufficio perso. Caveat: gli altri Valori (Combattimento/Velocita/Porto) non sono memorizzati per personaggio, quindi quel "-1" resta narrativo. |
 | 056 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (lava fluente adiacente / Citta Aliena / Heavy Veg / Flat+idrografia): lava fluente = esagono adiacente Solid Lava+Liquid Surface (vicinato 6.7). |
 | 057 | incontro-creatura (Eleboid) | 🔴 | «Comunica/Combatti» con danno a tutti i robot poi tabella-strategia non gestito. |
-| 058 | evento-interstellare (procedurale) | 🔴 | Check Intelligenza GSO, perdita Resistenza e dirama a ¶067/073/144 non gestito. |
+| 058 | evento-interstellare (procedurale) | 🟢 | follia dell'Ufficiale Scienze: Resistenza persa dagli altri + 2 dadi -> dirama a 067/073/144 (effetti applicati). Automatizzato. |
 | 059 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/039/147 — Città Aliena / Pond o Marsh / Cave+idrografia): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 060 | incontro-creatura (Scorsaur) | 🟡 | Creatura preparata; ramo «Combatti → ¶180» (incornata velenosa) non automatizzato. |
-| 061 | evento-interstellare | 🔴 | Check WO/Intelligenza, +1 mese o ¶169 non automatizzato. |
+| 061 | evento-interstellare | 🟢 | mercanti rinnegati: 2 dadi vs Int Armi -> +1 Mese o ¶169. Automatizzato. |
 | 062 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/179/066 — Città Aliena / Light Veg.+gravità / Hill+gravità): salto al ramo giusto o ri-tiro Matrice. |
 | 063 | incontro-creatura (Nessie) | 🟡 | Creatura preparata e strategia offerta; il requisito «3 E-cage» per il trasporto non è modellato. |
-| 064 | evento-interstellare (deviazione Opoplo) | 🔴 | Deviazione di rotta verso Opoplo, esagono 0817 e ¶076 non automatizzati. |
+| 064 | evento-interstellare (deviazione Opoplo) | 🟢 | deviazione verso Opoplo (esagono 14, Mesi di Tour, ¶076). Automatizzato. |
 | 065 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cliffs / Liquid Surface+vegetazione): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 066 | incontro-creatura (nebbia, senza pedina) | 🔴 | Creatura «senza counter» con modificatori espliciti e +4 PV Holographer: non gestita (nessun segnalino in dati). |
-| 067 | evento-interstellare (esito) | 🔴 | «+1 mese di tour» (follia temporanea) non applicato; solo testo. |
+| 067 | evento-interstellare (esito) | 🟢 | follia temporanea: +1 Mese di Tour. Automatizzato. |
 | 068 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶004/173/181 — Città Aliena / Heavy Veg. / Marsh): salto al ramo giusto o ri-tiro Matrice. |
 | 069 | incontro-creatura (Glassman, snodo) | 🔴 | Comunica/Combatti con tiri 1d6 → ¶213/217/220 non gestiti. |
 | 070 | procedurale (atterraggio shuttle) | 🔴 | Tre esiti su Intelligenza navigatore (danni/robot/5 Punti Danno) non automatizzati. |
 | 071 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/051/043 — Città Aliena / gravità quasi assente / atmosfera velenosa): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 072 | incontro-creatura (Unithalo) | 🔴 | Sorpresa shift 1 sx, deviazione a ¶206 e ramo Fuga (rapimento) non gestiti. |
-| 073 | evento-interstellare (esito) | 🔴 | Check MedO/Intelligenza (cura o animazione sospesa) non automatizzato. |
+| 073 | evento-interstellare (esito) | 🟢 | cura: 2 dadi vs Int Medico -> guarigione, oppure Ufficiale Scienze in animazione sospesa (Resistenza persa, inutilizzabile). Automatizzato. |
 | 074 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/009/057 — Città Aliena / Flat+gravità / Cave): salto al ramo giusto o ri-tiro Matrice. |
 | 075 | incontro-creatura (Aquan) | 🟡 | Sorpresa+strategia gestite; il ramo «Comunica → dona larva → ¶208» non automatizzato. |
 | 076 | atterraggio speciale (Opoplo) | 🔴 | Vincoli speciali (strutture sottoterra 0715/1016, non lasciare l'area finché non esplorate) non gestiti. |
 | 077 | incontro-creatura (Garbrist) | 🔴 | Comunica(neuroscanner→¶211 / ¶016) e Combatti(¶215) non gestiti. |
 | 078 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶009/009/005 — Città Aliena / Flat+clima tropicale / Marsh-Pond-River+clima): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 079 | incontro-creatura (Sholf) | 🟢 | Intro «orso»: sola scelta strategia, nessun effetto extra; gestito dal motore. |
-| 080 | evento-interstellare (procedurale) | 🔴 | Evoluzione creatura a bordo e diramazione ¶081–084 non gestite. |
+| 080 | evento-interstellare (procedurale) | 🟢 | evoluzione di una creatura a bordo -> diramazione 081-084. Automatizzato. |
 | 081 | esito (game over) | 🟡 | Testo «il gioco è finito» mostrato; il motore non chiude la partita automaticamente da qui. |
 | 082 | esito (game over) | 🟡 | Come ¶081: fine partita non innescata automaticamente. |
-| 083 | evento-interstellare (esito) | 🔴 | Distruzione di 1/3 delle creature a bordo non automatizzata. |
-| 084 | evento-interstellare (esito) | 🔴 | Check Combattimento/Intelligenza e uccisioni d'equipaggio non gestiti. |
+| 083 | evento-interstellare (esito) | 🟢 | la creatura e un terzo delle creature a bordo (a caso) sono distrutte, con perdita PV. Automatizzato. |
+| 084 | evento-interstellare (esito) | 🟢 | 2 dadi vs Valore della creatura -> distruzione senza danni oppure uccisioni d'equipaggio. Automatizzato. |
 | 085 | pianeta/orbita (Korkran) | 🟢 | Dati pianeta + tiro atterraggio→esagono→paragrafo gestiti dal motore. |
 | 086 | pianeta/orbita (Picole) | 🟢 | Idem, da dati. |
 | 087 | pianeta/orbita (Suwathe) | 🟢 | Idem, da dati. |
@@ -269,7 +269,7 @@ come metà, l'indice di completezza è **≈ 55,4%**
 | 141 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 142 | incontro-creatura (Decapus) | 🟡 | Sorpresa+strategia gestite dal motore; nessun effetto extra ⇒ vicino al 🟢, ma lo shift di sorpresa è applicato solo dentro `paragraph_logic` (assente per 142). |
 | 143 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+idrografia / Cave+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
-| 144 | evento-interstellare (esito) | 🔴 | Mesi di tour, reinfezione e rimando a ¶058 non automatizzati. |
+| 144 | evento-interstellare (esito) | 🟢 | morte dell'Ufficiale Scienze (PV) + 1 dado per Mesi di Tour (5-6=0); se Int Medico <=6 o assente, reinfezione di un altro membro -> ¶058 (guardia anti-ricorsione). Automatizzato. |
 | 145 | incontro-creatura (Erequito) | 🟡 | Creatura preparata; il filtro «solo unità più veloci possono combattere» non è imposto. |
 | 146 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cave / Hill+Light Veg+gravita): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 147 | incontro-creatura (Promite, procedurale) | 🔴 | Perdite di Resistenza da sorpresa (con modificatori) e rimando a ¶212 non gestiti. |
@@ -299,7 +299,7 @@ come metà, l'indice di completezza è **≈ 55,4%**
 | 166 | procedurale (gravità) | 🔴 | 2 dadi di Punti Danno (1 con GTO/Reconbot) con regole rover/enviorig non automatizzati. |
 | 167 | incontro-creatura (Ironhorn) | 🟡 | Creatura preparata; «1 ora per ispezionare» e inefficacia netgun/stunbomb non gestite. |
 | 168 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (stagno usato nel rifornimento / Citta Aliena / Glacial Ice / Flat senza veg+atmosfera): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
-| 169 | evento-interstellare (esito) | 🔴 | Trattativa CO con check Intelligenza → ¶203/183 non gestita. |
+| 169 | evento-interstellare (esito) | 🟢 | trattativa del Comandante coi pirati: 2 dadi vs sua Int -> fuga / ¶203 / ¶183. Automatizzato. |
 | 170 | incontro-creatura (snodo) | 🔴 | Sorpresa (divora il più lento), strategia, ramo Fuga→¶226 non gestiti. |
 | 171 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/147 — Città Aliena / Light Veg.+gravità / Mountain): salto al ramo giusto o ri-tiro Matrice. |
 | 172 | incontro (alieno città, snodo) | 🔴 | Tiro 1d6 → ¶158/228 non gestito. |
