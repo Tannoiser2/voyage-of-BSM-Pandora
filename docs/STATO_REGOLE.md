@@ -13,9 +13,9 @@ prototipo Godot.
 
 | Stato | Conteggio |
 |---|---|
-| 🟢 Verde | 23 |
-| 🟡 Giallo | 24 |
-| 🔴 Rosso | 11 |
+| 🟢 Verde | 25 |
+| 🟡 Giallo | 25 |
+| 🔴 Rosso | 8 |
 
 Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
 matrice di esplorazione → incontro creatura → combattimento) **solido**. I buchi
@@ -38,7 +38,7 @@ paragrafi-evento**. Già coperti: **Rifornimento (7.0/7.1/7.2/7.3)**,
 | 2.2 | Carte e tabelle | 🟡 | Presenti: Eventi Interstellari, Matrice Esplorazione, Risultati Combattimento, Valutazione Creatura, Strategia d'Incontro. Mancano/parziali: Capacità di Porto, Effetti del Terreno (modificatori rifornimento). |
 | 2.3 | 232 paragrafi | 🟢 | Tutti presenti in `paragrafi_it.json` (it/en). |
 | 2.4 | Pezzi: 7 personaggi, 4 bot, 21 strumenti, 39 creature, 5 artefatti | 🟡 | Personaggi/bot/strumenti/creature presenti; **5 artefatti assenti**. |
-| 2.5 | Unità + Valore Intelligenza + **Resistenza 5** | 🔴 | Il codice usa `MAX_ENDURANCE = 6` (le regole dicono **5**); Valore Intelligenza non modellato. |
+| 2.5 | Unità + Valore Intelligenza + **Resistenza 5** | 🟢 | `MAX_ENDURANCE = 5` (corretto) e Valore Intelligenza determinato a inizio gioco (3.3). |
 | 2.6 | Creature e artefatti da catturare/acquisire | 🟡 | Creature sì (cattura/uccisione); artefatti no. |
 | 2.7 | Marcatori per attributi variabili | 🟢 | Attributi pianeta, Tour Time, rifornimenti tracciati. |
 
@@ -47,7 +47,7 @@ paragrafi-evento**. Già coperti: **Rifornimento (7.0/7.1/7.2/7.3)**,
 |---|---|:--:|---|
 | 3.1 | Scelta Tour 10/20/30 mesi | 🟢 | Implementato nel menu/`start_new_game`. |
 | 3.2 | Disposizione iniziale | 🟢 | Stato iniziale impostato. |
-| 3.3 | Valore Intelligenza di ogni personaggio (tiro 1 dado) | 🔴 | Non implementato: i personaggi non hanno un Valore Intelligenza (impatta gli eventi che lo richiedono). |
+| 3.3 | Valore Intelligenza di ogni personaggio (tiro 1 dado) | 🟢 | `_roll_intelligence` a inizio partita (1:6, 2-3:7, 4-5:8, 6:9), fisso e salvato; helper `character_intelligence`/`highest_intelligence`. |
 | 3.4 | Vai al ¶201 per iniziare | 🟢 | Si parte in fase interstellare. |
 | 3.5 | Scelta casuale di personaggio/bot/oggetto | 🟡 | La selezione casuale richiesta da molti paragrafi non è automatizzata. |
 
@@ -81,7 +81,7 @@ paragrafi-evento**. Già coperti: **Rifornimento (7.0/7.1/7.2/7.3)**,
 | 6.2 | Marcatore Esplorato | 🟢 | Stato `explored` per esagono. |
 | 6.3 | Movimento affrettato | 🟢 | `can_hasty_move`, `hasty_move_to`, costo percorso. |
 | 6.4 | Matrice di Esplorazione | 🟢 | `get_exploration_2d6` (1° dado colonna, 2° riga). |
-| 6.5 | Paragrafo d'incontro di spedizione (3–4 affermazioni condizionali) | 🔴 | I **36 snodi** "Incontro di spedizione" non vengono valutati (salti su terreno/gravità/clima ignorati). |
+| 6.5 | Paragrafo d'incontro di spedizione (3–4 affermazioni condizionali) | 🟡 | I **36 snodi** sono automatizzati (`expedition_encounters.json` + interprete, Lotto 3): valuta terreno/gravità/atmosfera/geologia/idrografia/affrettato e instrada; ri-tira la Matrice se nessuna condizione è vera. Inerti finché i dati non vengono arricchiti: **clima** (non memorizzato) e sotto-feature/terreni assenti dalle mappe (River, Pond, Liquid Submerged, Alien Structure). |
 | 6.6 | Carta Effetti del Terreno | 🟡 | Costi in ore per entrare/esplorare sì; modificatori di rifornimento parziali. |
 | 6.7 | Terreni multipli / speciali | 🟡 | Gestione parziale del terreno misto. |
 | 6.8 | Spesa di ore di spedizione (Traccia Tempo) | 🟢 | `add_expedition_hours` fa avanzare `supply_track_pos`; al raggiungimento dello «spazio di controllo» della gravità (6/12/16/22/30) scatta un Controllo del Rifornimento (7.2) e la posizione si azzera (loop multiplo). |
