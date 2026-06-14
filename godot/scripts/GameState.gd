@@ -59,6 +59,9 @@ var crew: Dictionary = {
 }
 
 var visited_systems: Array = []
+# Numero di superfici planetarie su cui si è già sbarcati (regola 6.0). Serve alla
+# condizione del ¶058 («oppure non è ancora stata visitata alcuna superficie planetaria»).
+var surfaces_visited: int = 0
 var log_entries: Array = []
 var vp_ledger: Array = []   # storico delle variazioni di PV {amount, reason} per il riepilogo finale
 
@@ -125,6 +128,10 @@ func start_new_game(p_tour_length: int) -> void:
 	current_system = "Sol"
 	current_planet = ""
 	visited_systems = []
+	surfaces_visited = 0
+	jump_origin_hex = 46
+	jump_dest_hex = 46
+	pending_event_para = 0
 	log_entries = []
 	vp_ledger = []
 	expedition_units = []
@@ -193,6 +200,8 @@ func save_game(silent := false) -> bool:
 		"current_phase": int(current_phase), "current_paragraph": current_paragraph,
 		"awaiting_die_roll": awaiting_die_roll, "pending_die_purpose": pending_die_purpose,
 		"pending_event_threshold": pending_event_threshold,
+		"jump_origin_hex": jump_origin_hex, "jump_dest_hex": jump_dest_hex,
+		"pending_event_para": pending_event_para, "surfaces_visited": surfaces_visited,
 		"manual_dice": manual_dice,
 		"crew": crew, "visited_systems": visited_systems, "log_entries": log_entries,
 		"vp_ledger": vp_ledger,
@@ -253,6 +262,10 @@ func load_game() -> bool:
 	awaiting_die_roll = bool(d.get("awaiting_die_roll", false))
 	pending_die_purpose = str(d.get("pending_die_purpose", ""))
 	pending_event_threshold = int(d.get("pending_event_threshold", 0))
+	jump_origin_hex = int(d.get("jump_origin_hex", 46))
+	jump_dest_hex = int(d.get("jump_dest_hex", 46))
+	pending_event_para = int(d.get("pending_event_para", 0))
+	surfaces_visited = int(d.get("surfaces_visited", 0))
 	manual_dice = bool(d.get("manual_dice", false))
 	var cr: Variant = d.get("crew", {})
 	if typeof(cr) == TYPE_DICTIONARY:
@@ -338,6 +351,11 @@ func move_pandora_to(hex_id: int) -> void:
 		add_log("Non abbastanza mesi per raggiungere quel sistema.")
 		return
 	var cost := GameData.get_hex_distance(pandora_hex, hex_id)
+	# Memorizza l'origine e la destinazione del salto interstellare attuale: servono
+	# ai paragrafi-evento (4.2) che ragionano sulla ROTTA percorsa (es. ¶064 e la
+	# vicinanza all'esagono 14).
+	jump_origin_hex = pandora_hex
+	jump_dest_hex = hex_id
 	pandora_hex = hex_id
 	tour_months_used += cost
 
@@ -369,6 +387,13 @@ func move_pandora_to(hex_id: int) -> void:
 
 # Soglia (cost+1) per la determinazione dell'evento interstellare (4.0).
 var pending_event_threshold: int = 0
+# Origine e destinazione del salto interstellare attuale (per gli eventi 4.2 che
+# valutano la rotta percorsa, es. ¶064). Aggiornati a ogni move_pandora_to.
+var jump_origin_hex: int = 46
+var jump_dest_hex: int = 46
+# Paragrafo-evento interstellare (4.2) in attesa di un tiro manuale del giocatore:
+# i suoi effetti meccanici si risolvono quando arriva il dado (vedi resolve_event_die).
+var pending_event_para: int = 0
 
 # Determinazione 4.0: due dadi <= esagoni percorsi (origine inclusa) -> evento.
 func resolve_interstellar_check(die: int) -> void:
@@ -393,12 +418,359 @@ func resolve_interstellar_event(die: int) -> void:
 	if para > 0:
 		add_log("Evento interstellare! (2 dadi: %d) → Paragrafo %03d" % [die, para])
 		show_paragraph(para)
+		# Applica gli effetti meccanici interni del paragrafo-evento (4.2).
+		_apply_interstellar_event_effect(para)
 	else:
 		# Con la Tabella 4.2 corretta (2-12) ogni risultato ha un paragrafo;
 		# questo ramo è una salvaguardia: in assenza di voce si va in orbita.
 		add_log("Nessuna voce in Tabella Eventi per il risultato %d." % die)
 		if current_system != "" and current_system != "Sol":
 			enter_orbit()
+
+# --- Interprete degli effetti dei paragrafi-evento interstellari (regola 4.2) ---
+#
+# Ogni evento della Tabella 4.2 (080, 061, 055, 049, 046, 001, 044, 047, 052, 058,
+# 064) ha effetti meccanici descritti nel suo paragrafo: mesi di Tour extra, morti
+# casuali, controlli di Intelligenza, morte di creature catturate, salti ad altri
+# paragrafi. Questo metodo li applica DOPO che il testo è stato mostrato.
+#
+# Gli eventi che richiedono un tiro del giocatore vengono messi in coda
+# (pending_event_para) se manual_dice è attivo e risolti in resolve_event_die quando
+# arriva il dado; altrimenti il dado è tirato automaticamente qui.
+func _apply_interstellar_event_effect(para: int) -> void:
+	match para:
+		1:   _event_001()
+		44:  _event_044()
+		46:  _event_046()
+		47:  _event_047()
+		49:  _event_049()
+		52:  _event_052()
+		55:  _event_055()
+		58:  _event_058()
+		61:  _event_061()
+		64:  _event_064()
+		80:  _event_080()
+		_:
+			# Nessun effetto meccanico noto per questo paragrafo: resta narrativo.
+			pass
+
+# Spende mesi di Tour extra (4.2/4.6); se così facendo il Tour si esaurisce, lo chiude.
+func _spend_tour_months(n: int, reason: String) -> void:
+	if n <= 0:
+		return
+	tour_months_used += n
+	add_log("%s: +%d Mese/i di Tour (rimangono %d)." % [reason, n, months_remaining()])
+	state_updated.emit()
+	if months_remaining() <= 0:
+		_end_tour()
+
+# Vero se il personaggio (chiave ufficiale) è vivo e a bordo della Pandora.
+# In fase interstellare/orbita l'intero equipaggio vivo è considerato a bordo.
+func _officer_aboard(key: String) -> bool:
+	return crew.get(key, {}).get("alive", false)
+
+# Determina il Valore (8.4) di un attributo per una creatura catturata a bordo:
+# 2d6 + modificatore della scheda, mappato con la RATING_TABLE (come creature_attr).
+func _aboard_creature_rating(name: String, attr: String) -> int:
+	var modn := int(GameData.get_creature(name).get(attr, 0))
+	var total := clampi(randi_range(1, 6) + randi_range(1, 6) + modn, 2, 12)
+	if total <= 11:
+		return int(RATING_TABLE.get(total, 1))
+	var d := randi_range(1, 6)
+	return 9 if d <= 2 else (10 if d <= 4 else (11 if d == 5 else 12))
+
+# ¶001 — errore di navigazione: se il salto attuale è ≥3 esagoni (origine inclusa)
+# si spende un Mese di Tour extra; altrimenti nessun evento.
+func _event_001() -> void:
+	var dist := GameData.get_hex_distance(jump_origin_hex, jump_dest_hex) + 1  # +1: origine inclusa
+	if dist >= 3:
+		_spend_tour_months(1, "¶001 errore di navigazione (salto di %d esagoni)" % dist)
+	else:
+		add_log("¶001: salto di %d esagoni (≤2) → nessun effetto." % dist)
+
+# ¶044 — sforzo sui sistemi FTL. Con l'ufficiale alla manutenzione a bordo si tirano
+# due dadi contro la sua Intelligenza; altrimenti 4 mesi fissi.
+func _event_044() -> void:
+	if not _officer_aboard("MntO"):
+		_spend_tour_months(4, "¶044 sforzo FTL (manutenzione assente)")
+		return
+	if manual_dice:
+		pending_event_para = 44
+		pending_die_purpose = "event_044"
+		awaiting_die_roll = true
+		message_posted.emit("¶044: tira due dadi contro l'Intelligenza dell'Ufficiale Manutenzione.")
+	else:
+		_resolve_044(randi_range(1, 6) + randi_range(1, 6))
+
+func _resolve_044(roll: int) -> void:
+	var intel := character_intelligence("MntO")
+	if roll <= intel:
+		_spend_tour_months(1, "¶044 riparazione FTL (%d ≤ Int %d)" % [roll, intel])
+	else:
+		var months := mini(roll - intel, 4)
+		_spend_tour_months(months, "¶044 danno FTL (%d > Int %d)" % [roll, intel])
+
+# ¶046 — brillamenti stellari: un Mese di Tour extra.
+func _event_046() -> void:
+	_spend_tour_months(1, "¶046 brillamenti stellari")
+
+# ¶047 — avaria del Processore Fuji: 9 − (Int più alta tra scienze/manutenzione).
+# L'ufficiale al rilevamento terrestre coincide con l'Ufficiale Scienze (GSO).
+func _event_047() -> void:
+	var best := highest_intelligence(["GSO", "MntO"])
+	_spend_tour_months(maxi(0, 9 - best), "¶047 avaria Processore Fuji (9 − Int %d)" % best)
+
+# ¶049 — tempesta di asteroidi: 9 − (Int più alta tra comandante/navigatore/manutenzione).
+func _event_049() -> void:
+	var best := highest_intelligence(["CO", "Nav", "MntO"])
+	_spend_tour_months(maxi(0, 9 - best), "¶049 tempesta di asteroidi (9 − Int %d)" % best)
+
+# ¶052 — supporto vitale: una creatura catturata a bordo (a caso) muore, perdendo i suoi PV.
+func _event_052() -> void:
+	if captured_creatures.is_empty():
+		add_log("¶052: nessuna creatura a bordo, nessun effetto.")
+		return
+	var idx := randi_range(0, captured_creatures.size() - 1)
+	var name: String = captured_creatures[idx]
+	captured_creatures.remove_at(idx)
+	add_log("¶052: la creatura %s muore per esigenze di supporto vitale." % name)
+	var vp := GameData.creature_vp(name)
+	if vp > 0:
+		lose_vp(vp, "¶052 creatura %s deceduta" % name)
+	state_updated.emit()
+
+# ¶055 — danno cerebrale permanente a un membro dell'equipaggio (a caso). Tutti i
+# Valori −1 (qui modelliamo solo l'Intelligenza), e l'Intelligenza −1d6; se l'Int
+# scende a 2 o meno si perdono 4 PV e l'ufficio non esiste più.
+func _event_055() -> void:
+	if manual_dice:
+		pending_event_para = 55
+		pending_die_purpose = "event_055"
+		awaiting_die_roll = true
+		message_posted.emit("¶055: tira un dado per il danno all'Intelligenza.")
+	else:
+		_resolve_055(randi_range(1, 6))
+
+func _resolve_055(roll: int) -> void:
+	var living: Array = []
+	for k in crew.keys():
+		if crew[k].get("alive", false):
+			living.append(k)
+	if living.is_empty():
+		return
+	var key: String = living[randi_range(0, living.size() - 1)]
+	var old_int := character_intelligence(key)
+	var new_int := maxi(0, old_int - roll)
+	crew[key]["intelligence"] = new_int
+	add_log("¶055: danno cerebrale a %s — Intelligenza %d → %d (−%d)." % [
+		crew[key]["name"], old_int, new_int, roll])
+	# NB: gli altri Valori (Combattimento/Velocità/Porto) non sono memorizzati per
+	# personaggio, quindi il «tutti i Valori −1» resta narrativo per quei valori.
+	if new_int <= 2:
+		lose_vp(4, "¶055 ufficio perso (%s)" % crew[key]["name"])
+		add_log("¶055: %s non è più in grado di svolgere i suoi compiti (Int ≤ 2)." % crew[key]["name"])
+	state_updated.emit()
+
+# ¶058 — ceppi virali: follia dell'Ufficiale Scienze (GSO). Ignora se GSO assente o
+# nessuna superficie ancora visitata. Altrimenti: 1 dado sottratto all'Int del GSO →
+# tanti Punti Resistenza persi dagli altri; poi un altro dado instrada a 067/073/144.
+func _event_058() -> void:
+	if not _officer_aboard("GSO") or surfaces_visited <= 0:
+		add_log("¶058: Ufficiale Scienze assente o nessuna superficie visitata → ignorato.")
+		return
+	if manual_dice:
+		pending_event_para = 58
+		pending_die_purpose = "event_058"
+		awaiting_die_roll = true
+		message_posted.emit("¶058: tira un dado (sottratto all'Intelligenza dell'Ufficiale Scienze).")
+	else:
+		_resolve_058(randi_range(1, 6))
+
+func _resolve_058(roll: int) -> void:
+	var intel := character_intelligence("GSO")
+	var loss := maxi(0, intel - roll)
+	add_log("¶058: dado %d, Int Scienze %d → %d Punti Resistenza persi dagli altri." % [roll, intel, loss])
+	# Distribuisce la perdita di Resistenza tra gli ALTRI personaggi imbarcati (8.8).
+	for _i in range(loss):
+		var target := ""
+		var best_e := 0
+		for k in crew.keys():
+			if k == "GSO" or not crew[k].get("alive", false):
+				continue
+			var e: int = int(crew[k].get("endurance", 0))
+			if e > best_e:
+				best_e = e
+				target = k
+		if target == "":
+			break
+		crew[target]["endurance"] = maxi(0, int(crew[target]["endurance"]) - 1)
+		add_log("¶058: %s perde 1 Punto Resistenza (%d/%d)." % [
+			crew[target]["name"], crew[target]["endurance"], MAX_ENDURANCE])
+		if crew[target]["endurance"] <= 0 and crew[target].get("alive", false):
+			crew[target]["alive"] = false
+			lose_vp(10, "Personaggio ucciso: %s" % crew[target]["name"])
+			add_log("%s muore per la follia dell'Ufficiale Scienze." % crew[target]["name"])
+	state_updated.emit()
+	# Secondo dado: instrada al paragrafo di esito (la sua meccanica segue il libro-gioco).
+	var d2 := randi_range(1, 6)
+	var dest := 67 if d2 <= 3 else (73 if d2 <= 5 else 144)
+	add_log("¶058: secondo dado %d → ¶%03d." % [d2, dest])
+	show_paragraph(dest)
+
+# ¶061 — mercanti rinnegati: con l'Ufficiale Armi a bordo, due dadi contro la sua
+# Intelligenza. Se < Int → 1 Mese extra e fuga; altrimenti (o se assente) → ¶169.
+func _event_061() -> void:
+	if not _officer_aboard("WO"):
+		add_log("¶061: Ufficiale Armi assente → ¶169.")
+		show_paragraph(169)
+		return
+	if manual_dice:
+		pending_event_para = 61
+		pending_die_purpose = "event_061"
+		awaiting_die_roll = true
+		message_posted.emit("¶061: tira due dadi contro l'Intelligenza dell'Ufficiale Armi.")
+	else:
+		_resolve_061(randi_range(1, 6) + randi_range(1, 6))
+
+func _resolve_061(roll: int) -> void:
+	var intel := character_intelligence("WO")
+	if roll < intel:
+		_spend_tour_months(1, "¶061 fuga dai mercanti (%d < Int %d)" % [roll, intel])
+	else:
+		add_log("¶061: %d ≥ Int %d → ¶169." % [roll, intel])
+		show_paragraph(169)
+
+# ¶064 — vicinanza a Opoplo (esagono 14). Se la rotta del salto attuale entra nel 14
+# o in un esagono adiacente, la Pandora deve deviare verso Opoplo (¶076). Modelliamo
+# il rilevamento e il dirottamento; lo schieramento di superficie segue il libro-gioco.
+func _event_064() -> void:
+	if not _jump_near_opoplo():
+		add_log("¶064: la rotta non passa entro un esagono da Opoplo → nessun effetto.")
+		return
+	add_log("¶064: trasmissioni da Opoplo! La Pandora devia verso l'esagono 14.")
+	# Spesa di Tempo di Tour per adattare la rotta fino a Opoplo (5.0).
+	var extra := GameData.get_hex_distance(jump_dest_hex, 14)
+	if extra > 0:
+		_spend_tour_months(extra, "¶064 deviazione verso Opoplo")
+		if current_phase == Phase.GAME_OVER:
+			return
+	pandora_hex = 14
+	jump_dest_hex = 14
+	current_system = "Opoplo"
+	# La spedizione è piazzata nell'esagono 0817 e si procede al ¶076 (vedi paragrafo).
+	add_log("¶064: arrivati a Opoplo (esagono 14). Organizza la spedizione (¶076).")
+	enter_orbit()
+
+# Vero se la rotta del salto attuale (origine o destinazione) è l'esagono 14 (Opoplo)
+# o un esagono adiacente al 14.
+func _jump_near_opoplo() -> bool:
+	var near := [14]
+	for h in GameData.get_adjacency(14):
+		near.append(int(h) if not (h is int) else h)
+	return jump_dest_hex in near or jump_origin_hex in near
+
+# ¶080 — una creatura a bordo (a caso) si evolve. In base ai suoi Valori di
+# Intelligenza/Combattimento si dirama a 081/082/083/084.
+func _event_080() -> void:
+	if captured_creatures.is_empty():
+		add_log("¶080: nessuna creatura a bordo, nessun effetto.")
+		return
+	var idx := randi_range(0, captured_creatures.size() - 1)
+	var name: String = captured_creatures[idx]
+	var intel := _aboard_creature_rating(name, "intel")
+	var combat := _aboard_creature_rating(name, "combat")
+	add_log("¶080: la creatura %s si evolve (Int %d, Combat %d)." % [name, intel, combat])
+	if intel > 6:
+		show_paragraph(81)
+		_event_081()
+	elif combat > 7 and intel < 6:
+		show_paragraph(82)
+		_event_082()
+	elif (combat == 6 or combat == 7) and intel < 6:
+		show_paragraph(83)
+		_event_083(name)
+	else:
+		show_paragraph(84)
+		_event_084(name, intel, combat)
+
+# ¶081 — la creatura uccide tutti e prende la Pandora: fine del gioco.
+func _event_081() -> void:
+	add_log("¶081: la creatura prende il controllo della Pandora. Il gioco è finito.")
+	for k in crew.keys():
+		crew[k]["alive"] = false
+	set_phase(Phase.GAME_OVER)
+
+# ¶082 — la creatura distrugge la Pandora, uccidendo tutti: fine del gioco.
+func _event_082() -> void:
+	add_log("¶082: la Pandora è distrutta. Il gioco è finito.")
+	for k in crew.keys():
+		crew[k]["alive"] = false
+	set_phase(Phase.GAME_OVER)
+
+# ¶083 — la creatura e un terzo delle creature a bordo (a caso) sono distrutte.
+func _event_083(trigger: String) -> void:
+	captured_creatures.erase(trigger)
+	add_log("¶083: la creatura %s viene distrutta." % trigger)
+	var to_kill := captured_creatures.size() / 3  # divisione intera: un terzo
+	for _i in range(to_kill):
+		if captured_creatures.is_empty():
+			break
+		var j := randi_range(0, captured_creatures.size() - 1)
+		var dead: String = captured_creatures[j]
+		captured_creatures.remove_at(j)
+		add_log("¶083: anche %s viene distrutta." % dead)
+		var vp := GameData.creature_vp(dead)
+		if vp > 0:
+			lose_vp(vp, "¶083 creatura %s distrutta" % dead)
+	state_updated.emit()
+
+# ¶084 — la creatura vaga in cerca di carne umana. Due dadi vs max(Combat, Int):
+# ≥ valore → distrutta senza danni; < valore → la differenza è il numero di
+# personaggi (a caso) uccisi prima che venga distrutta.
+func _event_084(trigger: String, intel: int, combat: int) -> void:
+	captured_creatures.erase(trigger)
+	if manual_dice:
+		pending_event_para = 84
+		pending_die_purpose = "event_084"
+		# Memorizza il valore di confronto nel campo creature_rating (riutilizzato).
+		creature_rating = maxi(combat, intel)
+		awaiting_die_roll = true
+		message_posted.emit("¶084: tira due dadi contro il Valore %d della creatura." % creature_rating)
+	else:
+		_resolve_084(randi_range(1, 6) + randi_range(1, 6), maxi(combat, intel))
+
+func _resolve_084(roll: int, value: int) -> void:
+	if roll >= value:
+		add_log("¶084: %d ≥ %d → la creatura è distrutta senza fare danni." % [roll, value])
+		return
+	var kills := value - roll
+	add_log("¶084: %d < %d → %d personaggio/i ucciso/i." % [roll, value, kills])
+	for _i in range(kills):
+		var living: Array = []
+		for k in crew.keys():
+			if crew[k].get("alive", false):
+				living.append(k)
+		if living.is_empty():
+			break
+		var victim: String = living[randi_range(0, living.size() - 1)]
+		crew[victim]["alive"] = false
+		crew[victim]["endurance"] = 0
+		lose_vp(10, "Personaggio ucciso: %s" % crew[victim]["name"])
+		add_log("¶084: %s viene ucciso dalla creatura." % crew[victim]["name"])
+	state_updated.emit()
+
+# Risolve il tiro manuale in attesa per un paragrafo-evento interstellare (4.2).
+func resolve_event_die(die: int) -> void:
+	var para := pending_event_para
+	pending_event_para = 0
+	pending_die_purpose = ""
+	match para:
+		44: _resolve_044(die)
+		55: _resolve_055(die)
+		58: _resolve_058(die)
+		61: _resolve_061(die)
+		84: _resolve_084(die, creature_rating)
+		_:  pass
 
 # Ingresso in orbita: prepara gli attributi del pianeta e mostra il paragrafo
 # che lo descrive (Tabella Pianeti, 5.0). Il giocatore decide se esplorare.
@@ -454,6 +826,7 @@ func land_on_planet(die_result: int) -> void:
 			break
 
 	current_planet = current_system
+	surfaces_visited += 1  # una nuova superficie planetaria è stata visitata (per ¶058)
 	expedition_hours = 0
 	expedition_supply = shuttle_supply  # bring supplies from shuttle
 	shuttle_supply = 0

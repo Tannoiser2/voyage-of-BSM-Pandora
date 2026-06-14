@@ -13,8 +13,8 @@ prototipo Godot.
 
 | Stato | Conteggio |
 |---|---|
-| 🟢 Verde | 25 |
-| 🟡 Giallo | 25 |
+| 🟢 Verde | 26 |
+| 🟡 Giallo | 24 |
 | 🔴 Rosso | 8 |
 
 Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
@@ -56,11 +56,11 @@ paragrafi-evento**. Già coperti: **Rifornimento (7.0/7.1/7.2/7.3)**,
 |---|---|:--:|---|
 | 4.0 Proc. | Muovi esagono-per-esagono, costo Tour Time, **2 dadi ≤ esagoni (origine inclusa) → evento** | 🟢 | **Corretto in questa sessione**: gate di occorrenza 4.0 + tiro a 2 dadi. |
 | 4.1 | Display Interstellare | 🟢 | Mappa interstellare reale con movimento. |
-| 4.2 | Tabella Eventi Interstellari | 🟡 | Tabella ora **corretta** (2→080 … 12→064); ma gli **effetti interni** dei paragrafi-evento (mesi extra, morti casuali, controlli Intelligenza) non sono automatizzati. |
+| 4.2 | Tabella Eventi Interstellari | 🟢 | Tabella corretta (2→080 … 12→064) **e** effetti interni dei paragrafi-evento automatizzati (`_apply_interstellar_event_effect`): ¶001/046/047/049 mesi extra; ¶044/061 controllo Intelligenza con tiro (manuale o auto); ¶052 morte creatura catturata (−PV); ¶055 danno cerebrale (Int −1d6, ufficio perso); ¶058 follia Scienze (perdita Resistenza + ramo 067/073/144); ¶064 deviazione verso Opoplo; ¶080 creatura evoluta (rami 081/082/083/084). Restano narrativi i Valori non memorizzati per personaggio (Combattimento/Velocità/Porto al ¶055) e lo schieramento di superficie del ¶064/¶076. |
 | 4.3 | Tabella Pianeti | 🟢 | `enter_orbit` + `get_planet_paragraph`. |
 | 4.4 | Inizio/fine dal Pandora Entry Box | 🟡 | Flusso inizio/fine semplificato. |
 | 4.5 | Azioni di Bordo al ¶050 (riparazioni/cure/studio creature) | 🟡 | Riparazione/cura esistono come azioni di spedizione (6.9), non come azioni di bordo al ¶050; "studio creature" assente. |
-| 4.6 | Tour Time a zero → Tour superato | 🟡 | `_end_tour` presente; penalità per mesi oltre il Tour parziale. |
+| 4.6 | Tour Time a zero → Tour superato | 🟡 | `_end_tour` presente; i mesi extra degli eventi interstellari (4.2) sono spesi via `_spend_tour_months`, che chiude il Tour se i mesi si esauriscono. Resta parziale la penalità per i mesi oltre il Tour. |
 
 ## [5.0] Preparare una Spedizione
 | Caso | Regola | Stato | Nota |

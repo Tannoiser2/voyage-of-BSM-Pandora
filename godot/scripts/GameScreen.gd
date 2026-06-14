@@ -1723,7 +1723,11 @@ func _on_roll_dice() -> void:
 	# Il controllo (4.0) e l'evento (4.2) interstellari usano DUE dadi (2-12);
 	# gli altri tiri usano un dado solo.
 	var p: String = GameState.pending_die_purpose
-	var two_dice := GameState.awaiting_die_roll and (p == "interstellar_event" or p == "interstellar_check")
+	# Tiri a DUE dadi: controllo/evento interstellare (4.0/4.2) e gli eventi 4.2 che
+	# confrontano 2 dadi con un Valore di Intelligenza/creatura (¶044, ¶061, ¶084).
+	var two_dice := GameState.awaiting_die_roll and (
+		p == "interstellar_event" or p == "interstellar_check"
+		or p == "event_044" or p == "event_061" or p == "event_084")
 	var die := (randi_range(1, 6) + randi_range(1, 6)) if two_dice else randi_range(1, 6)
 	_set_dice_result(die)
 
@@ -1741,6 +1745,10 @@ func _on_roll_dice() -> void:
 				# Controllo del Rifornimento (7.2): risolve un controllo in coda e, se ne
 				# restano altri, richiede subito un nuovo tiro al giocatore (6.8 loop multiplo).
 				GameState.resolve_pending_supply_check(die)
+				return
+			"event_044", "event_055", "event_058", "event_061", "event_084":
+				# Tiro manuale per un paragrafo-evento interstellare in attesa (4.2).
+				GameState.resolve_event_die(die)
 				return
 
 func _set_dice_result(val: int) -> void:
