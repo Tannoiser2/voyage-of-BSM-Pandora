@@ -81,12 +81,12 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 | Stato | Conteggio | % |
 |---|---|---|
 | 🟢 Verde | 155 | 66,8% |
-| 🟡 Giallo | 40 | 17,2% |
-| 🔴 Rosso | 37 | 15,9% |
+| 🟡 Giallo | 43 | 18,5% |
+| 🔴 Rosso | 34 | 14,7% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 75,4%**
-( (155 + 40/2) / 232 ).
+come metà, l'indice di completezza è **≈ 76,1%**
+( (155 + 43/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 75,4%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **155** | **40** | **37** | **232** |
+| **Totale** | **155** | **43** | **34** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -272,7 +272,7 @@ come metà, l'indice di completezza è **≈ 75,4%**
 | 144 | evento-interstellare (esito) | 🟢 | morte dell'Ufficiale Scienze (PV) + 1 dado per Mesi di Tour (5-6=0); se Int Medico <=6 o assente, reinfezione di un altro membro -> ¶058 (guardia anti-ricorsione). Automatizzato. |
 | 145 | incontro-creatura (Erequito) | 🟡 | Creatura preparata; il filtro «solo unità più veloci possono combattere» non è imposto. |
 | 146 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cave / Hill+Light Veg+gravita): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
-| 147 | incontro-creatura (Promite, procedurale) | 🔴 | Perdite di Resistenza da sorpresa (con modificatori) e rimando a ¶212 non gestiti. |
+| 147 | procedurale (vermi-tunnel) | 🟡 | Se sorpresa: ogni personaggio perde 1 dado di Resistenza (−2 con SO, −2 con GSO), poi → ¶212. Caveat: armorig/enviorig per-personaggio approssimati (non modellati come oggetti). |
 | 148 | procedurale (atterraggio) | 🟢 | 2 dadi vs Int max a bordo: < Int → 5 Punti Danno; ≥ Int → 12 Punti Danno. Automatizzato. |
 | 149 | incontro-creatura (Bisape) | 🟡 | Sorpresa shift 1 sx (citata nel testo) non applicata; strategia offerta. |
 | 150 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/045/162 — Città Aliena / Cave+gravità / Solid Lava): salto al ramo giusto o ri-tiro Matrice. |
@@ -310,7 +310,7 @@ come metà, l'indice di completezza è **≈ 75,4%**
 | 177 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/007/149 — Città Aliena / Mountain+gravità / veg.+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 178 | procedurale (uovo si schiude) | 🔴 | Tiro 1d6 → ¶142/159/162 non gestito. |
 | 179 | incontro-creatura (Glosper) | 🟡 | Creatura preparata; uccisione da sorpresa e ramo Combatti→¶227 non gestiti. |
-| 180 | procedurale (incornata) | 🔴 | Perdita Resistenza (2 dadi, modificatori) poi rimando a ¶017 non gestiti. |
+| 180 | procedurale (incornata) | 🟡 | Personaggio a caso: 2 dadi di Resistenza (−3 Medico, −3 medkit), poi → ¶017; armorig annulla la perdita. Caveat: armorig per-personaggio approssimato; enviorig non modellato. |
 | 181 | incontro-creatura (Radrod, snodo) | 🟢 | Comunica: con il Neuroscan → ¶230; altrimenti → ¶016. Codificato (come ¶009). |
 | 182 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (shuttle non occupato (spedizione lontana) / Citta Aliena / Mountain-Cliffs+clima artico / atmosfera corrosiva): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
 | 183 | procedurale (combattimento pirati) | 🟢 | 1 dado: 1-3 pirati respinti (2 dadi Resistenza +1 Mese); 4-5 → ¶191; 6 → Pandora distrutta, gioco finito. Automatizzato. |
@@ -352,7 +352,7 @@ come metà, l'indice di completezza è **≈ 75,4%**
 | 214 | esito (creatura svanisce) | 🟢 | +3 con Holographer, +2 col neuroscanner. Automatizzato. |
 | 215 | procedurale (Garbrist combatte) | 🔴 | Danno a tutti i robot/strumenti, poi combattimento: non gestito. |
 | 216 | procedurale (Abomnid insegue) | 🔴 | Esito su rover/armorig o uccisione del più lento non automatizzato. |
-| 217 | procedurale (Glassman ostile) | 🔴 | Distruzione personaggio+robot e combattimento con mod +3 non gestiti. |
+| 217 | procedurale (Glassman ostile) | 🟡 | Distrugge un personaggio e un robot a caso, poi combattimento di uccisione (shift impostato per il +3). Caveat: modificatore di Combattimento approssimato come shift. |
 | 218 | procedurale (combattimento speciale) | 🔴 | Rilettura risultati col turbolaser o shift 2 sx non automatizzati. |
 | 219 | esito (fungo intelligente) | 🔴 | +3 PV neuroscanner/+2 Holographer e ore su dado non assegnati. |
 | 220 | incontro-creatura (Glassman fugge) | 🟡 | La logica «fuga su velocità o combatti» è simile a quella codificata altrove, ma per ¶220 non è in `paragraph_logic`: solo testo. |

@@ -2075,6 +2075,50 @@ func _apply_paragraph_effect(para: int) -> int:
 				if vc223 != "":
 					crew[vc223]["endurance"] = maxi(0, int(crew[vc223].get("endurance", 0)) - 2)
 					add_log("¶223: l'aeron colpisce %s di striscio: −2 Resistenza." % crew[vc223].get("name", vc223))
+		147:
+			if surprise_active and not _gear_has("Armorig"):
+				var sub := 0
+				if "SO" in expedition_units:
+					sub += 2
+				if "GSO" in expedition_units:
+					sub += 2
+				for k in expedition_units:
+					if crew.has(k) and crew[k].get("alive", false):
+						var loss := maxi(0, randi_range(1, 6) - sub)
+						if loss > 0:
+							crew[k]["endurance"] = maxi(0, int(crew[k]["endurance"]) - loss)
+							add_log("¶147: %s perde %d Resistenza (vermi-tunnel)." % [crew[k].get("name", k), loss])
+							if int(crew[k]["endurance"]) <= 0:
+								_kill_character(k)
+			redirect = 212
+		180:
+			var vic180 := _random_alive_char()
+			if vic180 != "" and not _gear_has("Armorig"):
+				var loss180 := randi_range(1, 6) + randi_range(1, 6)
+				if "MedO" in expedition_units:
+					loss180 -= 3
+				if _gear_has("Medkit"):
+					loss180 -= 3
+				loss180 = maxi(0, loss180)
+				crew[vic180]["endurance"] = maxi(0, int(crew[vic180]["endurance"]) - loss180)
+				add_log("¶180: %s incornato da uno sperone velenoso: −%d Resistenza." % [crew[vic180].get("name", vic180), loss180])
+				if int(crew[vic180]["endurance"]) <= 0:
+					_kill_character(vic180)
+			redirect = 17
+		217:
+			var vc217 := _random_alive_char()
+			if vc217 != "":
+				_kill_character(vc217)
+			var bots217 := _functioning_bots()
+			if not bots217.is_empty():
+				var b217: String = bots217[randi_range(0, bots217.size() - 1)]
+				expedition_gear.erase(b217)
+				expedition_units.erase(b217)
+				if not damaged_gear.has(b217):
+					damaged_gear.append(b217)
+				add_log("¶217: il Glassman ostile distrugge %s." % GameData.get_unit(b217).get("name", b217))
+			pending_combat_shift = 2
+			add_log("¶217: combattimento di uccisione contro il Glassman (modificatore di Combattimento +3).")
 		_:
 			applied = false
 	if applied:
