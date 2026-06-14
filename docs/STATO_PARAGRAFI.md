@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 175 | 75,4% |
-| 🟡 Giallo | 48 | 20,7% |
-| 🔴 Rosso | 9 | 3,9% |
+| 🟢 Verde | 177 | 76,3% |
+| 🟡 Giallo | 55 | 23,7% |
+| 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 85,8%**
-( (175 + 48/2) / 232 ).
+come metà, l'indice di completezza è **≈ 88,1%**
+( (177 + 55/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 85,8%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **175** | **48** | **9** | **232** |
+| **Totale** | **177** | **55** | **0** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -150,15 +150,15 @@ come metà, l'indice di completezza è **≈ 85,8%**
 | 032 | procedurale (sisma) | 🟢 | Scossa sismica: 2 dadi di Punti Danno (1 dado se tutti con armorig). Automatizzato. |
 | 033 | incontro-creatura (Florist) | 🟡 | Creatura preparata; il divieto di «Comunica» non è imposto dalla UI. |
 | 034 | scelta (delegazione aliena) | 🟢 | Bottoni di scelta: Comunica → ¶195, Combatti → ¶199, Fuggi → ¶204. UI a scelte. |
-| 035 | incontro-creatura (Curder) | 🔴 | Condizione enviorig/armorig→tabella o ¶209, e «2 E-cage» non gestite. |
+| 035 | incontro-creatura (Curder) | 🟡 | Comunica/Combatti: senza armorig → ¶209 (altrimenti incontro normale). Caveat: «tutti enviorig/armorig» approssimato come presenza di armorig. |
 | 036 | procedurale (scultura) | 🟢 | La scultura è acquisibile come artefatto (pulsante «Raccogli», peso 3) con i PV registrati al rientro sulla Pandora; il flusso «scegli un'altra azione» è ok. |
 | 037 | incontro-creatura (Snoup) | 🟡 | Creatura preparata; lo svanire + ricerca con scanner (¶020) o fuga non è automatizzato. |
 | 038 | procedurale (vulcano) | 🟢 | Eruzione: −12 Punti Resistenza (−6 da soli robot/strumenti se tutti armorig); rover danneggiato se presente. Automatizzato. |
-| 039 | incontro-creatura (Allidon) | 🔴 | «Qualsiasi strategia» con tiro 1d6→tabella poi ¶197/¶205 non gestito. |
+| 039 | incontro-creatura (Allidon) | 🟡 | 1 dado: 5-6 → ¶205; 1-4 incontro normale. Caveat: il rimando «poi → ¶197» dopo la risoluzione non è agganciato. |
 | 040 | procedurale (rettiliani) | 🟢 | Rettiliani amichevoli: +5 ore, +PV pari all'Intelligenza del comandante (se presente). Automatizzato. |
 | 041 | incontro-creatura (Abomnid) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo Fuga (¶216) usa il rimando. |
 | 042 | procedurale (uovo) | 🟡 | L'uovo è acquisibile come artefatto (PV al rientro); il tiro 1d6 al momento del trasporto (1-2 ok / 3-4 → ¶178 / 5-6 → ¶205) non è ancora gestito. |
-| 043 | incontro-creatura (Crusher) | 🔴 | Restrizione armi (solo armorig/specibot/turbolaser), distruzione robot, «2 E-cage» non gestite. |
+| 043 | incontro-creatura (Crusher) | 🟡 | Un robot a caso è polverizzato all'intro, poi incontro normale. Caveat: la restrizione dei valori di combattimento (solo armorig/specibot/turbolaser) non è modellata. |
 | 044 | evento-interstellare | 🟢 | sforzo FTL: 2 dadi vs Int Manutenzione -> Mesi di Tour. Automatizzato. |
 | 045 | incontro-creatura (Armeetle) | 🟡 | Creatura preparata; inefficacia di stunbomb/reconbot/specibot e fuga «2 ore» non gestite. |
 | 046 | evento-interstellare | 🟢 | brillamenti stellari: +1 Mese di Tour. Automatizzato. |
@@ -196,7 +196,7 @@ come metà, l'indice di completezza è **≈ 85,8%**
 | 073 | evento-interstellare (esito) | 🟢 | cura: 2 dadi vs Int Medico -> guarigione, oppure Ufficiale Scienze in animazione sospesa (Resistenza persa, inutilizzabile). Automatizzato. |
 | 074 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/009/057 — Città Aliena / Flat+gravità / Cave): salto al ramo giusto o ri-tiro Matrice. |
 | 075 | incontro-creatura (Aquan) | 🟡 | Sorpresa+strategia gestite; il ramo «Comunica → dona larva → ¶208» non automatizzato. |
-| 076 | atterraggio speciale (Opoplo) | 🔴 | Vincoli speciali (strutture sottoterra 0715/1016, non lasciare l'area finché non esplorate) non gestiti. |
+| 076 | atterraggio speciale (Opoplo) | 🟡 | Schiera ed esplora; clima temperato applicato. Caveat: struttura aliena sottoterra (0715/1016) e vincolo «non lasciare l'area» restano narrativi. |
 | 077 | incontro-creatura (Garbrist, snodo) | 🟢 | Comunica: col neuroscanner → ¶211, altrimenti → ¶016; Combatti → ¶215. Codificato (paragraph_logic). |
 | 078 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶009/009/005 — Città Aliena / Flat+clima tropicale / Marsh-Pond-River+clima): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 079 | incontro-creatura (Sholf) | 🟢 | Intro «orso»: sola scelta strategia, nessun effetto extra; gestito dal motore. |
@@ -293,7 +293,7 @@ come metà, l'indice di completezza è **≈ 85,8%**
 | 160 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/060/153 — Città Aliena / Flat+veg.+gravità / atmosfera+clima sahariano): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 161 | scelta (insetti bipedi) | 🟢 | Bottoni di scelta: Comunica → ¶222, Combatti → ¶125 (fuga impossibile). UI a scelte. |
 | 162 | incontro-creatura (Draloid, snodo) | 🟢 | Sorpresa → ¶226. Non sorpresa: se l'Ufficiale rilevamento terrestre (GSO) è assente, 2 dadi vs Int max spedizione (≥ → ¶226). Codificato (effetto-intro). |
-| 163 | procedurale (shuttle divorato) | 🔴 | Vincolo temporale «torna allo shuttle prima del controllo» e perdita shuttle→¶050 non gestiti. |
+| 163 | procedurale (shuttle divorato) | 🟡 | Se si torna allo shuttle prima del prossimo Controllo del Rifornimento gli insetti sono respinti; altrimenti shuttle divorato → ¶050. Caveat: il timing non è modellato. |
 | 164 | scelta (vetta viva) | 🟢 | Bottoni con tiro: Comunica (1d6 1-4→¶214/5-6→¶221), Combatti (1d6 1-2→¶218/3-4→¶221/5-6 svanisce), Fuga → ¶221. UI a scelte. |
 | 165 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/151 — Città Aliena / Light Veg.+gravità / Hill+idrografia): salto al ramo giusto o ri-tiro Matrice. |
 | 166 | procedurale (gravità) | 🟡 | Caduta per gravità: 2 dadi di Punti Danno (1 se GSO o Reconbot presente), applicati prima al rover. Resta non modellata la clausola enviorig (danno a Resistenza vs rifornimento). |
@@ -338,10 +338,10 @@ come metà, l'indice di completezza è **≈ 85,8%**
 |---|---|---|---|
 | 201 | snodo-di-flusso (avvio) | 🟢 | Avvio del viaggio: il motore avvia tour, mappa interstellare e tabella pianeti. Fedele. |
 | 202 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+gravita / lava fluente adiacente+clima sahariano): lava fluente = esagono adiacente Solid Lava+Liquid Surface (vicinato 6.7). |
-| 203 | procedurale (pirati: tributo) | 🔴 | Cessione robot/strumenti o ¶183 non automatizzata. |
+| 203 | procedurale (pirati: tributo) | 🟢 | Scelta: cedi un robot/strumento di ogni tipo (i pirati se ne vanno) oppure rifiuta → ¶183. UI a scelte. |
 | 204 | procedurale (fuga alieni) | 🟢 | 1 dado: 1 +5 PV; 2-3 rover distrutto →¶195; 4-5 imprigionati 1 Mese, rifornimenti confiscati +5 PV; 6→¶210. Automatizzato. |
 | 205 | esito-strategia (modificatore) | 🟡 | «Aggressività auto +2, ritira sulla tabella 8.2»: il motore ha la tabella 8.2 ma non applica questa correzione né il rimando-incontro. |
-| 206 | procedurale (combattimento Unithalo) | 🔴 | Combattimento a due round con risultati riletti non automatizzato. |
+| 206 | procedurale (combattimento Unithalo) | 🟡 | Combattimento a 2 round con risultati riletti (¶072 vi instrada). Caveat: il dettaglio dei 2 round e l'aumento del Valore di Combattimento non sono modellati (combattimento normale). |
 | 207 | esito (orchidea, senza pedina) | 🟢 | Orchidea raccolta: +3 PV, poi 1 dado (4-6 → ¶033). Automatizzato. |
 | 208 | incontro-creatura (Reeler) | 🟢 | Con l'Ufficiale Scienze la larva è riportata in salvo (+2 PV); altrimenti 1 dado: 1-3 muore, 4-6 si trasforma e si combatte. Codificato (intro). |
 | 209 | procedurale (infezione germe) | 🟢 | Personaggio a caso: −2 Resistenza subito e −1 a ogni Controllo del Rifornimento (salvo Ufficiale Medico presente), curato al rientro. Automatizzato. |
@@ -357,10 +357,10 @@ come metà, l'indice di completezza è **≈ 85,8%**
 | 219 | esito (fungo intelligente) | 🟢 | +3 col neuroscanner, +2 con Holographer; 1 dado di ore spese. Automatizzato. |
 | 220 | incontro-creatura (Glassman fugge) | 🟡 | La logica «fuga su velocità o combatti» è simile a quella codificata altrove, ma per ¶220 non è in `paragraph_logic`: solo testo. |
 | 221 | procedurale (campo psionico) | 🟢 | Campo psionico: 1 dado di ore di incoscienza; Intelligenza di ogni personaggio ridotta permanentemente a 6 (se superiore). Automatizzato. |
-| 222 | esito (insetti senzienti) | 🔴 | Check Aggressività con PV variabili e diramazione ¶231/¶225 non gestiti. |
+| 222 | esito (gruppo creature) | 🟢 | Valore di Aggressività (tiro): ≤4 → +4 PV e ¶231; 5-8 → +PV (Int comandante o 4, +1 neuroscan, +1 Holographer); ≥9 → ¶225. Automatizzato. |
 | 223 | procedurale (aeron) | 🟢 | L'aeron afferra un robot a caso (rimosso); se nessun robot, un personaggio a caso perde 2 Resistenza. Automatizzato. |
 | 224 | procedurale (veleno fungo) | 🟢 | Personaggio investigatore avvelenato: −3 Resistenza a ogni Controllo del Rifornimento (−2 con Medico o medkit, −1 con entrambi), curato al rientro; armorig annulla. Automatizzato. |
-| 225 | procedurale (combattimento gruppo) | 🔴 | Somma Valori di Combattimento e regole speciali risultato «E» non automatizzate. |
+| 225 | procedurale (combattimento gruppo) | 🟡 | Esito riassunto: +5 PV e → ¶231. Caveat: il combattimento col valore combinato e il risultato «E» a 12 danni non sono modellati nel dettaglio. |
 | 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
 | 227 | procedurale (combattimento speciale) | 🟢 | Sui risultati C/D/E (EX/DR/DE) un personaggio a caso è fatto a pezzi prima di applicare il risultato. Hook kill_on nel motore di combattimento. |
 | 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |

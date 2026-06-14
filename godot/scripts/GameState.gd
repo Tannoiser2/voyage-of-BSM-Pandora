@@ -2303,6 +2303,25 @@ func _apply_paragraph_effect(para: int) -> int:
 		227:
 			pending_combat_kill_on = ["EX", "DR", "DE"]
 			add_log("¶227: combattimento col glosper — sui risultati C/D/E un personaggio a caso è fatto a pezzi; conduci il combattimento.")
+		222:
+			var aggr := int(RATING_TABLE.get(clampi(randi_range(1, 6) + randi_range(1, 6), 2, 11), 9))
+			if aggr <= 4:
+				gain_vp(4, "¶222 le creature se ne vanno in pace")
+				redirect = 231
+			elif aggr <= 8:
+				var v222 := character_intelligence("CO") if ("CO" in expedition_units) else 4
+				if _gear_has("Neuroscan"):
+					v222 += 1
+				if _gear_has("Holographer"):
+					v222 += 1
+				gain_vp(v222, "¶222 comunicazione con le creature")
+			else:
+				redirect = 225
+		225:
+			# Combattimento di gruppo (valore combinato): qui se ne riassume l'esito
+			# (sopravvivenza +5 PV) e si prosegue al ¶231.
+			gain_vp(5, "¶225 sopravvissuti al combattimento di gruppo")
+			redirect = 231
 		_:
 			applied = false
 	if applied:
@@ -2369,6 +2388,23 @@ func _apply_creature_intro(para: int) -> void:
 				_clear_encounter_state()
 			else:
 				add_log("¶208: la forma larvale si trasforma in una creatura mortale simile a una manta!")
+		43:
+			# Mostruosità al silicio (Crusher): un robot a caso viene polverizzato, poi
+			# l'incontro si risolve normalmente.
+			var bots43 := _functioning_bots()
+			if not bots43.is_empty():
+				var b43: String = bots43[randi_range(0, bots43.size() - 1)]
+				expedition_gear.erase(b43)
+				expedition_units.erase(b43)
+				if not damaged_gear.has(b43):
+					damaged_gear.append(b43)
+				add_log("¶043: la mostruosità al silicio polverizza %s." % GameData.get_unit(b43).get("name", b43))
+		39:
+			# Anfibio di palude (Allidon): 1 dado, 5-6 → ¶205; 1-4 incontro normale.
+			if randi_range(1, 6) >= 5:
+				add_log("¶039: la bestia reagisce male → ¶205.")
+				_clear_encounter_state()
+				pending_goto = 205
 
 # Risolve una scelta-paragrafo cliccata dal giocatore (override paragraph_choices.json):
 # goto diretto, tiro→goto, condizione speciale, oppure «lascia stare».
@@ -2402,6 +2438,16 @@ func resolve_paragraph_choice(act: Dictionary) -> void:
 				show_paragraph(219)
 			else:
 				show_paragraph(224)
+		"give_tribute_203":
+			# ¶203: si cede ai pirati uno di ogni tipo di robot e strumento; se ne vanno.
+			for g in expedition_gear.duplicate():
+				if not (g in ["Rover", "Armorig", "Enviorig"]):
+					expedition_gear.erase(g)
+					if not damaged_gear.has(g):
+						damaged_gear.append(g)
+			add_log("¶203: si cede ai pirati uno di ogni tipo di robot e strumento; i pirati se ne vanno.")
+			encounter_outcome_text = "I pirati se ne vanno con il tributo. Procedi (Tabella Pianeti)."
+			choices_resolved.emit()
 		_:
 			encounter_outcome_text = "Scegli un'azione di spedizione."
 			choices_resolved.emit()

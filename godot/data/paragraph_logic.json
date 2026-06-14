@@ -799,5 +799,43 @@
     "para": 206
    }
   }
+ ],
+ "035": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ],
+    [
+     "has_gear",
+     "!=",
+     "Armorig"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 209
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ],
+    [
+     "has_gear",
+     "!=",
+     "Armorig"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 209
+   }
+  }
  ]
 }
