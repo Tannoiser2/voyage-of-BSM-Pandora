@@ -71,6 +71,22 @@ var expedition_gear: Array = []            # chiavi di robot/strumenti imbarcati
 var damaged_gear: Array = []               # chiavi di robot/strumenti danneggiati (6.9)
 var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
 
+# Traccia Tempo e Rifornimento (6.8 / 7.0): la posizione avanza con le ore di
+# spedizione spese; quando raggiunge/supera lo «spazio di controllo» della gravità
+# si esegue un Controllo del Rifornimento (7.1/7.2) e la posizione si azzera.
+var supply_track_pos: int = 0
+# Spazio del Controllo del Rifornimento per gravità (regola 6.8, valori dei componenti).
+const SUPPLY_CHECK_SPACE := {
+	"Oppressive": 6,
+	"Heavy": 12,
+	"Earth like": 16,
+	"Light": 22,
+	"Near weightless": 30
+}
+# Controlli del rifornimento ancora da risolvere quando i tiri sono manuali: ogni
+# elemento è un singolo controllo in attesa del dado del giocatore (vedi 7.2).
+var pending_supply_checks: int = 0
+
 # Combattimento / incontri
 var current_creature: String = ""
 var creature_rating: int = 0          # valutazione della creatura per l'esagono (8.4)
@@ -118,6 +134,8 @@ func start_new_game(p_tour_length: int) -> void:
 	planet_attrs = {}
 	planet_gravity = "Earth like"
 	shuttle_capacity = 80
+	supply_track_pos = 0
+	pending_supply_checks = 0
 	reset_expedition_state()
 	for k in crew:
 		crew[k]["alive"] = true
@@ -182,6 +200,7 @@ func save_game(silent := false) -> bool:
 		"shuttle_capacity": shuttle_capacity, "expedition_units": expedition_units,
 		"expedition_gear": expedition_gear, "damaged_gear": damaged_gear,
 		"planned_supply": planned_supply,
+		"supply_track_pos": supply_track_pos, "pending_supply_checks": pending_supply_checks,
 		"current_creature": current_creature, "creature_rating": creature_rating,
 		"damage_points": damage_points, "captured_creatures": captured_creatures,
 		"creature_attr_cache": creature_attr_cache,
@@ -252,6 +271,8 @@ func load_game() -> bool:
 	expedition_gear = d.get("expedition_gear", [])
 	damaged_gear = d.get("damaged_gear", [])
 	planned_supply = int(d.get("planned_supply", 6))
+	supply_track_pos = int(d.get("supply_track_pos", 0))
+	pending_supply_checks = int(d.get("pending_supply_checks", 0))
 	current_creature = str(d.get("current_creature", ""))
 	creature_rating = int(d.get("creature_rating", 0))
 	damage_points = int(d.get("damage_points", 0))
@@ -491,10 +512,39 @@ func toggle_gear_unit(key: String) -> void:
 		expedition_gear.append(key)
 	planned_supply = clampi(planned_supply, 0, max_planned_supply())
 
+# --- Equipaggiamento d'atmosfera (regola 5.2) --------------------------------
+
+# Statistica EFFICACE di un personaggio (weight/speed/port) coi modificatori
+# dell'equipaggiamento d'atmosfera del pianeta in orbita (5.2):
+#  - Thin (rarefatta): respiratore → Porto −1.
+#  - Poison (velenosa): enviorig → Peso +4, Velocità −1 (uniforme, dai segnalini).
+#  - Corrosive (corrosiva): armorig → Peso +4, Porto −1 (richiesto; si assume indossato).
+# Normal/None: nessun modificatore (None trattato come Normal: nessuna regola lo
+# distingue qui).
+func effective_char_stat(key: String, stat: String) -> int:
+	var c := GameData.get_character(key)
+	var base := int(c.get(stat, 0))
+	var atmo := str(planet_attrs.get("atmosphere", "Normal"))
+	match atmo:
+		"Thin":
+			if stat == "port":
+				base -= 1
+		"Poison":
+			if stat == "weight":
+				base += 4
+			elif stat == "speed":
+				base -= 1
+		"Corrosive":
+			if stat == "weight":
+				base += 4
+			elif stat == "port":
+				base -= 1
+	return base
+
 func units_weight() -> int:
 	var w := 0
 	for k in expedition_units:
-		w += int(GameData.get_character(k).get("weight", 6))
+		w += effective_char_stat(k, "weight")  # peso efficace coi rig d'atmosfera (5.2)
 	for k in expedition_gear:
 		w += int(GameData.get_unit(k).get("weight", 0))
 	return w
@@ -744,13 +794,13 @@ func creature_attr(attr: String) -> int:
 func expedition_max_speed() -> int:
 	var best := 0
 	for k in expedition_units:
-		best = maxi(best, int(GameData.get_character(k).get("speed", 0)))
+		best = maxi(best, effective_char_stat(k, "speed"))  # velocità efficace (5.2)
 	return best
 
 func expedition_min_speed() -> int:
 	var worst := 99
 	for k in expedition_units:
-		worst = mini(worst, int(GameData.get_character(k).get("speed", 99)))
+		worst = mini(worst, effective_char_stat(k, "speed"))  # velocità efficace (5.2)
 	return worst if worst < 99 else 0
 
 # --- Interprete dei rami dei paragrafi d'incontro (8.2/8.5) -------------------
@@ -991,9 +1041,120 @@ func lose_vp(amount: int, reason: String) -> void:
 
 func add_expedition_hours(h: int) -> void:
 	expedition_hours += h
+	# Traccia Tempo e Rifornimento (6.8): la posizione avanza delle ore spese; ogni
+	# volta che raggiunge/supera lo spazio di controllo si esegue un Controllo del
+	# Rifornimento (7.0) e la posizione si azzera, continuando con le ore residue.
+	# Una grande spesa può innescare più controlli (in particolare con gravità
+	# opprimente): si ripete finché tutte le ore sono collocate.
+	if h > 0 and expedition_pos > 0:
+		_advance_supply_track(h)
 	state_updated.emit()
 	if expedition_hours >= 12:
 		add_log("ATTENZIONE: 12+ ore di spedizione! Tornare allo shuttle!")
+
+# --- Traccia Tempo e Rifornimento (6.8 / 7.0) --------------------------------
+
+# Spazio del Controllo del Rifornimento per la gravità del pianeta in orbita (6.8).
+func supply_check_space() -> int:
+	var g := str(planet_attrs.get("gravity", planet_gravity))
+	return int(SUPPLY_CHECK_SPACE.get(g, 16))
+
+# Fa avanzare la posizione sulla Traccia delle ore indicate, innescando un Controllo
+# del Rifornimento ogni volta che si raggiunge/supera lo spazio di controllo (6.8).
+func _advance_supply_track(h: int) -> void:
+	var space := supply_check_space()
+	supply_track_pos += h
+	# Ciclo: ogni volta che la posizione raggiunge/supera lo spazio si esegue un
+	# controllo e si azzera la posizione, conservando le ore residue (loop multiplo).
+	while supply_track_pos >= space:
+		supply_track_pos -= space
+		_request_supply_check()
+
+# Avvia un Controllo del Rifornimento (7.2): col dado automatico lo risolve subito,
+# coi tiri manuali lo mette in coda e attende il dado del giocatore (GameScreen).
+func _request_supply_check() -> void:
+	if manual_dice:
+		pending_supply_checks += 1
+		# Se non c'è già un altro tiro in attesa, chiede al giocatore di tirare.
+		if not awaiting_die_roll:
+			pending_die_purpose = "supply_check"
+			awaiting_die_roll = true
+			message_posted.emit("Controllo del Rifornimento (7.2): tira un dado.")
+	else:
+		resolve_supply_check(randi_range(1, 6))
+
+# Risolve un Controllo del Rifornimento in coda col dado del giocatore (tiri manuali):
+# scala la coda e, se restano altri controlli, ri-arma la richiesta del dado (6.8).
+func resolve_pending_supply_check(die: int) -> void:
+	if pending_supply_checks > 0:
+		pending_supply_checks -= 1
+	resolve_supply_check(die)
+	if pending_supply_checks > 0:
+		pending_die_purpose = "supply_check"
+		awaiting_die_roll = true
+		message_posted.emit("Controllo del Rifornimento (7.2): tira un dado.")
+	else:
+		pending_die_purpose = ""
+
+# Controllo del Rifornimento (regola 7.2): un unico dado applicato a due calcoli.
+# 1) floor(Totale Utenti / dado) Punti Rifornimento spesi — al massimo 4.
+# 2) somma = Valore Supporto Vitale (lsv) + Modificatori di Rifornimento del terreno
+#    dell'esagono occupato; se > 0, floor(somma / dado) Punti aggiuntivi — al massimo 4.
+# Il totale viene speso dai Rifornimenti; l'eventuale ammanco è pagato in Resistenza (7.3).
+func resolve_supply_check(die: int) -> void:
+	if die <= 0:
+		die = 1
+	var users := supply_user_total()
+	var calc1 := mini(int(users / die), 4)
+	var lsv := int(planet_attrs.get("lsv", 0))
+	var cell: Dictionary = environ_grid.get(expedition_pos, {})
+	var terr_supply := int(GameData.terrain_effect(cell.get("terrain", "Open")).get("supply", 0))
+	var summ := lsv + terr_supply
+	var calc2 := mini(int(summ / die), 4) if summ > 0 else 0
+	var total := calc1 + calc2
+	add_log("Controllo Rifornimento (7.2): dado %d · Utenti %d → %d · (LSV %d + terreno %d = %d) → %d · totale %d." % [
+		die, users, calc1, lsv, terr_supply, summ, calc2, total])
+	_expend_supply(total)
+	state_updated.emit()
+
+# Totale degli Utenti di Rifornimento della spedizione (regola 7.1):
+# ogni personaggio conta DUE volte; ogni robot in spedizione (non sullo shuttle)
+# UNA volta; ogni strumento con simbolo di rifornimento UNA volta; il Rover conta
+# DOPPIO se la spedizione lo usa. Robot/strumenti danneggiati e creature catturate
+# non contano.
+# NB: i dati non hanno un flag «simbolo di rifornimento» per strumento, quindi si
+# contano una volta tutti gli strumenti non danneggiati (assunzione documentata).
+func supply_user_total() -> int:
+	var total := 0
+	for k in expedition_units:
+		if crew.get(k, {}).get("alive", false):
+			total += 2  # personaggio: doppio (7.1)
+	for k in expedition_gear:
+		if k in damaged_gear:
+			continue  # danneggiati non contano (7.1)
+		if k == "Rover":
+			total += 2  # il Rover conta doppio se in uso (7.1)
+		elif _gear_is_bot(k):
+			total += 1  # robot in spedizione: singolo (7.1)
+		else:
+			total += 1  # strumento (assunzione: tutti col simbolo di rifornimento)
+	return total
+
+# Spende i Punti Rifornimento del Controllo; l'eventuale ammanco diventa Punti
+# Resistenza tramite il consueto percorso di danno (7.3 / 8.8): 1 Punto = 1 Resistenza.
+func _expend_supply(points: int) -> void:
+	if points <= 0:
+		return
+	if expedition_supply >= points:
+		expedition_supply -= points
+		add_log("Spesi %d Punti Rifornimento (rimasti %d)." % [points, expedition_supply])
+	else:
+		var short := points - expedition_supply
+		if expedition_supply > 0:
+			add_log("Spesi %d Punti Rifornimento: rifornimenti esauriti." % expedition_supply)
+		expedition_supply = 0
+		add_log("Rifornimenti insufficienti (7.3): %d Punti pagati in Resistenza." % short)
+		_apply_damage(short)
 
 func use_expedition_supply(amount: int) -> bool:
 	if expedition_supply >= amount:
@@ -1015,6 +1176,9 @@ func reset_expedition_state() -> void:
 	current_environ_id = 0
 	hasty_path_terrains = []
 	_expedition_reroll_depth = 0
+	# La Traccia Tempo e Rifornimento (6.8) riparte da capo a ogni nuova spedizione.
+	supply_track_pos = 0
+	pending_supply_checks = 0
 
 # --- Superficie planetaria (environ) -----------------------------------------
 
@@ -1243,7 +1407,10 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 	add_expedition_hours(explore_cost)
 	add_log("Esplorazione di %s — %d ore%s." % [
 		_terrain_it(terrain), explore_cost, _gear_cost_note(terrain)])
-	_consume_supply_for(terrain)
+	# Il consumo di rifornimenti non è più legato direttamente al terreno: avviene
+	# tramite il Controllo del Rifornimento (7.0), innescato dalle ore sulla Traccia
+	# Tempo (6.8) in add_expedition_hours; il Modificatore di Rifornimento del terreno
+	# alimenta il calcolo 2 del controllo (7.2), non aggiunge/toglie scorte direttamente.
 	environ_changed.emit()
 	# Esplorazione subordinata al libro-gioco (6.4): Matrice di Esplorazione reale.
 	# Si tira il 1° dado (colonna) e il 2° dado (riga) → paragrafo dell'incontro.
@@ -1291,26 +1458,6 @@ func _gear_cost_note(terrain: String) -> String:
 	if _gear_has("Rover") and int(GameData.terrain_effect(terrain).get("enter_rover", 0)) > 0:
 		parts.append("Rover")
 	return "" if parts.is_empty() else " (" + ", ".join(parts) + ")"
-
-# --- Controllo dei rifornimenti (regola 7.2) ---------------------------------
-
-# Esplorare un esagono consuma (o, su terreni fertili, fornisce) Rifornimenti.
-func _consume_supply_for(terrain: String) -> void:
-	var cost := int(GameData.terrain_effect(terrain).get("supply", 0))
-	if cost < 0:
-		# Terreno fertile: rifornimento, fino al massimo trasportabile
-		expedition_supply = mini(expedition_supply - cost, GameData.max_supply())
-		add_log("Il terreno fornisce %d Rifornimenti (totale %d)." % [-cost, expedition_supply])
-	elif cost > 0:
-		if expedition_supply >= cost:
-			expedition_supply -= cost
-			add_log("Consumo di %d Rifornimenti (rimasti %d)." % [cost, expedition_supply])
-		else:
-			var short := cost - expedition_supply
-			expedition_supply = 0
-			add_log("Rifornimenti esauriti (7.2): %d Punti Danno per gli stenti." % short)
-			_apply_damage(short)
-	state_updated.emit()
 
 # --- Equipaggiamento danneggiato e riparazioni (regola 6.9) ------------------
 

@@ -1434,9 +1434,13 @@ func _refresh_prep_panel() -> void:
 			continue
 		var u := GameData.get_character(k)
 		chk.button_pressed = k in GameState.expedition_units
+		# Peso/Porto/Velocità EFFICACI: includono i modificatori dell'equipaggiamento
+		# d'atmosfera del pianeta in orbita (rig/respiratore, regola 5.2).
 		chk.text = "%s — Catt %d / Ucc %d · Peso %d · Porto %d · Vel %d" % [
 			u.get("name", k), u.get("capture", 0), u.get("kill", 0),
-			u.get("weight", 0), u.get("port", 0), u.get("speed", 0)]
+			GameState.effective_char_stat(k, "weight"),
+			GameState.effective_char_stat(k, "port"),
+			GameState.effective_char_stat(k, "speed")]
 		chk.disabled = not GameState.crew.get(k, {}).get("alive", true)
 	# Robot e strumenti imbarcabili (caselle-segnalino)
 	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
@@ -1732,6 +1736,12 @@ func _on_roll_dice() -> void:
 				GameState.resolve_interstellar_event(die)
 			"landing":
 				GameState.land_on_planet(die)
+				return
+			"supply_check":
+				# Controllo del Rifornimento (7.2): risolve un controllo in coda e, se ne
+				# restano altri, richiede subito un nuovo tiro al giocatore (6.8 loop multiplo).
+				GameState.resolve_pending_supply_check(die)
+				return
 
 func _set_dice_result(val: int) -> void:
 	var lbl := find_child("DiceResult", true, false) as Label

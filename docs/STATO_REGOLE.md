@@ -13,15 +13,16 @@ prototipo Godot.
 
 | Stato | Conteggio |
 |---|---|
-| 🟢 Verde | 19 |
-| 🟡 Giallo | 26 |
-| 🔴 Rosso | 13 |
+| 🟢 Verde | 23 |
+| 🟡 Giallo | 24 |
+| 🔴 Rosso | 11 |
 
 Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
 matrice di esplorazione → incontro creatura → combattimento) **solido**. I buchi
-principali: **Rifornimento (7.0)**, **Valore Intelligenza personaggi (3.3)**,
-**equipaggiamento d'atmosfera (5.2)**, **snodi "Incontro di spedizione" (6.5)**,
-**artefatti (2.6/9.1)** ed **effetti interni dei paragrafi-evento**.
+principali rimasti: **artefatti (2.6/9.1)** ed **effetti interni dei
+paragrafi-evento**. Già coperti: **Rifornimento (7.0/7.1/7.2/7.3)**,
+**Valore Intelligenza personaggi (3.3)**, **equipaggiamento d'atmosfera (5.2)**,
+**snodi "Incontro di spedizione" (6.5)**.
 
 ---
 
@@ -65,13 +66,13 @@ principali: **Rifornimento (7.0)**, **Valore Intelligenza personaggi (3.3)**,
 | Caso | Regola | Stato | Nota |
 |---|---|:--:|---|
 | 5.1 | Marcatori sulla Traccia Attributi Pianeta/Environ | 🟢 | `setup_orbit_planet`, `planet_attrs`. |
-| 5.2 | Scelta unità + **enviorig/armorig per atmosfera** | 🟡 | Scelta unità OK; **obbligo enviorig/armorig** (atmosfere velenose/corrosive) **non modellato**. |
+| 5.2 | Scelta unità + **enviorig/armorig per atmosfera** | 🟢 | Scelta unità OK; equipaggiamento d'atmosfera applicato in `effective_char_stat`: Thin → Porto −1; Poison (enviorig) → Peso +4, Velocità −1; Corrosive (armorig) → Peso +4, Porto −1 (auto-indossato). Peso/Velocità efficaci instradano in `units_weight`/`expedition_max_speed`/`expedition_min_speed`. |
 | 5.3 | Punti Rifornimento sullo shuttle (0–20, peso 1) | 🟢 | `planned_supply` con limite. |
 | 5.4 | Esagono di atterraggio (tiro di dado) | 🟢 | `land_on_planet`, `landing_hex`. |
 | 5.5 | Paragrafo che descrive l'environ | 🟢 | Mostrato all'atterraggio. |
 | 5.6 | Scelta unità a bordo vs in spedizione | 🟡 | Distinzione presente ma parziale (Rover/On Foot). |
 | 5.7 | Spedizione in Rover o a piedi | 🟡 | Modellazione parziale del rover. |
-| 5.8 | Carta Capacità di Porto | 🟡 | Limite di peso sì; alterazione del Valore di Porto per gravità no. |
+| 5.8 | Carta Capacità di Porto | 🟡 | Limite di peso (capacità shuttle per gravità) sì; il Valore di Porto del singolo personaggio è mostrato come efficace (modificatori d'atmosfera, 5.2) ma non vincola ancora un carico individuale. |
 
 ## [6.0] Movimento ed Esplorazione della Spedizione
 | Caso | Regola | Stato | Nota |
@@ -83,15 +84,15 @@ principali: **Rifornimento (7.0)**, **Valore Intelligenza personaggi (3.3)**,
 | 6.5 | Paragrafo d'incontro di spedizione (3–4 affermazioni condizionali) | 🔴 | I **36 snodi** "Incontro di spedizione" non vengono valutati (salti su terreno/gravità/clima ignorati). |
 | 6.6 | Carta Effetti del Terreno | 🟡 | Costi in ore per entrare/esplorare sì; modificatori di rifornimento parziali. |
 | 6.7 | Terreni multipli / speciali | 🟡 | Gestione parziale del terreno misto. |
-| 6.8 | Spesa di ore di spedizione (Traccia Tempo) | 🟢 | `add_expedition_hours`. |
+| 6.8 | Spesa di ore di spedizione (Traccia Tempo) | 🟢 | `add_expedition_hours` fa avanzare `supply_track_pos`; al raggiungimento dello «spazio di controllo» della gravità (6/12/16/22/30) scatta un Controllo del Rifornimento (7.2) e la posizione si azzera (loop multiplo). |
 | 6.9 | Riparazione/cura/studio in spedizione | 🟡 | `repair_gear`, `heal_wounded` sì; "studio" no. |
 
 ## [7.0] Rifornimento della Spedizione
 | Caso | Regola | Stato | Nota |
 |---|---|:--:|---|
-| 7.1 | Utenti di rifornimento (singolo/doppio) | 🔴 | Non implementato. |
-| 7.2 | Controllo rifornimento (dado vs Valore Supporto Vitale) | 🔴 | Non implementato: nessun supply check per environ. |
-| 7.3 | Spesa dei Punti Rifornimento | 🟡 | Consumo parziale (`_consume_supply_for`, `use_expedition_supply`), ma senza il controllo 7.2. |
+| 7.1 | Utenti di rifornimento (singolo/doppio) | 🟢 | `supply_user_total`: personaggio ×2, robot ×1, Rover ×2, strumenti ×1; danneggiati/catturati esclusi. Assunzione: tutti gli strumenti non danneggiati hanno il «simbolo di rifornimento» (flag per-strumento assente nei dati). |
+| 7.2 | Controllo rifornimento (dado vs Valore Supporto Vitale) | 🟢 | `resolve_supply_check`: un dado → calc1 = floor(Utenti/dado) max 4; calc2 = floor((LSV + Mod. Rifornimento terreno)/dado) max 4 se la somma > 0. Innescato dalla Traccia Tempo (6.8) in `add_expedition_hours`, spazi per gravità 6/12/16/22/30; loop multiplo per spese grandi. Tiro manuale gestito in `GameScreen._on_roll_dice` (`pending_die_purpose = "supply_check"`). |
+| 7.3 | Spesa dei Punti Rifornimento | 🟢 | `_expend_supply`: spende da `expedition_supply`; l'ammanco è pagato in Resistenza (1 Punto = 1 Resistenza) via `_apply_damage` (robot-scudo/ferite/morte 8.8). Vecchio `_consume_supply_for` rimosso. |
 
 ## [8.0] Creature, Combattimento e Danni
 | Caso | Regola | Stato | Nota |
@@ -119,7 +120,7 @@ principali: **Rifornimento (7.0)**, **Valore Intelligenza personaggi (3.3)**,
 1. **Resistenza 6 → 5** (2.5): valore errato rispetto al regolamento. *(impatta bilanciamento e PV 9.2)*
 2. **Valore Intelligenza personaggi** (3.3): assente; serve a molti eventi/paragrafi.
 3. **Snodi "Incontro di spedizione"** (6.5): 36 paragrafi non valutati — serve un piccolo interprete di condizioni terreno/gravità/clima.
-4. **Rifornimento 7.0**: supply check (7.2) e utenti singolo/doppio (7.1).
-5. **Equipaggiamento d'atmosfera** (5.2): enviorig/armorig obbligatori.
+4. ~~**Rifornimento 7.0**: supply check (7.2) e utenti singolo/doppio (7.1).~~ ✅ fatto (Traccia Tempo 6.8 → controllo 7.1/7.2/7.3).
+5. ~~**Equipaggiamento d'atmosfera** (5.2): enviorig/armorig obbligatori.~~ ✅ fatto (`effective_char_stat`: Thin/Poison/Corrosive).
 6. **Artefatti** (2.6/9.1): 5 artefatti e relativi PV.
 7. **Effetti interni dei paragrafi-evento interstellari** (4.2).
