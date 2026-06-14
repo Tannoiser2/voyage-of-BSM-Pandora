@@ -110,7 +110,10 @@
     },
     {
       "cond": {
-        "inert": "esagono con uno stagno o una palude: stagno non modellato (palude=Marsh non in environ data)"
+        "terrain_in": [
+          "Pond",
+          "Marsh"
+        ]
       },
       "goto": 39
     },
@@ -288,7 +291,11 @@
       "cond": {
         "all": [
           {
-            "_subfeature": "palude/stagno/fiume"
+            "terrain_in": [
+              "Marsh",
+              "Pond",
+              "River"
+            ]
           },
           {
             "climate": "tropicale"
@@ -370,7 +377,7 @@
     },
     {
       "cond": {
-        "inert": "esagono di abisso (solo abisso, non 'dirupo o abisso'): abisso non modellato"
+        "terrain": "Abyss"
       },
       "goto": 176
     }
@@ -1110,7 +1117,7 @@
       "cond": {
         "all": [
           {
-            "_subfeature": "fiume"
+            "terrain": "River"
           },
           {
             "climate": "tropicale"

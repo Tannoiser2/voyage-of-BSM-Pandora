@@ -26,7 +26,14 @@
     "Cave": "Cave",
     "River": "River",
     "Abyss": "Abyss",
-    "Marsh": "Marsh"
+    "Marsh": "Marsh",
+    "Pond": "Pond",
+    "Liquid Surface": "Liquid Surface",
+    "Flat": "Flat",
+    "Hill": "Hill",
+    "Heavy Vegetation": "Heavy Vegetation",
+    "Solid Lava": "Solid Lava",
+    "Glacial Ice": "Glacial Ice"
   },
   "terrain_it": {
     "Flat": "Pianura",

@@ -54,9 +54,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   «Il clima è X»), i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice) e
   ora le **Città Aliene** (23), la **Light Vegetation** (60), le **Montagne** (14),
   i **Cliffs** (3), le **Cave** (1) e le **Marsh** (16), tutte mappate dalle 8 mappe
-  environ e verificate sulle immagini. **20 dei 36 snodi sono così pienamente valutabili ⇒
-  🟢.** Tutti i 20 snodi terreno-dipendenti sono ora coperti; restano **16 snodi**
-  bloccati solo da **sotto-feature** (lava fluente adiacente, immersione, ecc.) ⇒ 🔴.
+  environ e verificate sulle immagini. Inoltre, grazie al modello multi-terreno (6.7)
+  e ai tipi River/Abyss/Pond/Marsh ora mappati, sono stati convertiti in condizioni
+  reali anche i segnaposto di 4 snodi (059/078/110/194). **24 dei 36 snodi sono
+  così pienamente valutabili ⇒ 🟢.** Restano **12 snodi** che richiedono meccaniche
+  non-terreno: esagoni sottomarini/immersione (065/130/188/198/200), adiacenza a
+  lava fluente (056/202), combinazioni base+vegetazione-rada con base ignota
+  (143/146/154), stato stagno/shuttle (168/182) ⇒ 🔴.
   Regola **6.7** (un esagono può contenere più terreni): il motore supporta un campo
   `extra` per i terreni aggiuntivi sovrapposti al terreno base; `_current_terrain_is`
   soddisfa sia il base sia gli extra. Sono così tagliati per fedeltà anche **River**
@@ -73,13 +77,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 92 | 39,7% |
+| 🟢 Verde | 96 | 41,4% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 99 | 42,7% |
+| 🔴 Rosso | 95 | 40,9% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 48,5%**
-( (92 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 50,2%**
+( (96 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -90,9 +94,9 @@ come metà, l'indice di completezza è **≈ 48,5%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 20 | 0 | 16 | 36 |
+| snodo «Incontro di spedizione» | 24 | 0 | 12 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **92** | **41** | **99** | **232** |
+| **Totale** | **96** | **41** | **95** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -172,7 +176,7 @@ come metà, l'indice di completezza è **≈ 48,5%**
 | 056 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶038/004/027/151) non valutata. |
 | 057 | incontro-creatura (Eleboid) | 🔴 | «Comunica/Combatti» con danno a tutti i robot poi tabella-strategia non gestito. |
 | 058 | evento-interstellare (procedurale) | 🔴 | Check Intelligenza GSO, perdita Resistenza e dirama a ¶067/073/144 non gestito. |
-| 059 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶028/039/147) non valutata. |
+| 059 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/039/147 — Città Aliena / Pond o Marsh / Cave+idrografia): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 060 | incontro-creatura (Scorsaur) | 🟡 | Creatura preparata; ramo «Combatti → ¶180» (incornata velenosa) non automatizzato. |
 | 061 | evento-interstellare | 🔴 | Check WO/Intelligenza, +1 mese o ¶169 non automatizzato. |
 | 062 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/179/066 — Città Aliena / Light Veg.+gravità / Hill+gravità): salto al ramo giusto o ri-tiro Matrice. |
@@ -191,7 +195,7 @@ come metà, l'indice di completezza è **≈ 48,5%**
 | 075 | incontro-creatura (Aquan) | 🟡 | Sorpresa+strategia gestite; il ramo «Comunica → dona larva → ¶208» non automatizzato. |
 | 076 | atterraggio speciale (Opoplo) | 🔴 | Vincoli speciali (strutture sottoterra 0715/1016, non lasciare l'area finché non esplorate) non gestiti. |
 | 077 | incontro-creatura (Garbrist) | 🔴 | Comunica(neuroscanner→¶211 / ¶016) e Combatti(¶215) non gestiti. |
-| 078 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶009/009/005) non valutata. |
+| 078 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶009/009/005 — Città Aliena / Flat+clima tropicale / Marsh-Pond-River+clima): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 079 | incontro-creatura (Sholf) | 🟢 | Intro «orso»: sola scelta strategia, nessun effetto extra; gestito dal motore. |
 | 080 | evento-interstellare (procedurale) | 🔴 | Evoluzione creatura a bordo e diramazione ¶081–084 non gestite. |
 | 081 | esito (game over) | 🟡 | Testo «il gioco è finito» mostrato; il motore non chiude la partita automaticamente da qui. |
@@ -228,7 +232,7 @@ come metà, l'indice di completezza è **≈ 48,5%**
 | 107 | pianeta/orbita (Opoplo 30) | 🟢 | Idem, da dati. |
 | 108 | pianeta/orbita (Mezo 30) | 🟢 | Idem, da dati. |
 | 109 | pianeta/orbita (Paleo 30) | 🟢 | Idem, da dati. |
-| 110 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶028/159/176) non valutata. |
+| 110 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/159/176 — Città Aliena / Flat-Hill+gravità / Abyss): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 111 | pianeta/orbita (Birss 30) | 🟢 | Dati pianeta + atterraggio gestiti. |
 | 112 | pianeta/orbita (Mephisto 30) | 🟢 | Idem, da dati. |
 | 113 | pianeta/orbita (New Alto 30) | 🟢 | Idem, da dati. |
@@ -317,7 +321,7 @@ come metà, l'indice di completezza è **≈ 48,5%**
 | 191 | procedurale (esito pirati) | 🔴 | Uccisioni casuali, perdita robot/strumenti e mesi di tour non automatizzati. |
 | 192 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/037/159 — Città Aliena / Heavy Veg.+gravità / Mountain-Cliffs+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 193 | procedurale (combattimento struttura) | 🟢 | Pulsante «Affronta la struttura»: col turbolaser combattimento via Intelligenza (solo uccisione) → struttura distrutta e pezzo recuperato (artefatto ¶193, peso 3, PV al rientro); senza turbolaser −10 Punti Resistenza e fuga obbligata a ¶187. Caveat: la colonna-Intelligenza della Tabella Combattimento è modellata in modo approssimato. |
-| 194 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶172/063/069) non valutata. |
+| 194 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/063/069 — Città Aliena / Liquid Surface / River+clima tropicale): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 195 | procedurale (comunicazione alieni) | 🔴 | Tiro 1d6 con modificatori CO/GSO/neuroscanner e PV/¶210 non gestiti. |
 | 196 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/079/048 — Città Aliena / Glacial Ice+gravità / veg.+clima temperato): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 197 | procedurale (fungo parassita) | 🔴 | Perdita Resistenza a ogni controllo rifornimento (salvo armorig) non automatizzata. |

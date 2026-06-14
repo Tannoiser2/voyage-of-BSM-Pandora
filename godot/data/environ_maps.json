@@ -974,7 +974,11 @@
 "lr": 3,
 "x": 288.1,
 "y": 675.2,
-"terrain": "Forest"
+"terrain": "Forest",
+"extra": [
+"Pond",
+"Hill"
+]
 },
 "22": {
 "real": "1402",
@@ -2534,7 +2538,8 @@
 "y": 773.2,
 "terrain": "Light Vegetation",
 "extra": [
-"Marsh"
+"Marsh",
+"Pond"
 ]
 },
 "26": {
@@ -2551,7 +2556,10 @@
 "lr": 6,
 "x": 626.2,
 "y": 1257.0,
-"terrain": "Light Vegetation"
+"terrain": "Light Vegetation",
+"extra": [
+"Pond"
+]
 },
 "66": {
 "real": "1820",
