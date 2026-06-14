@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 160 | 69,0% |
-| 🟡 Giallo | 43 | 18,5% |
-| 🔴 Rosso | 29 | 12,5% |
+| 🟢 Verde | 163 | 70,3% |
+| 🟡 Giallo | 45 | 19,4% |
+| 🔴 Rosso | 24 | 10,3% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 78,2%**
-( (160 + 43/2) / 232 ).
+come metà, l'indice di completezza è **≈ 80,0%**
+( (163 + 45/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 78,2%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **160** | **43** | **29** | **232** |
+| **Totale** | **163** | **45** | **24** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -285,7 +285,7 @@ come metà, l'indice di completezza è **≈ 78,2%**
 | 152 | procedurale (virus dello stagno) | 🟢 | Virus: un personaggio a caso muore, salvo medkit + Ufficiale Medico presenti (e la vittima non è il Medico). Automatizzato. |
 | 153 | incontro-creatura (Bubbler) | 🟡 | Strategia offerta; sorpresa shift 1 sx e «risultato D/E → tutti morti» non applicati. |
 | 154 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+atmosfera / Flat+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
-| 155 | procedurale (atmosfera/robot) | 🔴 | Deterioramento robot a ogni controllo rifornimento non automatizzato. |
+| 155 | procedurale (atmosfera/robot) | 🟡 | Atmosfera velenosa/corrosiva: i robot si deteriorano a ogni Controllo del Rifornimento (gravità 1/3/6 secondo atmosfera e MntO). Modellato come danneggiamento di un robot per controllo (la Resistenza dei robot non è tracciata). |
 | 156 | incontro-creatura (Aenon, snodo) | 🟢 | Comunicazione/Combattimento: con Ambot o Turbolaser la creatura fugge (scegli altra azione); altrimenti → ¶223. Codificato. |
 | 157 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/072/054/032 — Città Aliena / Glacial Ice / Light Veg.+atmosfera / geologia attiva): salto al ramo giusto o ri-tiro Matrice. |
 | 158 | esito (alieno amichevole) | 🟢 | Ultimo superstite telepate: +5 PV, +2 per ciascuno tra comandante, neuroscanner e Holographer presenti. Automatizzato. |
@@ -329,7 +329,7 @@ come metà, l'indice di completezza è **≈ 78,2%**
 | 196 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/079/048 — Città Aliena / Glacial Ice+gravità / veg.+clima temperato): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 197 | procedurale (fungo parassita) | 🟢 | Personaggio a caso infettato: −1 Resistenza a ogni Controllo del Rifornimento fino al rientro (curato sulla Pandora); l'armorig previene l'infezione. Automatizzato. |
 | 198 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Liquid Surface / vegetazione+atmosfera): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
-| 199 | procedurale (combattimento alieni) | 🔴 | Tiro 1d6 con perdite equipaggiamento/PV/¶210 non gestiti. |
+| 199 | procedurale (esito pirati) | 🟢 | 1 dado: 1→¶195; 2-3 armi+rifornimenti dissolti +5 PV; 4-5 equipaggiamento (tranne armorig/enviorig)+rifornimenti dissolti +5 PV; 6→¶210. Automatizzato. |
 | 200 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Liquid Surface+Cliffs-o-Abyss / Light Veg+atmosfera): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 
 ### 201–232 — avvio, esiti finali, snodi e chiusura
@@ -339,7 +339,7 @@ come metà, l'indice di completezza è **≈ 78,2%**
 | 201 | snodo-di-flusso (avvio) | 🟢 | Avvio del viaggio: il motore avvia tour, mappa interstellare e tabella pianeti. Fedele. |
 | 202 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+gravita / lava fluente adiacente+clima sahariano): lava fluente = esagono adiacente Solid Lava+Liquid Surface (vicinato 6.7). |
 | 203 | procedurale (pirati: tributo) | 🔴 | Cessione robot/strumenti o ¶183 non automatizzata. |
-| 204 | procedurale (fuga alieni) | 🔴 | Tiro 1d6 con esiti multipli (prigionia/PV/rover/¶195/¶210) non gestiti. |
+| 204 | procedurale (fuga alieni) | 🟢 | 1 dado: 1 +5 PV; 2-3 rover distrutto →¶195; 4-5 imprigionati 1 Mese, rifornimenti confiscati +5 PV; 6→¶210. Automatizzato. |
 | 205 | esito-strategia (modificatore) | 🟡 | «Aggressività auto +2, ritira sulla tabella 8.2»: il motore ha la tabella 8.2 ma non applica questa correzione né il rimando-incontro. |
 | 206 | procedurale (combattimento Unithalo) | 🔴 | Combattimento a due round con risultati riletti non automatizzato. |
 | 207 | esito (orchidea, senza pedina) | 🟢 | Orchidea raccolta: +3 PV, poi 1 dado (4-6 → ¶033). Automatizzato. |
@@ -359,14 +359,14 @@ come metà, l'indice di completezza è **≈ 78,2%**
 | 221 | procedurale (campo psionico) | 🟢 | Campo psionico: 1 dado di ore di incoscienza; Intelligenza di ogni personaggio ridotta permanentemente a 6 (se superiore). Automatizzato. |
 | 222 | esito (insetti senzienti) | 🔴 | Check Aggressività con PV variabili e diramazione ¶231/¶225 non gestiti. |
 | 223 | procedurale (aeron) | 🟢 | L'aeron afferra un robot a caso (rimosso); se nessun robot, un personaggio a caso perde 2 Resistenza. Automatizzato. |
-| 224 | procedurale (veleno fungo) | 🔴 | Perdita Resistenza a ogni controllo (modificata da MedO/medkit/armorig) non gestita. |
+| 224 | procedurale (veleno fungo) | 🟢 | Personaggio investigatore avvelenato: −3 Resistenza a ogni Controllo del Rifornimento (−2 con Medico o medkit, −1 con entrambi), curato al rientro; armorig annulla. Automatizzato. |
 | 225 | procedurale (combattimento gruppo) | 🔴 | Somma Valori di Combattimento e regole speciali risultato «E» non automatizzate. |
 | 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
 | 227 | procedurale (combattimento Glosper) | 🔴 | Rilettura risultati C/D/E (un personaggio fatto a pezzi) non automatizzata. |
 | 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |
 | 229 | esito (monoke amichevole) | 🟡 | Cattura facoltativa e 1 ora: il flusso «scegli azione» è ok ma la cattura/ora non sono automatizzate. |
 | 230 | procedurale (radrod) | 🟢 | Studio: 2 dadi (−2 con SO) vs Int max: < → +3 PV e cattura (1 ora); ≥ → neuroscanner+creatura distrutti, un personaggio −2 Resistenza e svenuto (2 dadi di ore). Automatizzato. |
-| 231 | procedurale (razza ostile) | 🔴 | Tiro 1d6 a ogni esagono città/controllo rifornimento (rischio distruzione) non automatizzato. |
+| 231 | procedurale (razza ostile) | 🟡 | Razza locale ostile: a ogni Controllo del Rifornimento, 1 dado (1-2 → spedizione imboscata e distrutta). Resta non agganciato il trigger «ingresso in esagono struttura/città». |
 | 232 | snodo-di-flusso (fine viaggio) | 🟢 | Attracco e calcolo PV finali: il motore mostra ¶232 a fine tour e produce il riepilogo PV (9.0/9.2). Fedele. |
 
 ---

@@ -113,7 +113,9 @@ var expedition_pos: int = 0           # esagono attuale della spedizione (0 = no
 var landing_hex: int = 0
 var pond_supply_used: bool = false    # 6.5: stagno usato in un Controllo del Rifornimento
 var _landing_fx_applied: Array = []   # paragrafi-area i cui effetti numerici (LSV) sono già applicati
-var infected_chars: Array = []        # personaggi che perdono 1 Resistenza a ogni Controllo del Rifornimento (¶197/¶209)
+var infected_chars: Array = []        # {key, amt}: personaggi che perdono Resistenza a ogni Controllo del Rifornimento (¶197/¶209/¶224)
+var robot_decay: int = 0              # ¶155: i robot perdono Resistenza (qui: un robot danneggiato) a ogni Controllo del Rifornimento
+var hostile_race: bool = false        # ¶231: rischio d'imboscata a ogni Controllo del Rifornimento
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
@@ -257,7 +259,7 @@ func save_game(silent := false) -> bool:
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
-		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "current_environ_id": current_environ_id,
+		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "hostile_race": hostile_race, "current_environ_id": current_environ_id,
 		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -357,6 +359,8 @@ func load_game() -> bool:
 	landing_hex = int(d.get("landing_hex", 0))
 	pond_supply_used = bool(d.get("pond_supply_used", false))
 	infected_chars = d.get("infected_chars", [])
+	robot_decay = int(d.get("robot_decay", 0))
+	hostile_race = bool(d.get("hostile_race", false))
 	current_environ_id = int(d.get("current_environ_id", 0))
 	hasty_path_terrains = d.get("hasty_path_terrains", [])
 	add_log("Partita caricata.")
@@ -1792,6 +1796,15 @@ func _compute_shift(act: Dictionary) -> int:
 	return int(act.get("shift", 0))
 
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
+# Registra/aggiorna un'infezione su un personaggio (importo di Resistenza perso a
+# ogni Controllo del Rifornimento). Se già infetto, tiene l'importo maggiore.
+func _infect(key: String, amt: int) -> void:
+	for inf in infected_chars:
+		if str(inf.get("key", "")) == key:
+			inf["amt"] = maxi(int(inf.get("amt", 1)), amt)
+			return
+	infected_chars.append({"key": key, "amt": amt})
+
 # Personaggio vivo a caso della spedizione ("" se nessuno).
 func _random_alive_char() -> String:
 	var alive: Array = []
@@ -2022,8 +2035,7 @@ func _apply_paragraph_effect(para: int) -> int:
 		197:
 			var vic197 := _random_alive_char()
 			if vic197 != "" and not _gear_has("Armorig"):
-				if not infected_chars.has(vic197):
-					infected_chars.append(vic197)
+				_infect(vic197, 1)
 				add_log("¶197: %s è ricoperto da un fungo parassita: perdita ricorrente di Resistenza fino al rientro." % crew[vic197].get("name", vic197))
 			elif vic197 != "":
 				add_log("¶197: l'armorig protegge dall'infezione del fungo.")
@@ -2032,8 +2044,8 @@ func _apply_paragraph_effect(para: int) -> int:
 			if vic209 != "":
 				crew[vic209]["endurance"] = maxi(0, int(crew[vic209].get("endurance", 0)) - 2)
 				add_log("¶209: %s ha le convulsioni: −2 Resistenza (germe alieno)." % crew[vic209].get("name", vic209))
-				if not ("MedO" in expedition_units) and not infected_chars.has(vic209):
-					infected_chars.append(vic209)
+				if not ("MedO" in expedition_units):
+					_infect(vic209, 1)
 				if int(crew[vic209]["endurance"]) <= 0:
 					_kill_character(vic209)
 		221:
@@ -2195,6 +2207,70 @@ func _apply_paragraph_effect(para: int) -> int:
 					crew[v230]["endurance"] = maxi(0, int(crew[v230].get("endurance", 0)) - 2)
 				add_expedition_hours(randi_range(1, 6) + randi_range(1, 6))
 				add_log("¶230: onde cerebrali del radrod: neuroscanner distrutto, un personaggio −2 Resistenza e privo di sensi.")
+		199:
+			var d199 := randi_range(1, 6)
+			if d199 == 1:
+				redirect = 195
+			elif d199 <= 3:
+				for it in ["Turbolaser", "Specibot", "Netgun", "Stunbomb"]:
+					if _gear_has(it):
+						expedition_gear.erase(it)
+						expedition_units.erase(it)
+				expedition_supply = 0
+				gain_vp(5, "¶199 le armi si dissolvono nel prisma")
+			elif d199 <= 5:
+				for g in expedition_gear.duplicate():
+					if not (g in ["Armorig", "Enviorig"]):
+						expedition_gear.erase(g)
+						expedition_units.erase(g)
+				expedition_supply = 0
+				gain_vp(5, "¶199 lampo accecante: equipaggiamento dissolto")
+			else:
+				redirect = 210
+		204:
+			var d204 := randi_range(1, 6)
+			if d204 == 1:
+				gain_vp(5, "¶204 gli alieni non inseguono")
+			elif d204 <= 3:
+				if _gear_has("Rover"):
+					expedition_gear.erase("Rover")
+					if not damaged_gear.has("Rover"):
+						damaged_gear.append("Rover")
+				redirect = 195
+			elif d204 <= 5:
+				_spend_tour_months(1, "¶204 spedizione imprigionata e studiata")
+				expedition_supply = 0
+				gain_vp(5, "¶204 rilasciati allo shuttle (rifornimenti confiscati)")
+			else:
+				redirect = 210
+		224:
+			var vic224 := _random_alive_char()
+			if vic224 != "" and not _gear_has("Armorig"):
+				var amt224 := 3
+				var hasMed := "MedO" in expedition_units
+				var hasKit := _gear_has("Medkit")
+				if hasMed and hasKit:
+					amt224 = 1
+				elif hasMed or hasKit:
+					amt224 = 2
+				_infect(vic224, amt224)
+				add_log("¶224: %s è spruzzato da veleno corrosivo: −%d Resistenza a ogni Controllo del Rifornimento fino al rientro." % [crew[vic224].get("name", vic224), amt224])
+			elif vic224 != "":
+				add_log("¶224: l'armorig protegge dal veleno del fungo.")
+		155:
+			var atmo := str(planet_attrs.get("atmosphere", ""))
+			var mnt := "MntO" in expedition_units
+			if atmo == "Poison" and mnt:
+				robot_decay = 1
+			elif (atmo == "Poison" and not mnt) or (atmo == "Corrosive" and mnt):
+				robot_decay = 3
+			elif atmo == "Corrosive" and not mnt:
+				robot_decay = 6
+			if robot_decay > 0:
+				add_log("¶155: atmosfera distruttiva → i robot si deterioreranno a ogni Controllo del Rifornimento (gravità %d)." % robot_decay)
+		231:
+			hostile_race = true
+			add_log("¶231: la razza locale è ora ostile: rischio d'imboscata a ogni Controllo del Rifornimento in quest'area.")
 		_:
 			applied = false
 	if applied:
@@ -2304,6 +2380,8 @@ func return_to_pandora() -> void:
 		if not infected_chars.is_empty():
 			add_log("Rientro sulla Pandora: le infezioni dei personaggi vengono curate.")
 			infected_chars = []
+		robot_decay = 0
+		hostile_race = false
 		# Assegna i PV per le creature catturate riportate sulla Pandora (8.0/9.0)
 		if captured_creatures.size() > 0:
 			for cname in captured_creatures:
@@ -2455,12 +2533,30 @@ func resolve_supply_check(die: int) -> void:
 	_expend_supply(total)
 	# Infezioni in corso (¶197/¶209): ogni personaggio infetto perde 1 Resistenza a
 	# ogni Controllo del Rifornimento, finché non rientra sulla Pandora.
-	for v in infected_chars.duplicate():
-		if crew.has(v) and crew[v].get("alive", false):
-			crew[v]["endurance"] = maxi(0, int(crew[v].get("endurance", 0)) - 1)
-			add_log("Infezione: %s perde 1 Punto Resistenza (%d/%d)." % [crew[v].get("name", v), crew[v]["endurance"], MAX_ENDURANCE])
-			if int(crew[v]["endurance"]) <= 0:
-				_kill_character(v)
+	for inf in infected_chars.duplicate():
+		var ik: String = str(inf.get("key", ""))
+		var iamt: int = int(inf.get("amt", 1))
+		if crew.has(ik) and crew[ik].get("alive", false):
+			crew[ik]["endurance"] = maxi(0, int(crew[ik].get("endurance", 0)) - iamt)
+			add_log("Infezione: %s perde %d Punto/i Resistenza (%d/%d)." % [crew[ik].get("name", ik), iamt, crew[ik]["endurance"], MAX_ENDURANCE])
+			if int(crew[ik]["endurance"]) <= 0:
+				_kill_character(ik)
+	# ¶155: l'atmosfera distruttiva danneggia un robot a ogni Controllo del Rifornimento.
+	if robot_decay > 0:
+		var rbots := _functioning_bots()
+		if not rbots.is_empty():
+			damaged_gear.append(rbots[0])
+			add_log("Atmosfera distruttiva (¶155): %s si deteriora ed è danneggiato." % GameData.get_unit(rbots[0]).get("name", rbots[0]))
+	# ¶231: la razza ostile può imboscare la spedizione a ogni Controllo del Rifornimento.
+	if hostile_race:
+		var dr := randi_range(1, 6)
+		if dr <= 2:
+			add_log("¶231: dado %d → la spedizione è imboscata e distrutta dalle forze di sicurezza locali." % dr)
+			for k in crew.keys():
+				if k in expedition_units:
+					crew[k]["alive"] = false
+			_end_encounter()
+			return_to_pandora()
 	state_updated.emit()
 
 # Totale degli Utenti di Rifornimento della spedizione (regola 7.1):
@@ -2552,6 +2648,9 @@ func generate_environ_at(landing_real: String) -> void:
 	environ_grid = {}
 	pond_supply_used = false
 	_landing_fx_applied = []
+	infected_chars = []
+	robot_decay = 0
+	hostile_race = false
 	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
 	if place.is_empty():
 		# Fallback: environ deterministico per sistema, atterraggio al centro.
