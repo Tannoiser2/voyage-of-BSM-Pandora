@@ -116,7 +116,7 @@
 "lr": 7,
 "x": 963.6,
 "y": 1348.9,
-"terrain": "Open"
+"terrain": "Cliffs"
 },
 "57": {
 "real": "0507",
@@ -124,7 +124,7 @@
 "lr": 7,
 "x": 795.6,
 "y": 1263.6,
-"terrain": "Open"
+"terrain": "Cliffs"
 },
 "47": {
 "real": "0407",
@@ -533,7 +533,7 @@
 "lr": 4,
 "x": 455.8,
 "y": 769.1,
-"terrain": "Mountain"
+"terrain": "Cliffs"
 },
 "44": {
 "real": "1004",
@@ -1761,7 +1761,7 @@
 "lr": 5,
 "x": 472.8,
 "y": 974.0,
-"terrain": "Desert"
+"terrain": "Cave"
 },
 "25": {
 "real": "1412",

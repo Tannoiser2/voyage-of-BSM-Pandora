@@ -52,12 +52,12 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   a terreno/gravità/clima/atmosfera. L'interprete valuta gravità, atmosfera,
   idrografia, geologia, vegetazione, **clima** (5.1, derivato dal testo dell'area:
   «Il clima è X»), i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice) e
-  ora le **Città Aliene** (23 esagoni), la **Light Vegetation** (60) e le
-  **Montagne** (15), tutte mappate dalle 8 mappe environ e verificate sulle immagini.
-  **14 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.** Restano inerti alcuni
-  **terreni fini** (Cave/Cliffs/Liquid Surface/Marsh) e le sotto-feature
-  (lava fluente, ecc.): 6 snodi sono bloccati solo da questi terreni, 16 da
-  sotto-feature ⇒ 🔴 finché non si arricchisce ulteriormente il per-esagono.
+  ora le **Città Aliene** (23), la **Light Vegetation** (60), le **Montagne** (14),
+  i **Cliffs** (3) e le **Cave** (1), tutte mappate dalle 8 mappe environ e
+  verificate sulle immagini. **19 dei 36 snodi sono così pienamente valutabili ⇒
+  🟢.** Resta 1 snodo (068) in attesa del terreno **Marsh** (non ancora trovato) e
+  16 bloccati da sotto-feature (lava fluente, ecc.) ⇒ 🔴. Le mappe contengono anche
+  i tipi **River** e **Abyss**, non usati da alcuno snodo (da modellare a parte).
 - **procedurale-vario:** tiri/condizioni con effetti su Resistenza, PV, ore,
   equipaggiamento. Quasi sempre solo testo ⇒ 🔴 (🟡 se in parte coperto).
 
@@ -69,13 +69,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 86 | 37,1% |
+| 🟢 Verde | 91 | 39,2% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 105 | 45,3% |
+| 🔴 Rosso | 100 | 43,1% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 45,9%**
-( (86 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 48,1%**
+( (91 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -86,9 +86,9 @@ come metà, l'indice di completezza è **≈ 45,9%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 14 | 0 | 22 | 36 |
+| snodo «Incontro di spedizione» | 19 | 0 | 17 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **86** | **41** | **105** | **232** |
+| **Totale** | **91** | **41** | **100** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -162,7 +162,7 @@ come metà, l'indice di completezza è **≈ 45,9%**
 |---|---|---|---|
 | 051 | incontro-creatura (Paraboid) | 🟡 | Creatura preparata; «qualsiasi strategia → la creatura se ne va» non forzato come esito automatico. |
 | 052 | evento-interstellare | 🔴 | Morte di una creatura a bordo (a caso) non automatizzata. |
-| 053 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (dirupo/struttura/clima/gravità → ¶008/004/031/153) non valutata. |
+| 053 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶008/004/031/153 — Cliffs / Città Aliena / Flat+clima sahariano / gravità+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 054 | incontro-creatura (Aracat) | 🟢 | Intro «felino»: sorpresa+strategia gestite dal motore; nessun effetto extra oltre lo shift standard di sorpresa. |
 | 055 | evento-interstellare | 🔴 | Danno cerebrale a un membro (riduzione Valori/PV) non automatizzato. |
 | 056 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶038/004/027/151) non valutata. |
@@ -183,7 +183,7 @@ come metà, l'indice di completezza è **≈ 45,9%**
 | 071 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/051/043 — Città Aliena / gravità quasi assente / atmosfera velenosa): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 072 | incontro-creatura (Unithalo) | 🔴 | Sorpresa shift 1 sx, deviazione a ¶206 e ramo Fuga (rapimento) non gestiti. |
 | 073 | evento-interstellare (esito) | 🔴 | Check MedO/Intelligenza (cura o animazione sospesa) non automatizzato. |
-| 074 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶028/009/057) non valutata. |
+| 074 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/009/057 — Città Aliena / Flat+gravità / Cave): salto al ramo giusto o ri-tiro Matrice. |
 | 075 | incontro-creatura (Aquan) | 🟡 | Sorpresa+strategia gestite; il ramo «Comunica → dona larva → ¶208» non automatizzato. |
 | 076 | atterraggio speciale (Opoplo) | 🔴 | Vincoli speciali (strutture sottoterra 0715/1016, non lasciare l'area finché non esplorate) non gestiti. |
 | 077 | incontro-creatura (Garbrist) | 🔴 | Comunica(neuroscanner→¶211 / ¶016) e Combatti(¶215) non gestiti. |
@@ -234,7 +234,7 @@ come metà, l'indice di completezza è **≈ 45,9%**
 | 117 | atterraggio (artico) | 🟡 | «+1 LSV» e ridefinizione città-aliena→ghiaccio non automatizzati. |
 | 118 | atterraggio (sahariano) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 119 | atterraggio (temperato) | 🟡 | «La struttura aliena in 0310 non esiste» non è modellato nell'environ. |
-| 120 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶006/181/060) non valutata. |
+| 120 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶006/181/060 — Città Aliena / Cave+atmosfera / Flat-Hill+gravità+clima): salto al ramo giusto o ri-tiro Matrice. |
 | 121 | atterraggio (sahariano) | 🟡 | «+1 LSV» va applicato a mano. |
 | 122 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 123 | atterraggio (oceano) | 🟡 | Ridefinizioni (strutture inesistenti, città→struttura, immersione 6.7) non gestite. |
@@ -264,7 +264,7 @@ come metà, l'indice di completezza è **≈ 45,9%**
 | 147 | incontro-creatura (Promite, procedurale) | 🔴 | Perdite di Resistenza da sorpresa (con modificatori) e rimando a ¶212 non gestiti. |
 | 148 | procedurale (atterraggio) | 🔴 | Due esiti di schianto (5/12 Punti Danno) su check Intelligenza non automatizzati. |
 | 149 | incontro-creatura (Bisape) | 🟡 | Sorpresa shift 1 sx (citata nel testo) non applicata; strategia offerta. |
-| 150 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶030/045/162) non valutata. |
+| 150 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/045/162 — Città Aliena / Cave+gravità / Solid Lava): salto al ramo giusto o ri-tiro Matrice. |
 
 ### 151–200 — creature, esiti speciali e snodi
 
@@ -311,7 +311,7 @@ come metà, l'indice di completezza è **≈ 45,9%**
 | 189 | procedurale (furto equipaggiamento) | 🔴 | Tiro 1d6 e rimozione casuale robot/strumenti non automatizzati. |
 | 190 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/037/164 — Città Aliena / Heavy Veg. / Mountain+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 191 | procedurale (esito pirati) | 🔴 | Uccisioni casuali, perdita robot/strumenti e mesi di tour non automatizzati. |
-| 192 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/037/159) non valutata. |
+| 192 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/037/159 — Città Aliena / Heavy Veg.+gravità / Mountain-Cliffs+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 193 | procedurale (combattimento struttura) | 🟢 | Pulsante «Affronta la struttura»: col turbolaser combattimento via Intelligenza (solo uccisione) → struttura distrutta e pezzo recuperato (artefatto ¶193, peso 3, PV al rientro); senza turbolaser −10 Punti Resistenza e fuga obbligata a ¶187. Caveat: la colonna-Intelligenza della Tabella Combattimento è modellata in modo approssimato. |
 | 194 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶172/063/069) non valutata. |
 | 195 | procedurale (comunicazione alieni) | 🔴 | Tiro 1d6 con modificatori CO/GSO/neuroscanner e PV/¶210 non gestiti. |

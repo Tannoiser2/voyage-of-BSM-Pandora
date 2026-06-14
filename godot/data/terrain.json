@@ -21,7 +21,9 @@
     "Desert": "Solid Lava",
     "Ice": "Glacial Ice",
     "Alien City": "Alien City",
-    "Light Vegetation": "Light Vegetation"
+    "Light Vegetation": "Light Vegetation",
+    "Cliffs": "Cliffs",
+    "Cave": "Cave"
   },
   "terrain_it": {
     "Flat": "Pianura",
