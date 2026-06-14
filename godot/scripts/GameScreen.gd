@@ -280,6 +280,13 @@ func _build_ui() -> void:
 	btn_examine.pressed.connect(_on_examine)
 	actions_hbox.add_child(btn_examine)
 
+	var btn_procedure := Button.new()
+	btn_procedure.name = "BtnProcedure"
+	btn_procedure.text = "Risolvi"
+	btn_procedure.visible = false
+	btn_procedure.pressed.connect(_on_procedure)
+	actions_hbox.add_child(btn_procedure)
+
 	var btn_explore := Button.new()
 	btn_explore.name = "BtnExplore"
 	btn_explore.text = "Esplora (tira dado)"
@@ -937,6 +944,7 @@ func _update_action_buttons(phase: String) -> void:
 		var can_take: bool = (phase == "paragraph") and on_surface and not creature_active \
 			and GameData.is_artifact_paragraph(current_para_num) \
 			and not GameData.has_intel_check(current_para_num) \
+			and not GameState.procedure_available(current_para_num) \
 			and not GameState.is_artifact_acquired(current_para_num)
 		btn_artifact.visible = can_take
 		if can_take:
@@ -948,6 +956,14 @@ func _update_action_buttons(phase: String) -> void:
 		var can_examine: bool = (phase == "paragraph") and on_surface and not creature_active \
 			and GameState.intel_check_available(current_para_num)
 		btn_examine.visible = can_examine
+	# Paragrafo procedurale una-tantum (¶187 raggi, ¶193 struttura).
+	var btn_procedure := find_child("BtnProcedure", true, false) as Button
+	if btn_procedure:
+		var can_proc: bool = (phase == "paragraph") and on_surface and not creature_active \
+			and GameState.procedure_available(current_para_num)
+		btn_procedure.visible = can_proc
+		if can_proc:
+			btn_procedure.text = GameState.procedure_label(current_para_num)
 
 func _update_display() -> void:
 	# Update status labels
@@ -1581,6 +1597,12 @@ func _on_examine() -> void:
 	_update_display()
 	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
+func _on_procedure() -> void:
+	# Risolve un paragrafo procedurale una-tantum (¶187/¶193); può rimandare.
+	GameState.resolve_procedure(current_para_num)
+	_update_display()
+	_update_action_buttons(GameState.phase_name(GameState.current_phase))
+
 func _on_explore() -> void:
 	# Esplora l'esagono attualmente occupato (es. quello di atterraggio), con i
 	# costi in ore del terreno (Carta 6.6) gestiti da GameState.
@@ -1929,7 +1951,9 @@ func _linkify(text: String) -> String:
 # Costruisce i pulsanti-scelta sotto il paragrafo dai rimandi ¶NNN.
 func _build_choices(para_num: int) -> void:
 	_clear_choices()
-	var choices := GameData.get_paragraph_choices(para_num)
+	# I paragrafi procedurali (¶187/¶193) gestiscono i propri rimandi tramite il
+	# pulsante «Risolvi»: si sopprimono le scelte auto-estratte dal testo.
+	var choices := [] if GameState.procedure_available(para_num) else GameData.get_paragraph_choices(para_num)
 	var lbl := find_child("ChoicesLabel", true, false) as Label
 	if lbl: lbl.visible = choices.size() > 0
 	for ch in choices:

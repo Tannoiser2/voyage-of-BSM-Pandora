@@ -62,13 +62,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 69 | 29,7% |
-| 🟡 Giallo | 42 | 18,1% |
-| 🔴 Rosso | 121 | 52,2% |
+| 🟢 Verde | 72 | 31,0% |
+| 🟡 Giallo | 41 | 17,7% |
+| 🔴 Rosso | 119 | 51,3% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 38,8%**
-( (69 + 42/2) / 232 ).
+come metà, l'indice di completezza è **≈ 39,9%**
+( (72 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -77,11 +77,11 @@ come metà, l'indice di completezza è **≈ 38,8%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 12 | 13 | 4 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 8 | 21 | 19 | 48 |
+| incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
 | snodo «Incontro di spedizione» | 0 | 0 | 36 | 36 |
-| procedurale-vario / rimandi-testuali | 6 | 5 | 42 | 53 |
-| **Totale** | **69** | **42** | **121** | **232** |
+| procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
+| **Totale** | **72** | **41** | **119** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -101,7 +101,7 @@ come metà, l'indice di completezza è **≈ 38,8%**
 | 001 | evento-interstellare | 🔴 | Routing 2d6 ok, ma il «+1 mese di tour se ≥3 esagoni» non è applicato dal motore: solo testo. |
 | 002 | procedurale (atterraggio) | 🔴 | Salto condizionato al navigatore (¶070/¶148) non automatizzato; mostrato come testo. |
 | 003 | incontro-creatura (snodo) | 🟢 | Codificato: `goto` a ¶054 con nuova creatura (Aracat). Fedele. |
-| 004 | incontro-creatura (struttura) | 🔴 | Scelta fuga(¶187)/combatti(¶193) non gestita; nessuna logica codificata. |
+| 004 | incontro-creatura (struttura) | 🟢 | Le due scelte (Fuggi → ¶187 / Combatti → ¶193) sono cliccabili e portano a esiti ora automatizzati. |
 | 005 | incontro-creatura (X-Wasp) | 🟢 | Strategia Cattura → cattura facile senza combattimento (override alla scelta strategia). Se si combatte, il X-Wasp non è catturabile (si applica l'uccisione) e morde un personaggio a caso prima di morire: perdita di Resistenza = 1 dado −2 (Ufficiale Medico) −2 (Medkit), contrassegnata come veleno. Caveat: la protezione enviorig/armorig di chi viene morso non è modellata (enviorig non esiste come oggetto) e il contrassegno «non curabile» è tracciato ma non ancora imposto alla cura. |
 | 006 | procedurale (arma) | 🟢 | Pulsante «Esamina» (check Intelligenza 3.3, resolver `intel_check`): con l'Ufficiale Armi → ¶175; altrimenti 2 dadi vs Intelligenza più alta → barra di energia usabile subito / usabile dopo 5 ore / solo trasportabile (peso 1). L'arma è usabile in combattimento (Cattura/Uccisione 9) solo dopo essere stata compresa. |
 | 007 | incontro-creatura (Drada) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo «non sorpreso» usa le azioni standard. |
@@ -299,13 +299,13 @@ come metà, l'indice di completezza è **≈ 38,8%**
 | 184 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶155/042/031/029) non valutata. |
 | 185 | procedurale (dispositivo alieno) | 🔴 | Tiro 1d6 → ¶161/034 non gestito. |
 | 186 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶042/027/051) non valutata. |
-| 187 | procedurale (fuga dalla struttura) | 🔴 | Tiro 2 dadi per unità vs Velocità, distruzioni e modificatori non automatizzati. |
+| 187 | procedurale (fuga dalla struttura) | 🟢 | Pulsante «Subisci i raggi»: per ogni personaggio e robot 2 dadi vs Velocità → distruzione se superata; col rover Velocità minima 8; −2 con turbolaser, −2 con scanner, −2 per chi indossa l'armorig. |
 | 188 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶034/039/142) non valutata. |
 | 189 | procedurale (furto equipaggiamento) | 🔴 | Tiro 1d6 e rimozione casuale robot/strumenti non automatizzati. |
 | 190 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶172/037/164) non valutata. |
 | 191 | procedurale (esito pirati) | 🔴 | Uccisioni casuali, perdita robot/strumenti e mesi di tour non automatizzati. |
 | 192 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/037/159) non valutata. |
-| 193 | procedurale (combattimento struttura) | 🟡 | Il pezzo di struttura è ora acquisibile come artefatto (¶193, peso 3, PV al rientro — chiave artefatto spostata da ¶004 a ¶193); il combattimento speciale via Intelligenza (solo col turbolaser) e il ramo -10 Resistenza→¶187 restano da automatizzare. |
+| 193 | procedurale (combattimento struttura) | 🟢 | Pulsante «Affronta la struttura»: col turbolaser combattimento via Intelligenza (solo uccisione) → struttura distrutta e pezzo recuperato (artefatto ¶193, peso 3, PV al rientro); senza turbolaser −10 Punti Resistenza e fuga obbligata a ¶187. Caveat: la colonna-Intelligenza della Tabella Combattimento è modellata in modo approssimato. |
 | 194 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶172/063/069) non valutata. |
 | 195 | procedurale (comunicazione alieni) | 🔴 | Tiro 1d6 con modificatori CO/GSO/neuroscanner e PV/¶210 non gestiti. |
 | 196 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/079/048) non valutata. |

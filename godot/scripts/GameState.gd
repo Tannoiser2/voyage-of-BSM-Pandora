@@ -100,6 +100,7 @@ var pending_artifact_vp: Array = []   # artefatti raccolti ma non ancora riporta
 var weapon_usable: bool = false       # l'Arma aliena (¶006) è usabile in combattimento solo dopo averla compresa (¶006/¶175)
 var intel_checks_done: Array = []     # paragrafi con check Intelligenza (3.3) già risolti (¶006/¶175/...)
 var poison_endurance_lost: int = 0    # Punti Resistenza persi da veleno (¶005), contrassegnati in modo speciale
+var procedures_done: Array = []       # paragrafi procedurali una-tantum già risolti (¶187/¶193)
 var recorded_creatures: Array = []    # tipi di creatura registrati sul Registro Attributi (PV per attributi a zero, 9.1)
 var explored_planets: Array = []      # sistemi i cui pianeti sono stati esplorati (1 PV ciascuno, 9.1)
 
@@ -154,6 +155,7 @@ func start_new_game(p_tour_length: int) -> void:
 	weapon_usable = false
 	intel_checks_done = []
 	poison_endurance_lost = 0
+	procedures_done = []
 	recorded_creatures = []
 	explored_planets = []
 	supply_track_pos = 0
@@ -242,7 +244,7 @@ func save_game(silent := false) -> bool:
 		"damage_points": damage_points, "captured_creatures": captured_creatures,
 		"acquired_artifacts": acquired_artifacts,
 		"weapon_usable": weapon_usable, "intel_checks_done": intel_checks_done,
-		"poison_endurance_lost": poison_endurance_lost,
+		"poison_endurance_lost": poison_endurance_lost, "procedures_done": procedures_done,
 		"pending_artifact_vp": pending_artifact_vp,
 		"recorded_creatures": recorded_creatures,
 		"explored_planets": explored_planets,
@@ -328,6 +330,7 @@ func load_game() -> bool:
 	weapon_usable = bool(d.get("weapon_usable", false))
 	intel_checks_done = d.get("intel_checks_done", [])
 	poison_endurance_lost = int(d.get("poison_endurance_lost", 0))
+	procedures_done = d.get("procedures_done", [])
 	pending_artifact_vp = d.get("pending_artifact_vp", [])
 	recorded_creatures = d.get("recorded_creatures", [])
 	explored_planets = d.get("explored_planets", [])
@@ -1120,6 +1123,92 @@ func resolve_intel_check(para: int) -> void:
 	add_log("¶%03d esame (Intelligenza %d, 2 dadi = %d): %s" % [para, v, roll, msg])
 	message_posted.emit(msg)
 	state_updated.emit()
+
+# --- Paragrafi procedurali una-tantum (¶187 raggi ustionanti, ¶193 struttura) ---
+
+const PROCEDURE_PARAS := [187, 193]
+
+func procedure_available(para: int) -> bool:
+	return para in PROCEDURE_PARAS and not (para in procedures_done)
+
+# Etichetta del pulsante procedurale per la UI.
+func procedure_label(para: int) -> String:
+	match para:
+		187: return "Subisci i raggi ustionanti (tira)"
+		193: return "Affronta la struttura"
+	return "Risolvi"
+
+func resolve_procedure(para: int) -> void:
+	if not procedure_available(para):
+		return
+	procedures_done.append(para)
+	match para:
+		187: _resolve_burning_rays()
+		193: _resolve_structure_fight()
+
+# ¶187: per ogni personaggio e robot si tirano 2 dadi; se il risultato supera il
+# Valore di Velocità l'unità viene distrutta dai raggi. Col rover tutti hanno
+# Velocità minima 8. −2 per tiro con turbolaser, −2 con lo scanner, −2 per un
+# personaggio in armorig.
+func _resolve_burning_rays() -> void:
+	var rover := _gear_has("Rover")
+	var base_mod := 0
+	if _gear_has("Turbolaser"): base_mod -= 2
+	if _gear_has("Scanner"): base_mod -= 2
+	var armorig := _gear_has("Armorig")
+	var destroyed: Array = []
+	# Personaggi (si itera su una copia: la morte rimuove da expedition_units).
+	for k in expedition_units.duplicate():
+		if not crew.get(k, {}).get("alive", false):
+			continue
+		var spd := effective_char_stat(k, "speed")
+		if rover: spd = maxi(spd, 8)
+		var mod := base_mod + (-2 if armorig else 0)
+		var roll := randi_range(1, 6) + randi_range(1, 6) + mod
+		if roll > spd:
+			destroyed.append(crew[k].get("name", k))
+			_kill_character(k)
+	# Robot imbarcati e funzionanti.
+	for b in _functioning_bots():
+		var spd := int(GameData.get_unit(b).get("speed", 0))
+		if rover: spd = maxi(spd, 8)
+		var roll := randi_range(1, 6) + randi_range(1, 6) + base_mod
+		if roll > spd:
+			destroyed.append(GameData.get_unit(b).get("name", b))
+			damaged_gear.append(b)
+			add_log("%s distrutto dai raggi ustionanti (¶187)." % GameData.get_unit(b).get("name", b))
+	var msg := "Raggi ustionanti (¶187): " + ("nessuna perdita." if destroyed.is_empty() else "distrutti — " + ", ".join(destroyed) + ".")
+	add_log(msg)
+	message_posted.emit(msg)
+	state_updated.emit()
+
+# ¶193: col turbolaser, si usa il Valore di Intelligenza (come colonna) per
+# combattere la struttura; solo risultati di uccisione. La struttura è distrutta e
+# un pezzo (artefatto ¶193, peso 3) può essere riportato. Senza turbolaser, perdita
+# immediata di 10 Punti Resistenza e fuga obbligata (¶187).
+func _resolve_structure_fight() -> void:
+	if _gear_has("Turbolaser"):
+		var col := highest_intelligence(expedition_units)
+		var die := randi_range(1, 6)
+		var differential := col + die - 7  # Intelligenza come colonna + tiro
+		var result := GameData.get_combat_result(differential)
+		# Solo risultati di uccisione: la struttura viene comunque distrutta; alla
+		# spedizione si applicano gli eventuali danni del risultato.
+		if result == "EX":
+			_apply_damage(1)
+		elif result == "DE":
+			_apply_damage(2)
+		add_log("¶193: combattimento col turbolaser (Intelligenza %d, tiro %d → %s)." % [col, die, result])
+		acquire_artifact(193)  # un pezzo della struttura può essere riportato (peso 3)
+		var msg := "La struttura vivente è neutralizzata: un pezzo è recuperato (riportalo per i PV)."
+		add_log(msg)
+		message_posted.emit(msg)
+		state_updated.emit()
+	else:
+		add_log("¶193: senza turbolaser la spedizione subisce 10 Punti Resistenza e deve fuggire.")
+		_apply_damage(10)
+		message_posted.emit("Senza turbolaser: −10 Punti Resistenza, fuga obbligata (¶187).")
+		show_paragraph(187)
 
 # Distribuzione degli esiti di combattimento per la modalità scelta (8.5):
 # per ciascun risultato del dado (1-6) calcola il differenziale e il risultato
