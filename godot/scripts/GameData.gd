@@ -9,6 +9,7 @@ var units: Dictionary = {}
 var terrain: Dictionary = {}
 var paragraph_logic: Dictionary = {}
 var expedition_encounters: Dictionary = {}
+var artifacts: Dictionary = {}
 
 func _ready() -> void:
 	_load_data()
@@ -23,10 +24,18 @@ func _load_data() -> void:
 	terrain = _load_json("res://data/terrain.json")
 	paragraph_logic = _load_json("res://data/paragraph_logic.json")
 	expedition_encounters = _load_json("res://data/expedition_encounters.json")
+	artifacts = _load_json("res://data/artifacts.json")
 
 # Regole degli snodi «Incontro di spedizione» (regola 6.5). [] se l'id non è uno snodo.
 func get_expedition_encounter(para: int) -> Array:
 	return expedition_encounters.get("%03d" % para, [])
+
+# Dati di un artefatto per paragrafo di acquisizione (regole 2.6/9.1). {} se non lo è.
+func get_artifact(para: int) -> Dictionary:
+	return artifacts.get("%03d" % para, {})
+
+func is_artifact_paragraph(para: int) -> bool:
+	return artifacts.has("%03d" % para)
 
 # Regole di ramo codificate per un paragrafo d'incontro (8.2/8.5). [] se assenti.
 func get_paragraph_logic(para: int) -> Array:

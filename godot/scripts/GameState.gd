@@ -95,6 +95,7 @@ var current_creature: String = ""
 var creature_rating: int = 0          # valutazione della creatura per l'esagono (8.4)
 var damage_points: int = 0            # danni accumulati dalla spedizione
 var captured_creatures: Array = []    # creature catturate vive (PV extra)
+var acquired_artifacts: Array = []    # paragrafi degli artefatti acquisiti (PV, regole 2.6/9.1)
 
 # Superficie planetaria (environ) — regola 6.0
 # Ogni environ è una mappa reale di 6 colonne × 7 righe (42 esagoni).
@@ -141,6 +142,8 @@ func start_new_game(p_tour_length: int) -> void:
 	planet_attrs = {}
 	planet_gravity = "Earth like"
 	shuttle_capacity = 80
+	captured_creatures = []
+	acquired_artifacts = []
 	supply_track_pos = 0
 	pending_supply_checks = 0
 	reset_expedition_state()
@@ -212,6 +215,7 @@ func save_game(silent := false) -> bool:
 		"supply_track_pos": supply_track_pos, "pending_supply_checks": pending_supply_checks,
 		"current_creature": current_creature, "creature_rating": creature_rating,
 		"damage_points": damage_points, "captured_creatures": captured_creatures,
+		"acquired_artifacts": acquired_artifacts,
 		"creature_attr_cache": creature_attr_cache,
 		"pending_combat_shift": pending_combat_shift, "pending_no_capture": pending_no_capture,
 		"pending_kill_as_capture": pending_kill_as_capture,
@@ -290,6 +294,7 @@ func load_game() -> bool:
 	creature_rating = int(d.get("creature_rating", 0))
 	damage_points = int(d.get("damage_points", 0))
 	captured_creatures = d.get("captured_creatures", [])
+	acquired_artifacts = d.get("acquired_artifacts", [])
 	creature_attr_cache = {}
 	var cac: Variant = d.get("creature_attr_cache", {})
 	if typeof(cac) == TYPE_DICTIONARY:
@@ -966,7 +971,31 @@ func best_combat(mode: String) -> int:
 		if g.get("combat", false) or GameData.get_bot_keys().has(k):
 			var gv: int = int(g.get("capture", 0)) if mode == "capture" else int(g.get("kill", 0))
 			best = maxi(best, gv)
+	# Arma aliena (artefatto ¶006): se acquisita, usabile come strumento (Cattura/Uccisione 9).
+	if "006" in acquired_artifacts:
+		var a := GameData.get_artifact(6)
+		best = maxi(best, int(a.get("capture", 0)) if mode == "capture" else int(a.get("kill", 0)))
 	return best if best > 0 else 3
+
+# Acquisizione di un artefatto (2.6/9.1): lo si riporta sulla Pandora e si
+# guadagnano i PV indicati sul retro del segnalino (linea Additional VP's).
+func acquire_artifact(para: int) -> bool:
+	var key := "%03d" % para
+	if key in acquired_artifacts:
+		return false
+	var a := GameData.get_artifact(para)
+	if a.is_empty():
+		return false
+	acquired_artifacts.append(key)
+	var vp := int(a.get("vp", 0))
+	if vp > 0:
+		gain_vp(vp, "Artefatto acquisito: %s (¶%s)" % [a.get("name", key), key])
+	add_log("Artefatto acquisito: %s (¶%s, +%d PV)." % [a.get("name", key), key, vp])
+	state_updated.emit()
+	return true
+
+func is_artifact_acquired(para: int) -> bool:
+	return ("%03d" % para) in acquired_artifacts
 
 # Distribuzione degli esiti di combattimento per la modalità scelta (8.5):
 # per ciascun risultato del dado (1-6) calcola il differenziale e il risultato

@@ -266,6 +266,13 @@ func _build_ui() -> void:
 	btn_return.pressed.connect(_on_return_to_pandora)
 	actions_hbox.add_child(btn_return)
 
+	var btn_artifact := Button.new()
+	btn_artifact.name = "BtnArtifact"
+	btn_artifact.text = "Acquisisci artefatto"
+	btn_artifact.visible = false
+	btn_artifact.pressed.connect(_on_acquire_artifact)
+	actions_hbox.add_child(btn_artifact)
+
 	var btn_explore := Button.new()
 	btn_explore.name = "BtnExplore"
 	btn_explore.text = "Esplora (tira dado)"
@@ -914,6 +921,17 @@ func _update_action_buttons(phase: String) -> void:
 	if btn_heal: btn_heal.visible = (phase == "expedition") and not creature_active and GameState.can_heal()
 	var btn_repair := find_child("BtnRepair", true, false)
 	if btn_repair: btn_repair.visible = (phase == "expedition") and not creature_active and GameState.can_repair()
+	# Acquisizione artefatto (2.6/9.1): sul paragrafo dell'artefatto, in spedizione,
+	# se non già acquisito e nessun incontro attivo.
+	var btn_artifact := find_child("BtnArtifact", true, false)
+	if btn_artifact:
+		var can_take: bool = on_surface and not creature_active \
+			and GameData.is_artifact_paragraph(current_para_num) \
+			and not GameState.is_artifact_acquired(current_para_num)
+		btn_artifact.visible = can_take
+		if can_take:
+			var a := GameData.get_artifact(current_para_num)
+			btn_artifact.text = "Acquisisci: %s (+%d PV)" % [a.get("name", "artefatto"), int(a.get("vp", 0))]
 
 func _update_display() -> void:
 	# Update status labels
@@ -1530,6 +1548,11 @@ func _on_continue() -> void:
 
 func _on_return_to_pandora() -> void:
 	GameState.return_to_pandora()
+
+func _on_acquire_artifact() -> void:
+	if GameState.acquire_artifact(current_para_num):
+		_update_display()
+		_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
 func _on_explore() -> void:
 	# Esplora l'esagono attualmente occupato (es. quello di atterraggio), con i

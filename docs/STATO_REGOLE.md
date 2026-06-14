@@ -13,16 +13,18 @@ prototipo Godot.
 
 | Stato | Conteggio |
 |---|---|
-| 🟢 Verde | 26 |
-| 🟡 Giallo | 24 |
+| 🟢 Verde | 28 |
+| 🟡 Giallo | 22 |
 | 🔴 Rosso | 8 |
 
 Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
-matrice di esplorazione → incontro creatura → combattimento) **solido**. I buchi
-principali rimasti: **artefatti (2.6/9.1)** ed **effetti interni dei
-paragrafi-evento**. Già coperti: **Rifornimento (7.0/7.1/7.2/7.3)**,
-**Valore Intelligenza personaggi (3.3)**, **equipaggiamento d'atmosfera (5.2)**,
-**snodi "Incontro di spedizione" (6.5)**.
+matrice di esplorazione → incontro creatura → combattimento) **solido**.
+Coperti in questa tornata: **Resistenza 5 (2.5)**, **Valore Intelligenza (3.3)**,
+**Rifornimento (7.0/7.1/7.2/7.3)**, **equipaggiamento d'atmosfera (5.2)**,
+**snodi "Incontro di spedizione" (6.5)**, **effetti eventi interstellari (4.2)**,
+**artefatti (2.4/2.6/9.1)**. Migliorie residue (🟡/🔴): arricchimento dati
+environ (clima + terreni mancanti per attivare le condizioni 6.5 oggi inerti),
+PV-per-attributo-creatura (9.1), e dettagli di rover/porto individuale (5.6–5.8).
 
 ---
 
@@ -37,9 +39,9 @@ paragrafi-evento**. Già coperti: **Rifornimento (7.0/7.1/7.2/7.3)**,
 | 2.1 | Mappa con 8 environ a griglia esagonale | 🟢 | 8 environ reali generati (`environ_maps.json`, `generate_environ`). |
 | 2.2 | Carte e tabelle | 🟡 | Presenti: Eventi Interstellari, Matrice Esplorazione, Risultati Combattimento, Valutazione Creatura, Strategia d'Incontro. Mancano/parziali: Capacità di Porto, Effetti del Terreno (modificatori rifornimento). |
 | 2.3 | 232 paragrafi | 🟢 | Tutti presenti in `paragrafi_it.json` (it/en). |
-| 2.4 | Pezzi: 7 personaggi, 4 bot, 21 strumenti, 39 creature, 5 artefatti | 🟡 | Personaggi/bot/strumenti/creature presenti; **5 artefatti assenti**. |
+| 2.4 | Pezzi: 7 personaggi, 4 bot, 21 strumenti, 39 creature, 5 artefatti | 🟢 | Personaggi/bot/strumenti/creature e i **5 artefatti** (`artifacts.json`: ¶004/006/030/036/042) presenti. |
 | 2.5 | Unità + Valore Intelligenza + **Resistenza 5** | 🟢 | `MAX_ENDURANCE = 5` (corretto) e Valore Intelligenza determinato a inizio gioco (3.3). |
-| 2.6 | Creature e artefatti da catturare/acquisire | 🟡 | Creature sì (cattura/uccisione); artefatti no. |
+| 2.6 | Creature e artefatti da catturare/acquisire | 🟢 | Creature (cattura/uccisione) e artefatti (`acquire_artifact`: pulsante sul paragrafo, PV, arma aliena ¶006 usabile in combattimento). |
 | 2.7 | Marcatori per attributi variabili | 🟢 | Attributi pianeta, Tour Time, rifornimenti tracciati. |
 
 ## [3.0] Come iniziare
@@ -110,7 +112,7 @@ paragrafi-evento**. Già coperti: **Rifornimento (7.0/7.1/7.2/7.3)**,
 ## [9.0] Condizioni di Vittoria
 | Caso | Regola | Stato | Nota |
 |---|---|:--:|---|
-| 9.1 | PV guadagnati (attributi creatura, cattura, artefatti, pianeta esplorato) | 🟡 | Creatura/pianeta sì; artefatti no; PV-per-attributo parziale. |
+| 9.1 | PV guadagnati (attributi creatura, cattura, artefatti, pianeta esplorato) | 🟡 | Creatura/pianeta/**artefatti** sì (`acquire_artifact`, `artifacts.json`, PV su linea Additional VP's); PV-per-attributo-creatura ancora parziale. |
 | 9.2 | PV persi (personaggio −10, Resistenza −1, bot/rover, tipo strumento, mesi oltre Tour) | 🟡 | Alcune voci sì; copertura non completa. |
 | 9.3 | Totale finale PV / condizione di vittoria | 🟡 | `_end_tour` calcola il totale; soglie vittoria/sconfitta da rifinire. |
 
