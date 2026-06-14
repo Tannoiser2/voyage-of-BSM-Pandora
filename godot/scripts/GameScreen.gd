@@ -1532,6 +1532,11 @@ func _on_strategy(strategy: String) -> void:
 	GameState.choose_encounter_strategy(strategy)
 
 func _on_continue() -> void:
+	# A Tour concluso (GAME_OVER) il "Continua" non riprende il gioco né rientra in orbita.
+	if GameState.current_phase == GameState.Phase.GAME_OVER:
+		GameState.current_paragraph = 0
+		_update_display()
+		return
 	# Chiude il paragrafo corrente e torna alla fase appropriata
 	GameState.current_paragraph = 0
 	if GameState.expedition_pos > 0:

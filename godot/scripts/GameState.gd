@@ -792,6 +792,10 @@ func resolve_event_die(die: int) -> void:
 # Ingresso in orbita: prepara gli attributi del pianeta e mostra il paragrafo
 # che lo descrive (Tabella Pianeti, 5.0). Il giocatore decide se esplorare.
 func enter_orbit() -> void:
+	# Se il Tour è già finito (es. evento interstellare che esaurisce i mesi o
+	# stermina l'equipaggio), non si rientra in orbita: la partita è conclusa.
+	if current_phase == Phase.GAME_OVER:
+		return
 	set_phase(Phase.ORBIT)
 	setup_orbit_planet()
 	var para := GameData.get_planet_paragraph(current_system, tour_length)
@@ -987,10 +991,15 @@ func best_combat(mode: String) -> int:
 		if g.get("combat", false) or GameData.get_bot_keys().has(k):
 			var gv: int = int(g.get("capture", 0)) if mode == "capture" else int(g.get("kill", 0))
 			best = maxi(best, gv)
-	# Arma aliena (artefatto ¶006): se acquisita, usabile come strumento (Cattura/Uccisione 9).
-	if "006" in acquired_artifacts:
-		var a := GameData.get_artifact(6)
-		best = maxi(best, int(a.get("capture", 0)) if mode == "capture" else int(a.get("kill", 0)))
+	# Armi-artefatto acquisite (es. Arma aliena ¶006, Cattura/Uccisione 9): una volta
+	# acquisite vengono portate dalla spedizione e usate come strumento (2.6), ma se
+	# danneggiate (registrate in damaged_gear) non sono utilizzabili (6.9).
+	for akey in acquired_artifacts:
+		if akey in damaged_gear:
+			continue
+		var art := GameData.get_artifact(akey.to_int())
+		var av: int = int(art.get("capture", 0)) if mode == "capture" else int(art.get("kill", 0))
+		best = maxi(best, av)
 	return best if best > 0 else 3
 
 # Acquisizione di un artefatto (2.6/9.1): si raccoglie ora, ma i PV indicati sul
