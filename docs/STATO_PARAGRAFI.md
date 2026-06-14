@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 128 | 55,2% |
+| 🟢 Verde | 131 | 56,5% |
 | 🟡 Giallo | 38 | 16,4% |
-| 🔴 Rosso | 66 | 28,4% |
+| 🔴 Rosso | 63 | 27,2% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 63,4%**
-( (128 + 38/2) / 232 ).
+come metà, l'indice di completezza è **≈ 64,7%**
+( (131 + 38/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -95,11 +95,11 @@ come metà, l'indice di completezza è **≈ 63,4%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 16 | 9 | 4 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 9 | 21 | 18 | 48 |
+| incontro-creatura (intro) | 12 | 21 | 15 | 48 |
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **128** | **38** | **66** | **232** |
+| **Totale** | **131** | **38** | **63** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -189,7 +189,7 @@ come metà, l'indice di completezza è **≈ 63,4%**
 | 066 | incontro-creatura (nebbia, senza pedina) | 🔴 | Creatura «senza counter» con modificatori espliciti e +4 PV Holographer: non gestita (nessun segnalino in dati). |
 | 067 | evento-interstellare (esito) | 🟢 | follia temporanea: +1 Mese di Tour. Automatizzato. |
 | 068 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶004/173/181 — Città Aliena / Heavy Veg. / Marsh): salto al ramo giusto o ri-tiro Matrice. |
-| 069 | incontro-creatura (Glassman, snodo) | 🔴 | Comunica/Combatti con tiri 1d6 → ¶213/217/220 non gestiti. |
+| 069 | incontro-creatura (Glassman, snodo) | 🟢 | Comunica: 1 dado 1-3→¶213 / 4-6→¶217. Combatti: 1 dado 1-4→¶220 / 5-6→¶217. Azione roll_goto. |
 | 070 | procedurale (atterraggio shuttle) | 🔴 | Tre esiti su Intelligenza navigatore (danni/robot/5 Punti Danno) non automatizzati. |
 | 071 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/051/043 — Città Aliena / gravità quasi assente / atmosfera velenosa): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 072 | incontro-creatura (Unithalo) | 🔴 | Sorpresa shift 1 sx, deviazione a ¶206 e ramo Fuga (rapimento) non gestiti. |
@@ -286,7 +286,7 @@ come metà, l'indice di completezza è **≈ 63,4%**
 | 153 | incontro-creatura (Bubbler) | 🟡 | Strategia offerta; sorpresa shift 1 sx e «risultato D/E → tutti morti» non applicati. |
 | 154 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+atmosfera / Flat+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 155 | procedurale (atmosfera/robot) | 🔴 | Deterioramento robot a ogni controllo rifornimento non automatizzato. |
-| 156 | incontro-creatura (Aenon, snodo) | 🔴 | Filtro ambot/turbolaser → fuga o ¶223 non gestito. |
+| 156 | incontro-creatura (Aenon, snodo) | 🟢 | Comunicazione/Combattimento: con Ambot o Turbolaser la creatura fugge (scegli altra azione); altrimenti → ¶223. Codificato. |
 | 157 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/072/054/032 — Città Aliena / Glacial Ice / Light Veg.+atmosfera / geologia attiva): salto al ramo giusto o ri-tiro Matrice. |
 | 158 | esito (alieno amichevole) | 🔴 | +5 PV e bonus CO/neuroscanner/Holographer e divieto incontri successivi non automatizzati. |
 | 159 | incontro-creatura (Mirror Fly) | 🟡 | Creatura preparata; «il carapace respinge il turbolaser» non modellato. |
@@ -311,7 +311,7 @@ come metà, l'indice di completezza è **≈ 63,4%**
 | 178 | procedurale (uovo si schiude) | 🔴 | Tiro 1d6 → ¶142/159/162 non gestito. |
 | 179 | incontro-creatura (Glosper) | 🟡 | Creatura preparata; uccisione da sorpresa e ramo Combatti→¶227 non gestiti. |
 | 180 | procedurale (incornata) | 🔴 | Perdita Resistenza (2 dadi, modificatori) poi rimando a ¶017 non gestiti. |
-| 181 | incontro-creatura (Garbrist, snodo) | 🔴 | Comunica(neuroscanner→¶230 / ¶016) non gestito. |
+| 181 | incontro-creatura (Radrod, snodo) | 🟢 | Comunica: con il Neuroscan → ¶230; altrimenti → ¶016. Codificato (come ¶009). |
 | 182 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (shuttle non occupato (spedizione lontana) / Citta Aliena / Mountain-Cliffs+clima artico / atmosfera corrosiva): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
 | 183 | procedurale (combattimento pirati) | 🔴 | Tiro 1d6 con esiti (Resistenza/¶191/game over) non automatizzato. |
 | 184 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶155/042/031/029 — atmosfera+robot / Città Aliena / Hill+clima sahariano / Heavy Veg.): il motore salta al ramo giusto o ri-tira la Matrice. |

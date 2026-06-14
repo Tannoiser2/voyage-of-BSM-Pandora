@@ -1668,6 +1668,20 @@ func _apply_act(act: Dictionary) -> void:
 				_clear_encounter_state()
 				encounter_outcome_text = ""
 			pending_goto = int(act.get("para", 0))
+		"roll_goto":
+			# Tira N dadi (default 1) e instrada al primo intervallo «max» soddisfatto
+			# (es. ¶069 Comunica: 1-3→¶213, 4-6→¶217).
+			var nd: int = int(act.get("dice", 1))
+			var total := 0
+			for _r in range(nd):
+				total += randi_range(1, 6)
+			var rdest := 0
+			for rg in act.get("ranges", []):
+				if total <= int(rg.get("max", 6)):
+					rdest = int(rg.get("para", 0))
+					break
+			add_log("Incontro: %d dado/i = %d → ¶%03d." % [nd, total, rdest])
+			pending_goto = rdest
 		"flee":
 			var h: int = int(act.get("hours", 0)) if typeof(act.get("hours", 0)) != TYPE_STRING else 0
 			if h > 0: add_expedition_hours(h)
