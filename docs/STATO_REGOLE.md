@@ -1,0 +1,125 @@
+# Stato del regolamento — confronto 1:1 regole ↔ gioco
+
+Aggiornato al **2026-06-14**. Confronto tra le **sezioni/casi del regolamento originale**
+(*Voyage of the BSM Pandora*, SPI 1981) e ciò che è effettivamente implementato nel
+prototipo Godot.
+
+**Legenda**
+- 🟢 **Verde** — regola implementata e fedele.
+- 🟡 **Giallo** — implementata in parte o con un bug / scostamento dal regolamento.
+- 🔴 **Rosso** — non implementata o errata.
+
+## Riepilogo
+
+| Stato | Conteggio |
+|---|---|
+| 🟢 Verde | 19 |
+| 🟡 Giallo | 26 |
+| 🔴 Rosso | 13 |
+
+Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
+matrice di esplorazione → incontro creatura → combattimento) **solido**. I buchi
+principali: **Rifornimento (7.0)**, **Valore Intelligenza personaggi (3.3)**,
+**equipaggiamento d'atmosfera (5.2)**, **snodi "Incontro di spedizione" (6.5)**,
+**artefatti (2.6/9.1)** ed **effetti interni dei paragrafi-evento**.
+
+---
+
+## [1.0] Introduzione
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 1.0 | Gioco solitario a 232 paragrafi | 🟢 | Struttura a paragrafi presente e funzionante. |
+
+## [2.0] Equipaggiamento di gioco
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 2.1 | Mappa con 8 environ a griglia esagonale | 🟢 | 8 environ reali generati (`environ_maps.json`, `generate_environ`). |
+| 2.2 | Carte e tabelle | 🟡 | Presenti: Eventi Interstellari, Matrice Esplorazione, Risultati Combattimento, Valutazione Creatura, Strategia d'Incontro. Mancano/parziali: Capacità di Porto, Effetti del Terreno (modificatori rifornimento). |
+| 2.3 | 232 paragrafi | 🟢 | Tutti presenti in `paragrafi_it.json` (it/en). |
+| 2.4 | Pezzi: 7 personaggi, 4 bot, 21 strumenti, 39 creature, 5 artefatti | 🟡 | Personaggi/bot/strumenti/creature presenti; **5 artefatti assenti**. |
+| 2.5 | Unità + Valore Intelligenza + **Resistenza 5** | 🔴 | Il codice usa `MAX_ENDURANCE = 6` (le regole dicono **5**); Valore Intelligenza non modellato. |
+| 2.6 | Creature e artefatti da catturare/acquisire | 🟡 | Creature sì (cattura/uccisione); artefatti no. |
+| 2.7 | Marcatori per attributi variabili | 🟢 | Attributi pianeta, Tour Time, rifornimenti tracciati. |
+
+## [3.0] Come iniziare
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 3.1 | Scelta Tour 10/20/30 mesi | 🟢 | Implementato nel menu/`start_new_game`. |
+| 3.2 | Disposizione iniziale | 🟢 | Stato iniziale impostato. |
+| 3.3 | Valore Intelligenza di ogni personaggio (tiro 1 dado) | 🔴 | Non implementato: i personaggi non hanno un Valore Intelligenza (impatta gli eventi che lo richiedono). |
+| 3.4 | Vai al ¶201 per iniziare | 🟢 | Si parte in fase interstellare. |
+| 3.5 | Scelta casuale di personaggio/bot/oggetto | 🟡 | La selezione casuale richiesta da molti paragrafi non è automatizzata. |
+
+## [4.0] Pandora e Movimento Interstellare
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 4.0 Proc. | Muovi esagono-per-esagono, costo Tour Time, **2 dadi ≤ esagoni (origine inclusa) → evento** | 🟢 | **Corretto in questa sessione**: gate di occorrenza 4.0 + tiro a 2 dadi. |
+| 4.1 | Display Interstellare | 🟢 | Mappa interstellare reale con movimento. |
+| 4.2 | Tabella Eventi Interstellari | 🟡 | Tabella ora **corretta** (2→080 … 12→064); ma gli **effetti interni** dei paragrafi-evento (mesi extra, morti casuali, controlli Intelligenza) non sono automatizzati. |
+| 4.3 | Tabella Pianeti | 🟢 | `enter_orbit` + `get_planet_paragraph`. |
+| 4.4 | Inizio/fine dal Pandora Entry Box | 🟡 | Flusso inizio/fine semplificato. |
+| 4.5 | Azioni di Bordo al ¶050 (riparazioni/cure/studio creature) | 🟡 | Riparazione/cura esistono come azioni di spedizione (6.9), non come azioni di bordo al ¶050; "studio creature" assente. |
+| 4.6 | Tour Time a zero → Tour superato | 🟡 | `_end_tour` presente; penalità per mesi oltre il Tour parziale. |
+
+## [5.0] Preparare una Spedizione
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 5.1 | Marcatori sulla Traccia Attributi Pianeta/Environ | 🟢 | `setup_orbit_planet`, `planet_attrs`. |
+| 5.2 | Scelta unità + **enviorig/armorig per atmosfera** | 🟡 | Scelta unità OK; **obbligo enviorig/armorig** (atmosfere velenose/corrosive) **non modellato**. |
+| 5.3 | Punti Rifornimento sullo shuttle (0–20, peso 1) | 🟢 | `planned_supply` con limite. |
+| 5.4 | Esagono di atterraggio (tiro di dado) | 🟢 | `land_on_planet`, `landing_hex`. |
+| 5.5 | Paragrafo che descrive l'environ | 🟢 | Mostrato all'atterraggio. |
+| 5.6 | Scelta unità a bordo vs in spedizione | 🟡 | Distinzione presente ma parziale (Rover/On Foot). |
+| 5.7 | Spedizione in Rover o a piedi | 🟡 | Modellazione parziale del rover. |
+| 5.8 | Carta Capacità di Porto | 🟡 | Limite di peso sì; alterazione del Valore di Porto per gravità no. |
+
+## [6.0] Movimento ed Esplorazione della Spedizione
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 6.1 | Esplora / muovi+esplora in una mossa | 🟢 | `move_expedition`, `explore_current_hex`. |
+| 6.2 | Marcatore Esplorato | 🟢 | Stato `explored` per esagono. |
+| 6.3 | Movimento affrettato | 🟢 | `can_hasty_move`, `hasty_move_to`, costo percorso. |
+| 6.4 | Matrice di Esplorazione | 🟢 | `get_exploration_2d6` (1° dado colonna, 2° riga). |
+| 6.5 | Paragrafo d'incontro di spedizione (3–4 affermazioni condizionali) | 🔴 | I **36 snodi** "Incontro di spedizione" non vengono valutati (salti su terreno/gravità/clima ignorati). |
+| 6.6 | Carta Effetti del Terreno | 🟡 | Costi in ore per entrare/esplorare sì; modificatori di rifornimento parziali. |
+| 6.7 | Terreni multipli / speciali | 🟡 | Gestione parziale del terreno misto. |
+| 6.8 | Spesa di ore di spedizione (Traccia Tempo) | 🟢 | `add_expedition_hours`. |
+| 6.9 | Riparazione/cura/studio in spedizione | 🟡 | `repair_gear`, `heal_wounded` sì; "studio" no. |
+
+## [7.0] Rifornimento della Spedizione
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 7.1 | Utenti di rifornimento (singolo/doppio) | 🔴 | Non implementato. |
+| 7.2 | Controllo rifornimento (dado vs Valore Supporto Vitale) | 🔴 | Non implementato: nessun supply check per environ. |
+| 7.3 | Spesa dei Punti Rifornimento | 🟡 | Consumo parziale (`_consume_supply_for`, `use_expedition_supply`), ma senza il controllo 7.2. |
+
+## [8.0] Creature, Combattimento e Danni
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 8.1 | Controllo di sorpresa | 🟢 | `surprise_active` (con effetto Scanner). |
+| 8.2 | Strategia d'incontro + Tabella | 🟢 | `choose_encounter_strategy` + tabella strategia. |
+| 8.3 | Asterisco = istruzione speciale | 🟡 | Le istruzioni speciali sono i rami-paragrafo, solo in parte codificati (Lotto 1 + inizio Lotto 2). |
+| 8.4 | Valutazione della creatura | 🟢 | `creature_attr` + `RATING_TABLE` (2d6 + modificatore). |
+| 8.5 | Sequenza di combattimento | 🟡 | `best_combat`, `combat_odds`, spostamenti colonne; contributo bot/strumenti parziale. |
+| 8.6 | Tabella Risultati di Combattimento | 🟢 | `combat_results` in `tables.json`. |
+| 8.7 | Uccisa/catturata/fuga + Danni | 🟢 | `_capture_creature`, `_kill_creature`, `_apply_damage`. |
+| 8.8 | Danni → rimozione Punti Resistenza | 🟡 | Danni su Resistenza sì; assorbimento via Punti Rifornimento parziale. |
+| 8.9 | Valore di Porto ridotto / strumento danneggiato | 🟡 | `damaged_gear` sì; riduzione del Porto per perdita di Resistenza no. |
+
+## [9.0] Condizioni di Vittoria
+| Caso | Regola | Stato | Nota |
+|---|---|:--:|---|
+| 9.1 | PV guadagnati (attributi creatura, cattura, artefatti, pianeta esplorato) | 🟡 | Creatura/pianeta sì; artefatti no; PV-per-attributo parziale. |
+| 9.2 | PV persi (personaggio −10, Resistenza −1, bot/rover, tipo strumento, mesi oltre Tour) | 🟡 | Alcune voci sì; copertura non completa. |
+| 9.3 | Totale finale PV / condizione di vittoria | 🟡 | `_end_tour` calcola il totale; soglie vittoria/sconfitta da rifinire. |
+
+---
+
+## Bug / scostamenti da correggere (priorità)
+1. **Resistenza 6 → 5** (2.5): valore errato rispetto al regolamento. *(impatta bilanciamento e PV 9.2)*
+2. **Valore Intelligenza personaggi** (3.3): assente; serve a molti eventi/paragrafi.
+3. **Snodi "Incontro di spedizione"** (6.5): 36 paragrafi non valutati — serve un piccolo interprete di condizioni terreno/gravità/clima.
+4. **Rifornimento 7.0**: supply check (7.2) e utenti singolo/doppio (7.1).
+5. **Equipaggiamento d'atmosfera** (5.2): enviorig/armorig obbligatori.
+6. **Artefatti** (2.6/9.1): 5 artefatti e relativi PV.
+7. **Effetti interni dei paragrafi-evento interstellari** (4.2).
