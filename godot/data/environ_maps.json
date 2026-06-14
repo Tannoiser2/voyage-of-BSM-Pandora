@@ -405,7 +405,7 @@
 "lr": 5,
 "x": 796.9,
 "y": 958.5,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "65": {
 "real": "1205",
@@ -509,7 +509,7 @@
 "lr": 3,
 "x": 795.9,
 "y": 571.4,
-"terrain": "Desert"
+"terrain": "Mountain"
 },
 "33": {
 "real": "0903",
@@ -517,7 +517,7 @@
 "lr": 3,
 "x": 457.5,
 "y": 578.1,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "43": {
 "real": "1003",
@@ -533,7 +533,7 @@
 "lr": 4,
 "x": 455.8,
 "y": 769.1,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "44": {
 "real": "1004",
@@ -557,7 +557,7 @@
 "lr": 4,
 "x": 795.2,
 "y": 764.4,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "64": {
 "real": "1204",
@@ -581,7 +581,7 @@
 "lr": 3,
 "x": 292.8,
 "y": 670.1,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "22": {
 "real": "0802",
@@ -589,7 +589,7 @@
 "lr": 2,
 "x": 290.8,
 "y": 475.8,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "13": {
 "real": "0703",
@@ -605,7 +605,7 @@
 "lr": 2,
 "x": 119.1,
 "y": 382.4,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "42": {
 "real": "1002",
@@ -621,7 +621,7 @@
 "lr": 1,
 "x": 957.9,
 "y": 285.4,
-"terrain": "Desert"
+"terrain": "Mountain"
 },
 "32": {
 "real": "0902",
@@ -637,7 +637,7 @@
 "lr": 2,
 "x": 794.6,
 "y": 379.4,
-"terrain": "Desert"
+"terrain": "Mountain"
 },
 "62": {
 "real": "1202",
@@ -653,7 +653,7 @@
 "lr": 1,
 "x": 457.5,
 "y": 193.4,
-"terrain": "Desert"
+"terrain": "Mountain"
 },
 "21": {
 "real": "0801",
@@ -661,7 +661,7 @@
 "lr": 1,
 "x": 290.5,
 "y": 284.4,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "51": {
 "real": "1101",
@@ -669,7 +669,7 @@
 "lr": 1,
 "x": 792.6,
 "y": 189.0,
-"terrain": "Desert"
+"terrain": "Mountain"
 },
 "41": {
 "real": "1001",
@@ -677,7 +677,7 @@
 "lr": 1,
 "x": 621.9,
 "y": 287.4,
-"terrain": "Rough"
+"terrain": "Mountain"
 },
 "11": {
 "real": "0701",
@@ -685,7 +685,7 @@
 "lr": 1,
 "x": 118.1,
 "y": 192.4,
-"terrain": "Desert"
+"terrain": "Mountain"
 }
 }
 },

@@ -52,11 +52,11 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   a terreno/gravità/clima/atmosfera. L'interprete valuta gravità, atmosfera,
   idrografia, geologia, vegetazione, **clima** (5.1, derivato dal testo dell'area:
   «Il clima è X»), i terreni grezzi (Flat/Hill/Heavy Veg./Solid Lava/Glacial Ice) e
-  ora le **Città Aliene** (23 esagoni) e la **Light Vegetation** (60 esagoni),
-  entrambe mappate dalle 8 mappe environ e verificate sulle immagini.
-  **11 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.** Restano inerti i
-  **terreni fini** (Cave/Cliffs/Mountain/Liquid Surface/Marsh) e le sotto-feature
-  (lava fluente, ecc.): 9 snodi sono bloccati solo da questi terreni, 16 da
+  ora le **Città Aliene** (23 esagoni), la **Light Vegetation** (60) e le
+  **Montagne** (15), tutte mappate dalle 8 mappe environ e verificate sulle immagini.
+  **14 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.** Restano inerti alcuni
+  **terreni fini** (Cave/Cliffs/Liquid Surface/Marsh) e le sotto-feature
+  (lava fluente, ecc.): 6 snodi sono bloccati solo da questi terreni, 16 da
   sotto-feature ⇒ 🔴 finché non si arricchisce ulteriormente il per-esagono.
 - **procedurale-vario:** tiri/condizioni con effetti su Resistenza, PV, ore,
   equipaggiamento. Quasi sempre solo testo ⇒ 🔴 (🟡 se in parte coperto).
@@ -69,13 +69,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 83 | 35,8% |
+| 🟢 Verde | 86 | 37,1% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 108 | 46,6% |
+| 🔴 Rosso | 105 | 45,3% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 44,6%**
-( (83 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 45,9%**
+( (86 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -86,9 +86,9 @@ come metà, l'indice di completezza è **≈ 44,6%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 11 | 0 | 25 | 36 |
+| snodo «Incontro di spedizione» | 14 | 0 | 22 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **83** | **41** | **108** | **232** |
+| **Totale** | **86** | **41** | **105** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -290,13 +290,13 @@ come metà, l'indice di completezza è **≈ 44,6%**
 | 168 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶152/036/041/066) non valutata. |
 | 169 | evento-interstellare (esito) | 🔴 | Trattativa CO con check Intelligenza → ¶203/183 non gestita. |
 | 170 | incontro-creatura (snodo) | 🔴 | Sorpresa (divora il più lento), strategia, ramo Fuga→¶226 non gestiti. |
-| 171 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶036/145/147) non valutata. |
+| 171 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/147 — Città Aliena / Light Veg.+gravità / Mountain): salto al ramo giusto o ri-tiro Matrice. |
 | 172 | incontro (alieno città, snodo) | 🔴 | Tiro 1d6 → ¶158/228 non gestito. |
 | 173 | incontro (fungo, senza pedina) | 🔴 | Check Intelligenza/GSO → ¶219/224 non gestito. |
 | 174 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/048/167 — Città Aliena / veg.+clima tropicale / Flat senza veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 175 | procedurale (arma, WO) | 🟢 | Pulsante «Esamina» (resolver `intel_check`): 2 dadi vs Intelligenza più alta → arma trasportabile dopo 1d6 ore / oggetto banale lasciato / esplosione con 2d6 Punti Danno. |
 | 176 | incontro (rete vivente, senza pedina) | 🟡 | Sostanzialmente narrativo «scegli azione»; il +3 PV Holographer non viene assegnato. |
-| 177 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶042/007/149) non valutata. |
+| 177 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/007/149 — Città Aliena / Mountain+gravità / veg.+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 178 | procedurale (uovo si schiude) | 🔴 | Tiro 1d6 → ¶142/159/162 non gestito. |
 | 179 | incontro-creatura (Glosper) | 🟡 | Creatura preparata; uccisione da sorpresa e ramo Combatti→¶227 non gestiti. |
 | 180 | procedurale (incornata) | 🔴 | Perdita Resistenza (2 dadi, modificatori) poi rimando a ¶017 non gestiti. |
@@ -309,7 +309,7 @@ come metà, l'indice di completezza è **≈ 44,6%**
 | 187 | procedurale (fuga dalla struttura) | 🟢 | Pulsante «Subisci i raggi»: per ogni personaggio e robot 2 dadi vs Velocità → distruzione se superata; col rover Velocità minima 8; −2 con turbolaser, −2 con scanner, −2 per chi indossa l'armorig. |
 | 188 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶034/039/142) non valutata. |
 | 189 | procedurale (furto equipaggiamento) | 🔴 | Tiro 1d6 e rimozione casuale robot/strumenti non automatizzati. |
-| 190 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶172/037/164) non valutata. |
+| 190 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/037/164 — Città Aliena / Heavy Veg. / Mountain+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 191 | procedurale (esito pirati) | 🔴 | Uccisioni casuali, perdita robot/strumenti e mesi di tour non automatizzati. |
 | 192 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶161/037/159) non valutata. |
 | 193 | procedurale (combattimento struttura) | 🟢 | Pulsante «Affronta la struttura»: col turbolaser combattimento via Intelligenza (solo uccisione) → struttura distrutta e pezzo recuperato (artefatto ¶193, peso 3, PV al rientro); senza turbolaser −10 Punti Resistenza e fuga obbligata a ¶187. Caveat: la colonna-Intelligenza della Tabella Combattimento è modellata in modo approssimato. |
