@@ -1305,6 +1305,15 @@ func _exp_cond_holds(cond: Dictionary) -> bool:
 		return str(planet_attrs.get("gravity", planet_gravity)) in cond["gravity"]
 	if cond.has("atmosphere"):
 		return str(planet_attrs.get("atmosphere", "Normal")) in cond["atmosphere"]
+	if cond.has("climate"):
+		# Clima del pianeta (5.1): valore atteso dalla traccia attributi (es.
+		# "tropicale", "sahariano", "artico", "temperato"). Vuoto finché non
+		# popolato nei dati-pianeta → condizione falsa.
+		var clim := str(planet_attrs.get("climate", ""))
+		return clim != "" and clim == str(cond["climate"])
+	if cond.has("climate_not"):
+		var clim2 := str(planet_attrs.get("climate", ""))
+		return clim2 != "" and clim2 != str(cond["climate_not"])
 	if cond.has("geology"):
 		return str(planet_attrs.get("geology", "Quiet")) == str(cond["geology"])
 	if cond.has("hydro"):
@@ -1331,7 +1340,9 @@ func _exp_cond_holds(cond: Dictionary) -> bool:
 		return true
 	if cond.has("unexplored_alien_city_in_area"):
 		return _unexplored_alien_city_in_area()
-	# climate / climate_not / inert / _subfeature / lava_in_area: non valutabili → FALSE (6.5).
+	# inert / _subfeature / lava_in_area: sotto-feature non modellate → FALSE (6.5).
+	# (climate/climate_not sono valutati sopra, ma falsi finché i dati-pianeta non
+	# includono il Clima — vedi 5.1.)
 	return false
 
 func show_paragraph(para_num: int) -> void:
