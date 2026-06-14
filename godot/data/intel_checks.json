@@ -1,5 +1,5 @@
 {
-  "_legend": "Procedure di check Intelligenza (regola 3.3). compare: 'highest' = Valore di Intelligenza piu' alto della spedizione (per i paragrafi che dicono «scegli un personaggio» si assume il gioco ottimale: il personaggio con Intelligenza piu' alta). Si tirano 2 dadi e si confronta il risultato col Valore V: < V-1 -> banda 'well_below'; da V-1 a V+1 -> 'near'; > V+1 -> 'well_above'. if_unit_goto: se l'unita' indicata e' nella spedizione si va invece al paragrafo dato (es. ¶006 con l'Ufficiale Armi -> ¶175). Campi di banda: text (descrizione), acquire (paragrafo dell'artefatto da raccogliere, PV al rientro), weapon_usable (rende usabile in combattimento l'Arma aliena ¶006), hours (intero o 'd6'), damage (intero o '2d6').",
+  "_legend": "Procedure di check Intelligenza (regola 3.3). compare: 'highest' = Valore di Intelligenza piu' alto della spedizione (per i paragrafi che dicono «scegli un personaggio» si assume il gioco ottimale: il personaggio con Intelligenza piu' alta). Si tirano 2 dadi e si confronta il risultato col Valore V: < V-1 -> banda 'well_below'; da V-1 a V+1 -> 'near'; > V+1 -> 'well_above'. if_unit_goto: se l'unita' indicata e' nella spedizione si va invece al paragrafo dato (es. ¶006 con l'Ufficiale Armi -> ¶175). investigator: true se gli effetti mirati ricadono sul personaggio che investiga (Intelligenza piu' alta). Campi di banda: text; acquire (paragrafo artefatto, PV al rientro); weapon_usable (rende usabile l'Arma aliena ¶006); hours (intero o 'd6'); damage (intero o '2d6', distribuito alla spedizione); require_gear + else_band (se l'equipaggiamento manca si applica un'altra banda, es. ¶030 senza E-cage); damage_investigator + negated_by (Punti Danno all'investigatore, annullati da un equipaggiamento); kill_investigator + armorig_reduces_to (uccide l'investigatore, ridotto a un danno con l'armorig). Nota: l'enviorig non e' modellato come oggetto e i suoi effetti collaterali (danneggiamento) sono inerti.",
   "006": {
     "if_unit_goto": {"unit": "WO", "para": 175},
     "compare": "highest",
@@ -15,6 +15,15 @@
       "well_below": {"acquire": 6, "hours": "d6", "text": "L'arma viene studiata attentamente ma non si scopre nulla; puo' essere riportata sulla Pandora (peso 1)."},
       "near": {"text": "L'oggetto dall'aspetto banale viene lasciato stare."},
       "well_above": {"damage": "2d6", "text": "Una manomissione incauta fa esplodere l'oggetto, che si distrugge e ferisce la spedizione."}
+    }
+  },
+  "030": {
+    "compare": "highest",
+    "investigator": true,
+    "bands": {
+      "well_below": {"require_gear": "Ecage", "else_band": "near", "acquire": 30, "text": "Lo splendido globo viene rimosso con successo e posto in una E-cage: puo' essere riportato sulla Pandora."},
+      "near": {"damage_investigator": 3, "negated_by": "Armorig", "text": "Un liquido acido schizza dal globo squarciato: chi investiga perde tre Punti Resistenza (l'armorig protegge; un enviorig verrebbe danneggiato)."},
+      "well_above": {"kill_investigator": true, "armorig_reduces_to": 3, "text": "La sfera esplode uccidendo chi investiga (con un armorig: l'armorig e' danneggiato e il personaggio perde tre Punti Resistenza)."}
     }
   }
 }

@@ -62,13 +62,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 67 | 28,9% |
-| 🟡 Giallo | 44 | 19,0% |
+| 🟢 Verde | 68 | 29,3% |
+| 🟡 Giallo | 43 | 18,5% |
 | 🔴 Rosso | 121 | 52,2% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 38,4%**
-( (67 + 44/2) / 232 ).
+come metà, l'indice di completezza è **≈ 38,6%**
+( (68 + 43/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -80,8 +80,8 @@ come metà, l'indice di completezza è **≈ 38,4%**
 | incontro-creatura (intro) | 7 | 22 | 19 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
 | snodo «Incontro di spedizione» | 0 | 0 | 36 | 36 |
-| procedurale-vario / rimandi-testuali | 5 | 6 | 42 | 53 |
-| **Totale** | **67** | **44** | **121** | **232** |
+| procedurale-vario / rimandi-testuali | 6 | 5 | 42 | 53 |
+| **Totale** | **68** | **43** | **121** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -127,7 +127,7 @@ come metà, l'indice di completezza è **≈ 38,4%**
 | 027 | incontro-creatura (Folisaur) | 🟡 | Creatura preparata e strategia offerta; lo stordimento da sorpresa e lo «shift = 1 dado» del ramo combattimento non sono applicati. |
 | 028 | procedurale (alieni invisibili) | 🔴 | Check neuroscanner→+4 PV o ¶189 non gestito; solo testo. |
 | 029 | incontro-creatura (Ivy Five) | 🟢 | Sorpresa→combattimento shift 3 sx codificata; ramo «non sorpreso» con azioni standard. |
-| 030 | procedurale (globo) | 🟡 | Il globo è acquisibile come artefatto (PV al rientro); i tre esiti del check Intelligenza (E-cage / -3 Resistenza+enviorig / morte) e il vincolo «serve una E-cage» non sono ancora automatizzati. |
+| 030 | procedurale (globo) | 🟢 | Pulsante «Esamina» (resolver `intel_check`, investigatore = Intelligenza più alta): con E-cage il globo è acquisito (PV al rientro); senza E-cage si ripiega sull'esito acido (−3 Resistenza all'investigatore, annullati dall'armorig); esito peggiore = morte dell'investigatore (con armorig: −3 Resistenza). Caveat: l'enviorig non è modellato, quindi il suo danneggiamento è inerte. |
 | 031 | incontro-creatura (Spiker) | 🟡 | Creatura preparata; l'uccisione automatica da sorpresa e il divieto netgun/stunbomb non sono modellati. |
 | 032 | procedurale (sisma) | 🔴 | 2 dadi di Punti Danno (1 se tutti armorig) non automatizzati. |
 | 033 | incontro-creatura (Florist) | 🟡 | Creatura preparata; il divieto di «Comunica» non è imposto dalla UI. |

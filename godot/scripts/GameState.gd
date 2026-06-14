@@ -192,6 +192,19 @@ func highest_intelligence(keys: Array) -> int:
 			best = maxi(best, int(c.get("intelligence", 0)))
 	return best
 
+# Chiave del personaggio imbarcato vivo con Intelligenza più alta ("" se nessuno):
+# per i paragrafi in cui «si sceglie un personaggio» (gioco ottimale) e l'effetto
+# ricade su chi investiga (es. ¶030).
+func highest_intelligence_unit() -> String:
+	var best := -1
+	var who := ""
+	for k in expedition_units:
+		var c: Dictionary = crew.get(k, {})
+		if c.get("alive", false) and int(c.get("intelligence", 0)) > best:
+			best = int(c.get("intelligence", 0))
+			who = k
+	return who
+
 # --- Salvataggio / caricamento della partita -------------------------------
 const SAVE_PATH := "user://savegame.json"
 const SAVE_VERSION := 1
@@ -1057,7 +1070,16 @@ func resolve_intel_check(para: int) -> void:
 		band = "well_below"
 	elif roll > v + 1:
 		band = "well_above"
-	var b: Dictionary = cfg.get("bands", {}).get(band, {})
+	var bands: Dictionary = cfg.get("bands", {})
+	var b: Dictionary = bands.get(band, {})
+	# Banda condizionata a un equipaggiamento (es. ¶030 well_below richiede la
+	# E-cage): se manca, si applica la banda indicata da else_band.
+	if b.has("require_gear") and not _gear_has(str(b["require_gear"])):
+		band = str(b.get("else_band", band))
+		b = bands.get(band, {})
+	# Personaggio che «investiga» (gioco ottimale: Intelligenza più alta): alcuni
+	# effetti ricadono su di lui (¶030).
+	var investigator := highest_intelligence_unit() if bool(cfg.get("investigator", false)) else ""
 	intel_checks_done.append(para)
 	var extra: Array = []
 	if b.has("hours"):
@@ -1070,6 +1092,20 @@ func resolve_intel_check(para: int) -> void:
 		if dv > 0:
 			_apply_damage(dv)
 			extra.append("%d Punti Danno" % dv)
+	# Danno mirato all'investigatore, eventualmente annullato da un equipaggiamento
+	# (es. armorig protegge dagli schizzi acidi del globo).
+	if b.has("damage_investigator") and investigator != "":
+		if b.has("negated_by") and _gear_has(str(b["negated_by"])):
+			extra.append("%s protegge: nessun danno" % b["negated_by"])
+		else:
+			_damage_character(investigator, int(b["damage_investigator"]))
+	# Morte dell'investigatore, ridotta a un danno se indossa un certo equipaggiamento.
+	if bool(b.get("kill_investigator", false)) and investigator != "":
+		if b.has("armorig_reduces_to") and _gear_has("Armorig"):
+			extra.append("Armorig danneggiato")
+			_damage_character(investigator, int(b["armorig_reduces_to"]))
+		else:
+			_kill_character(investigator)
 	if bool(b.get("weapon_usable", false)):
 		weapon_usable = true
 	if b.has("acquire"):
@@ -2177,6 +2213,19 @@ func _kill_character(key: String) -> void:
 		add_log("La spedizione non ha più personaggi: è considerata distrutta. Rientro forzato.")
 		_end_encounter()
 		return_to_pandora()
+
+# Danno mirato a uno specifico personaggio (es. ¶030: chi investiga il globo):
+# perde `points` Punti Resistenza; se arriva a zero viene ucciso.
+func _damage_character(key: String, points: int) -> void:
+	if not crew.get(key, {}).get("alive", false):
+		return
+	damage_points += points
+	crew[key]["endurance"] = maxi(0, int(crew[key].get("endurance", MAX_ENDURANCE)) - points)
+	add_log("%s subisce %d Punti Danno (Resistenza %d/%d)." % [
+		crew[key]["name"], points, crew[key]["endurance"], MAX_ENDURANCE])
+	if crew[key]["endurance"] <= 0:
+		_kill_character(key)
+	state_updated.emit()
 
 # Cura: l'Ufficiale Medico o un Medkit imbarcato ripristinano la Resistenza del più ferito (2.5).
 func _can_treat() -> bool:
