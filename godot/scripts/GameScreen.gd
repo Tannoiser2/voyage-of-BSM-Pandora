@@ -925,13 +925,13 @@ func _update_action_buttons(phase: String) -> void:
 	# se non già acquisito e nessun incontro attivo.
 	var btn_artifact := find_child("BtnArtifact", true, false)
 	if btn_artifact:
-		var can_take: bool = on_surface and not creature_active \
+		var can_take: bool = (phase == "paragraph") and on_surface and not creature_active \
 			and GameData.is_artifact_paragraph(current_para_num) \
 			and not GameState.is_artifact_acquired(current_para_num)
 		btn_artifact.visible = can_take
 		if can_take:
 			var a := GameData.get_artifact(current_para_num)
-			btn_artifact.text = "Acquisisci: %s (+%d PV)" % [a.get("name", "artefatto"), int(a.get("vp", 0))]
+			btn_artifact.text = "Raccogli: %s (+%d PV al rientro)" % [a.get("name", "artefatto"), int(a.get("vp", 0))]
 
 func _update_display() -> void:
 	# Update status labels

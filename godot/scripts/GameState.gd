@@ -95,7 +95,8 @@ var current_creature: String = ""
 var creature_rating: int = 0          # valutazione della creatura per l'esagono (8.4)
 var damage_points: int = 0            # danni accumulati dalla spedizione
 var captured_creatures: Array = []    # creature catturate vive (PV extra)
-var acquired_artifacts: Array = []    # paragrafi degli artefatti acquisiti (PV, regole 2.6/9.1)
+var acquired_artifacts: Array = []    # paragrafi degli artefatti acquisiti (registro permanente: anti-doppione + arma aliena)
+var pending_artifact_vp: Array = []   # artefatti raccolti ma non ancora riportati sulla Pandora (PV assegnati al rientro, 2.6/9.1)
 var recorded_creatures: Array = []    # tipi di creatura registrati sul Registro Attributi (PV per attributi a zero, 9.1)
 var explored_planets: Array = []      # sistemi i cui pianeti sono stati esplorati (1 PV ciascuno, 9.1)
 
@@ -146,6 +147,7 @@ func start_new_game(p_tour_length: int) -> void:
 	shuttle_capacity = 80
 	captured_creatures = []
 	acquired_artifacts = []
+	pending_artifact_vp = []
 	recorded_creatures = []
 	explored_planets = []
 	supply_track_pos = 0
@@ -220,6 +222,7 @@ func save_game(silent := false) -> bool:
 		"current_creature": current_creature, "creature_rating": creature_rating,
 		"damage_points": damage_points, "captured_creatures": captured_creatures,
 		"acquired_artifacts": acquired_artifacts,
+		"pending_artifact_vp": pending_artifact_vp,
 		"recorded_creatures": recorded_creatures,
 		"explored_planets": explored_planets,
 		"creature_attr_cache": creature_attr_cache,
@@ -301,6 +304,7 @@ func load_game() -> bool:
 	damage_points = int(d.get("damage_points", 0))
 	captured_creatures = d.get("captured_creatures", [])
 	acquired_artifacts = d.get("acquired_artifacts", [])
+	pending_artifact_vp = d.get("pending_artifact_vp", [])
 	recorded_creatures = d.get("recorded_creatures", [])
 	explored_planets = d.get("explored_planets", [])
 	creature_attr_cache = {}
@@ -989,8 +993,9 @@ func best_combat(mode: String) -> int:
 		best = maxi(best, int(a.get("capture", 0)) if mode == "capture" else int(a.get("kill", 0)))
 	return best if best > 0 else 3
 
-# Acquisizione di un artefatto (2.6/9.1): lo si riporta sulla Pandora e si
-# guadagnano i PV indicati sul retro del segnalino (linea Additional VP's).
+# Acquisizione di un artefatto (2.6/9.1): si raccoglie ora, ma i PV indicati sul
+# retro del segnalino (linea Additional VP's) si guadagnano solo riportandolo sulla
+# Pandora (vedi return_to_pandora). Se la spedizione va perduta, niente PV.
 func acquire_artifact(para: int) -> bool:
 	var key := "%03d" % para
 	if key in acquired_artifacts:
@@ -999,10 +1004,9 @@ func acquire_artifact(para: int) -> bool:
 	if a.is_empty():
 		return false
 	acquired_artifacts.append(key)
+	pending_artifact_vp.append(key)
 	var vp := int(a.get("vp", 0))
-	if vp > 0:
-		gain_vp(vp, "Artefatto acquisito: %s (¶%s)" % [a.get("name", key), key])
-	add_log("Artefatto acquisito: %s (¶%s, +%d PV)." % [a.get("name", key), key, vp])
+	add_log("Artefatto raccolto: %s (¶%s). Riportalo sulla Pandora per +%d PV." % [a.get("name", key), key, vp])
 	state_updated.emit()
 	return true
 
@@ -1408,6 +1412,13 @@ func return_to_pandora() -> void:
 				var vp := 1 + GameData.creature_vp(cname)
 				gain_vp(vp, "Creatura riportata viva: %s" % cname)
 			captured_creatures = []
+		# Assegna i PV degli artefatti riportati sulla Pandora (2.6/9.1)
+		if pending_artifact_vp.size() > 0:
+			for akey in pending_artifact_vp:
+				var av := int(GameData.get_artifact(akey.to_int()).get("vp", 0))
+				if av > 0:
+					gain_vp(av, "Artefatto riportato: ¶%s" % akey)
+			pending_artifact_vp = []
 		add_log("Ritorno alla Pandora da %s." % current_planet)
 		current_planet = ""
 		current_creature = ""
@@ -1432,6 +1443,11 @@ func return_to_pandora() -> void:
 				show_paragraph(para)
 
 func _end_tour() -> void:
+	# Guardia di rientro: un evento interstellare auto-risolto può chiamare _end_tour
+	# (via _spend_tour_months) e poi far ricadere il controllo su move_pandora_to, che
+	# richiamerebbe _end_tour applicando due volte le penalità di fine tour.
+	if current_phase == Phase.GAME_OVER:
+		return
 	add_log("Tour completato! Calcolo Punti Vittoria...")
 	# Regola 9.2: 1 PV perso per ogni Punto Resistenza perso dai personaggi sopravvissuti.
 	var lost := 0
