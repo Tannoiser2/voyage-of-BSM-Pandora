@@ -8,6 +8,7 @@ var environ_maps: Dictionary = {}
 var units: Dictionary = {}
 var terrain: Dictionary = {}
 var paragraph_logic: Dictionary = {}
+var paragraph_choices_override: Dictionary = {}
 var expedition_encounters: Dictionary = {}
 var artifacts: Dictionary = {}
 var intel_checks: Dictionary = {}
@@ -24,6 +25,7 @@ func _load_data() -> void:
 	units = _load_json("res://data/units.json")
 	terrain = _load_json("res://data/terrain.json")
 	paragraph_logic = _load_json("res://data/paragraph_logic.json")
+	paragraph_choices_override = _load_json("res://data/paragraph_choices.json")
 	expedition_encounters = _load_json("res://data/expedition_encounters.json")
 	artifacts = _load_json("res://data/artifacts.json")
 	intel_checks = _load_json("res://data/intel_checks.json")
@@ -176,6 +178,10 @@ func paragraph_lsv_delta(num: int) -> int:
 # Estrae le scelte/rimandi di un paragrafo (libro-gioco). Ogni rimando ¶NNN nel
 # testo diventa una scelta cliccabile; l'etichetta è la frase/riga che lo contiene.
 func get_paragraph_choices(num: int) -> Array:
+	# Override esplicito (scelte con tiro/condizione): vedi paragraph_choices.json.
+	var key := "%03d" % num
+	if paragraph_choices_override.has(key):
+		return paragraph_choices_override[key]
 	var text := get_paragraph_text(num)
 	var choices: Array = []
 	var seen := {}

@@ -839,6 +839,7 @@ func _connect_signals() -> void:
 	GameState.phase_changed.connect(_on_phase_changed)
 	GameState.state_updated.connect(_update_display)
 	GameState.paragraph_request.connect(_on_paragraph_request)
+	GameState.choices_resolved.connect(_clear_choices)
 	GameState.message_posted.connect(_on_message)
 	GameState.encounter_started.connect(_on_encounter_started)
 	GameState.encounter_ended.connect(_on_encounter_ended)
@@ -1961,7 +1962,10 @@ func _build_choices(para_num: int) -> void:
 		var label_text: String = ch.label
 		if label_text.length() > 90:
 			label_text = label_text.substr(0, 88) + "…"
-		b.text = "▶  %s  (¶%03d)" % [label_text, ch.para]
+		if ch.has("act"):
+			b.text = "▶  %s" % label_text
+		else:
+			b.text = "▶  %s  (¶%03d)" % [label_text, ch.para]
 		b.tooltip_text = ch.label
 		b.clip_text = true
 		b.custom_minimum_size = Vector2(0, 34)
@@ -1981,7 +1985,10 @@ func _build_choices(para_num: int) -> void:
 		b.add_theme_stylebox_override("pressed", sbh)
 		b.add_theme_stylebox_override("focus", sb)
 		b.add_theme_color_override("font_color", Color(0.85, 1.0, 0.85))
-		b.pressed.connect(_on_choice_selected.bind(ch.para))
+		if ch.has("act"):
+			b.pressed.connect(_on_choice_act.bind(ch.act))
+		else:
+			b.pressed.connect(_on_choice_selected.bind(ch.para))
 		choices_box.add_child(b)
 
 func _clear_choices() -> void:
@@ -1996,6 +2003,11 @@ func _clear_choices() -> void:
 func _on_choice_selected(para: int) -> void:
 	_play("click")
 	GameState.show_paragraph(para)
+
+# Scelta-paragrafo con azione (tiro/condizione): vedi paragraph_choices.json.
+func _on_choice_act(act: Dictionary) -> void:
+	_play("click")
+	GameState.resolve_paragraph_choice(act)
 
 func _on_meta_clicked(meta) -> void:
 	var n := int(str(meta))

@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 163 | 70,3% |
+| 🟢 Verde | 169 | 72,8% |
 | 🟡 Giallo | 45 | 19,4% |
-| 🔴 Rosso | 24 | 10,3% |
+| 🔴 Rosso | 18 | 7,8% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 80,0%**
-( (163 + 45/2) / 232 ).
+come metà, l'indice di completezza è **≈ 82,5%**
+( (169 + 45/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 80,0%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **163** | **45** | **24** | **232** |
+| **Totale** | **169** | **45** | **18** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -149,7 +149,7 @@ come metà, l'indice di completezza è **≈ 80,0%**
 | 031 | incontro-creatura (Spiker) | 🟡 | Creatura preparata; l'uccisione automatica da sorpresa e il divieto netgun/stunbomb non sono modellati. |
 | 032 | procedurale (sisma) | 🟢 | Scossa sismica: 2 dadi di Punti Danno (1 dado se tutti con armorig). Automatizzato. |
 | 033 | incontro-creatura (Florist) | 🟡 | Creatura preparata; il divieto di «Comunica» non è imposto dalla UI. |
-| 034 | procedurale (delegazione) | 🔴 | Scelta comunica(¶195)/combatti(¶199)/fuggi(¶204) non gestita. |
+| 034 | scelta (delegazione aliena) | 🟢 | Bottoni di scelta: Comunica → ¶195, Combatti → ¶199, Fuggi → ¶204. UI a scelte. |
 | 035 | incontro-creatura (Curder) | 🔴 | Condizione enviorig/armorig→tabella o ¶209, e «2 E-cage» non gestite. |
 | 036 | procedurale (scultura) | 🟢 | La scultura è acquisibile come artefatto (pulsante «Raccogli», peso 3) con i PV registrati al rientro sulla Pandora; il flusso «scegli un'altra azione» è ok. |
 | 037 | incontro-creatura (Snoup) | 🟡 | Creatura preparata; lo svanire + ricerca con scanner (¶020) o fuga non è automatizzato. |
@@ -291,10 +291,10 @@ come metà, l'indice di completezza è **≈ 80,0%**
 | 158 | esito (alieno amichevole) | 🟢 | Ultimo superstite telepate: +5 PV, +2 per ciascuno tra comandante, neuroscanner e Holographer presenti. Automatizzato. |
 | 159 | incontro-creatura (Mirror Fly) | 🟡 | Creatura preparata; «il carapace respinge il turbolaser» non modellato. |
 | 160 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/060/153 — Città Aliena / Flat+veg.+gravità / atmosfera+clima sahariano): il motore salta al ramo giusto o ri-tira la Matrice. |
-| 161 | incontro-creatura (insetti, senza pedina) | 🔴 | Gruppo variabile (1d6), +3 a ogni attributo, comunica(¶222)/combatti(¶125): non gestito. |
+| 161 | scelta (insetti bipedi) | 🟢 | Bottoni di scelta: Comunica → ¶222, Combatti → ¶125 (fuga impossibile). UI a scelte. |
 | 162 | incontro-creatura (Draloid, snodo) | 🟢 | Sorpresa → ¶226. Non sorpresa: se l'Ufficiale rilevamento terrestre (GSO) è assente, 2 dadi vs Int max spedizione (≥ → ¶226). Codificato (effetto-intro). |
 | 163 | procedurale (shuttle divorato) | 🔴 | Vincolo temporale «torna allo shuttle prima del controllo» e perdita shuttle→¶050 non gestiti. |
-| 164 | incontro-creatura (vetta viva, senza pedina) | 🔴 | Modificatori speciali e tiri comunica/combatti/fuga → ¶214/218/221 non gestiti. |
+| 164 | scelta (vetta viva) | 🟢 | Bottoni con tiro: Comunica (1d6 1-4→¶214/5-6→¶221), Combatti (1d6 1-2→¶218/3-4→¶221/5-6 svanisce), Fuga → ¶221. UI a scelte. |
 | 165 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/151 — Città Aliena / Light Veg.+gravità / Hill+idrografia): salto al ramo giusto o ri-tiro Matrice. |
 | 166 | procedurale (gravità) | 🟡 | Caduta per gravità: 2 dadi di Punti Danno (1 se GSO o Reconbot presente), applicati prima al rover. Resta non modellata la clausola enviorig (danno a Resistenza vs rifornimento). |
 | 167 | incontro-creatura (Ironhorn) | 🟡 | Creatura preparata; «1 ora per ispezionare» e inefficacia netgun/stunbomb non gestite. |
@@ -303,19 +303,19 @@ come metà, l'indice di completezza è **≈ 80,0%**
 | 170 | incontro-creatura (Monoke, snodo) | 🟢 | Sorpresa: il membro col Valore di Velocità più basso (robot o personaggio) viene divorato. Fuga → ¶226. Codificato (intro + paragraph_logic). |
 | 171 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/147 — Città Aliena / Light Veg.+gravità / Mountain): salto al ramo giusto o ri-tiro Matrice. |
 | 172 | incontro (alieno città, snodo) | 🟢 | 1 dado: 1-4 → ¶158, 5-6 → ¶228. Instradamento procedurale a dado. |
-| 173 | incontro (fungo, senza pedina) | 🔴 | Check Intelligenza/GSO → ¶219/224 non gestito. |
+| 173 | scelta (fungo) | 🟢 | Bottoni: Investiga (con SO → ¶219; altrimenti 2 dadi vs Int max → ¶219/¶224) o Lascia stare. UI a scelte. |
 | 174 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/048/167 — Città Aliena / veg.+clima tropicale / Flat senza veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 175 | procedurale (arma, WO) | 🟢 | Pulsante «Esamina» (resolver `intel_check`): 2 dadi vs Intelligenza più alta → arma trasportabile dopo 1d6 ore / oggetto banale lasciato / esplosione con 2d6 Punti Danno. |
 | 176 | incontro (rete vivente, senza pedina) | 🟡 | Sostanzialmente narrativo «scegli azione»; il +3 PV Holographer non viene assegnato. |
 | 177 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/007/149 — Città Aliena / Mountain+gravità / veg.+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
-| 178 | procedurale (uovo si schiude) | 🔴 | Tiro 1d6 → ¶142/159/162 non gestito. |
+| 178 | procedurale (uovo si schiude) | 🟢 | 1 dado automatico: 1-2 → ¶142, 3-4 → ¶159, 5-6 → ¶162. Instradamento a dado. |
 | 179 | incontro-creatura (Glosper) | 🟡 | Creatura preparata; uccisione da sorpresa e ramo Combatti→¶227 non gestiti. |
 | 180 | procedurale (incornata) | 🟡 | Personaggio a caso: 2 dadi di Resistenza (−3 Medico, −3 medkit), poi → ¶017; armorig annulla la perdita. Caveat: armorig per-personaggio approssimato; enviorig non modellato. |
 | 181 | incontro-creatura (Radrod, snodo) | 🟢 | Comunica: con il Neuroscan → ¶230; altrimenti → ¶016. Codificato (come ¶009). |
 | 182 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (shuttle non occupato (spedizione lontana) / Citta Aliena / Mountain-Cliffs+clima artico / atmosfera corrosiva): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
 | 183 | procedurale (combattimento pirati) | 🟢 | 1 dado: 1-3 pirati respinti (2 dadi Resistenza +1 Mese); 4-5 → ¶191; 6 → Pandora distrutta, gioco finito. Automatizzato. |
 | 184 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶155/042/031/029 — atmosfera+robot / Città Aliena / Hill+clima sahariano / Heavy Veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
-| 185 | procedurale (dispositivo alieno) | 🔴 | Tiro 1d6 → ¶161/034 non gestito. |
+| 185 | procedurale (dispositivo alieno) | 🟢 | 1 dado automatico: 1-3 → ¶161, 4-6 → ¶034. Instradamento a dado. |
 | 186 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/027/051 — Città Aliena / Heavy Veg.+atmosfera / gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 187 | procedurale (fuga dalla struttura) | 🟢 | Pulsante «Subisci i raggi»: per ogni personaggio e robot 2 dadi vs Velocità → distruzione se superata; col rover Velocità minima 8; −2 con turbolaser, −2 con scanner, −2 per chi indossa l'armorig. |
 | 188 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (citta aliena non esplorata / Marsh+atmosfera / Liquid Surface): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |

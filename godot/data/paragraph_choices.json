@@ -1,0 +1,21 @@
+{
+  "_descr": "Override delle scelte di paragrafi non-creatura con tiro/condizione (UI a bottoni). Ogni scelta ha label + act (goto / roll_goto / investigate_173 / none).",
+  "034": [
+    {"label": "Comunica con la delegazione", "act": {"type": "goto", "para": 195}},
+    {"label": "Combatti", "act": {"type": "goto", "para": 199}},
+    {"label": "Fuggi", "act": {"type": "goto", "para": 204}}
+  ],
+  "161": [
+    {"label": "Comunica", "act": {"type": "goto", "para": 222}},
+    {"label": "Combatti", "act": {"type": "goto", "para": 125}}
+  ],
+  "164": [
+    {"label": "Comunica (tira un dado)", "act": {"type": "roll_goto", "dice": 1, "ranges": [{"max": 4, "para": 214}, {"max": 6, "para": 221}]}},
+    {"label": "Combatti (tira un dado)", "act": {"type": "roll_goto", "dice": 1, "ranges": [{"max": 2, "para": 218}, {"max": 4, "para": 221}, {"max": 6, "para": 0}]}},
+    {"label": "Fuga", "act": {"type": "goto", "para": 221}}
+  ],
+  "173": [
+    {"label": "Investiga il fungo", "act": {"type": "investigate_173"}},
+    {"label": "Lascia stare", "act": {"type": "none"}}
+  ]
+}

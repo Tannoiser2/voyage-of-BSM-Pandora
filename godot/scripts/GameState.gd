@@ -3,6 +3,7 @@ extends Node
 signal phase_changed(new_phase: String)
 signal state_updated
 signal paragraph_request(para_num: int)
+signal choices_resolved
 signal message_posted(msg: String)
 signal encounter_started(creature_name: String)
 signal encounter_ended
@@ -2303,6 +2304,42 @@ func _apply_creature_intro(para: int) -> void:
 					add_log("¶170: %s (il più lento) viene divorato!" % slow)
 					_kill_unit(slow)
 
+# Risolve una scelta-paragrafo cliccata dal giocatore (override paragraph_choices.json):
+# goto diretto, tiro→goto, condizione speciale, oppure «lascia stare».
+func resolve_paragraph_choice(act: Dictionary) -> void:
+	match str(act.get("type", "")):
+		"goto":
+			show_paragraph(int(act.get("para", 0)))
+		"roll_goto":
+			var nd := int(act.get("dice", 1))
+			var t := 0
+			for _i in range(nd):
+				t += randi_range(1, 6)
+			var dest := 0
+			for rg in act.get("ranges", []):
+				if t <= int(rg.get("max", 6)):
+					dest = int(rg.get("para", 0))
+					break
+			if dest > 0:
+				add_log("Scelta: %d dado/i = %d → ¶%03d." % [nd, t, dest])
+				show_paragraph(dest)
+			else:
+				add_log("Scelta: %d dado/i = %d → la creatura svanisce." % [nd, t])
+				encounter_outcome_text = "La creatura svanisce: scegli un'azione di spedizione."
+				choices_resolved.emit()
+		"investigate_173":
+			# Investiga il fungo: con l'Ufficiale Scienze → ¶219; altrimenti 2 dadi vs Int
+			# massima della spedizione (< → ¶219, ≥ → ¶224).
+			if "SO" in expedition_units:
+				show_paragraph(219)
+			elif (randi_range(1, 6) + randi_range(1, 6)) < _expedition_max_intel():
+				show_paragraph(219)
+			else:
+				show_paragraph(224)
+		_:
+			encounter_outcome_text = "Scegli un'azione di spedizione."
+			choices_resolved.emit()
+
 # Instradamento procedurale a dado per paragrafi non-creatura. Ritorna il paragrafo
 # di destinazione (0 = nessun instradamento).
 func _paragraph_dice_route(para: int) -> int:
@@ -2313,6 +2350,18 @@ func _paragraph_dice_route(para: int) -> int:
 			var dest := 158 if roll <= 4 else 228
 			add_log("¶172: 1 dado %d → ¶%03d." % [roll, dest])
 			return dest
+		178:
+			# L'uovo si schiude: 1 dado, 1-2 → ¶142, 3-4 → ¶159, 5-6 → ¶162.
+			var r178 := randi_range(1, 6)
+			var d178 := 142 if r178 <= 2 else (159 if r178 <= 4 else 162)
+			add_log("¶178: 1 dado %d → ¶%03d." % [r178, d178])
+			return d178
+		185:
+			# Dispositivo alieno che si autodistrugge: 1 dado, 1-3 → ¶161, 4-6 → ¶034.
+			var r185 := randi_range(1, 6)
+			var d185 := 161 if r185 <= 3 else 34
+			add_log("¶185: 1 dado %d → ¶%03d." % [r185, d185])
+			return d185
 	return 0
 
 # Int più alta tra i PERSONAGGI della spedizione (i robot non hanno Intelligenza).
