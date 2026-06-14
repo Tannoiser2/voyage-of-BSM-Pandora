@@ -111,6 +111,7 @@ const ENVIRON_ROWS := 7
 var environ_grid: Dictionary = {}     # hex_id locale -> {"terrain","explored","real","x","y"}
 var expedition_pos: int = 0           # esagono attuale della spedizione (0 = non sbarcata)
 var landing_hex: int = 0
+var pond_supply_used: bool = false    # 6.5: stagno usato in un Controllo del Rifornimento
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
@@ -254,7 +255,7 @@ func save_game(silent := false) -> bool:
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
-		"landing_hex": landing_hex, "current_environ_id": current_environ_id,
+		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "current_environ_id": current_environ_id,
 		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -352,6 +353,7 @@ func load_game() -> bool:
 			environ_grid[int(k)] = eg[k]
 	expedition_pos = int(d.get("expedition_pos", 0))
 	landing_hex = int(d.get("landing_hex", 0))
+	pond_supply_used = bool(d.get("pond_supply_used", false))
 	current_environ_id = int(d.get("current_environ_id", 0))
 	hasty_path_terrains = d.get("hasty_path_terrains", [])
 	add_log("Partita caricata.")
@@ -1297,6 +1299,11 @@ func _lava_in_area() -> bool:
 			return true
 	return false
 
+# Vero se lo shuttle (fermo sull'esagono di atterraggio) NON è occupato da un
+# personaggio funzionante, cioè la spedizione si è spostata altrove (6.5).
+func _shuttle_hex_unoccupied() -> bool:
+	return expedition_pos > 0 and expedition_pos != landing_hex
+
 func _unexplored_alien_city_in_area() -> bool:
 	for hid in environ_grid:
 		var cell: Dictionary = environ_grid[hid]
@@ -1373,6 +1380,10 @@ func _exp_cond_holds(cond: Dictionary) -> bool:
 		return _unexplored_alien_city_in_area()
 	if cond.has("lava_in_area"):
 		return _lava_in_area()
+	if cond.has("shuttle_hex_unoccupied"):
+		return _shuttle_hex_unoccupied()
+	if cond.has("pond_supply_used"):
+		return pond_supply_used
 	# inert / _subfeature: sotto-feature non modellate → FALSE (6.5).
 	# (climate/climate_not sono valutati sopra, ma falsi finché i dati-pianeta non
 	# includono il Clima — vedi 5.1.)
@@ -1798,6 +1809,9 @@ func resolve_supply_check(die: int) -> void:
 	var calc1 := mini(int(users / die), 4)
 	var lsv := int(planet_attrs.get("lsv", 0))
 	var cell: Dictionary = environ_grid.get(expedition_pos, {})
+	# 6.5: se il Controllo avviene su uno stagno, ne è stato «usato» il modificatore.
+	if _cell_terrain_is(cell, "Pond"):
+		pond_supply_used = true
 	var terr_supply := int(GameData.terrain_effect(cell.get("terrain", "Open")).get("supply", 0))
 	var summ := lsv + terr_supply
 	var calc2 := mini(int(summ / die), 4) if summ > 0 else 0
@@ -1894,6 +1908,7 @@ func environ_neighbors(hex_id: int) -> Array:
 # (es. "1502"), scegliendo l'environ corretto e l'esagono d'atterraggio corretto.
 func generate_environ_at(landing_real: String) -> void:
 	environ_grid = {}
+	pond_supply_used = false
 	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
 	if place.is_empty():
 		# Fallback: environ deterministico per sistema, atterraggio al centro.

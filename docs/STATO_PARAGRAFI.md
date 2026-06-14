@@ -63,9 +63,9 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   modellati come esagoni **Liquid Surface** (esplorazione in immersione), sbloccando
   065/130/188/198/200. La **lava fluente** (056/202) è modellata come esagono
   adiacente Solid Lava+Liquid Surface (colata liquida), via `environ_neighbors`.
-  **34 dei 36 snodi sono così pienamente valutabili ⇒ 🟢.** Restano solo **2 snodi**
-  (168/182) che richiedono il tracciamento di stato (modificatore stagno usato,
-  posizione shuttle) ⇒ 🔴.
+  Infine, con due flag di stato (`pond_supply_used` nel Controllo del Rifornimento
+  e `shuttle_hex_unoccupied` = spedizione lontana dallo shuttle) si chiudono 168 e
+  182. **Tutti i 36 snodi «Incontro di spedizione» sono ora pienamente valutati ⇒ 🟢.**
   Regola **6.7** (un esagono può contenere più terreni): il motore supporta un campo
   `extra` per i terreni aggiuntivi sovrapposti al terreno base; `_current_terrain_is`
   soddisfa sia il base sia gli extra.
@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 106 | 45,7% |
+| 🟢 Verde | 108 | 46,6% |
 | 🟡 Giallo | 41 | 17,7% |
-| 🔴 Rosso | 85 | 36,6% |
+| 🔴 Rosso | 83 | 35,8% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 54,5%**
-( (106 + 41/2) / 232 ).
+come metà, l'indice di completezza è **≈ 55,4%**
+( (108 + 41/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -97,9 +97,9 @@ come metà, l'indice di completezza è **≈ 54,5%**
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 9 | 21 | 18 | 48 |
 | evento-interstellare + esiti | 0 | 2 | 20 | 22 |
-| snodo «Incontro di spedizione» | 34 | 0 | 2 | 36 |
+| snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 8 | 4 | 41 | 53 |
-| **Totale** | **106** | **41** | **85** | **232** |
+| **Totale** | **108** | **41** | **83** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -298,7 +298,7 @@ come metà, l'indice di completezza è **≈ 54,5%**
 | 165 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/151 — Città Aliena / Light Veg.+gravità / Hill+idrografia): salto al ramo giusto o ri-tiro Matrice. |
 | 166 | procedurale (gravità) | 🔴 | 2 dadi di Punti Danno (1 con GTO/Reconbot) con regole rover/enviorig non automatizzati. |
 | 167 | incontro-creatura (Ironhorn) | 🟡 | Creatura preparata; «1 ora per ispezionare» e inefficacia netgun/stunbomb non gestite. |
-| 168 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶152/036/041/066) non valutata. |
+| 168 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (stagno usato nel rifornimento / Citta Aliena / Glacial Ice / Flat senza veg+atmosfera): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
 | 169 | evento-interstellare (esito) | 🔴 | Trattativa CO con check Intelligenza → ¶203/183 non gestita. |
 | 170 | incontro-creatura (snodo) | 🔴 | Sorpresa (divora il più lento), strategia, ramo Fuga→¶226 non gestiti. |
 | 171 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/147 — Città Aliena / Light Veg.+gravità / Mountain): salto al ramo giusto o ri-tiro Matrice. |
@@ -312,7 +312,7 @@ come metà, l'indice di completezza è **≈ 54,5%**
 | 179 | incontro-creatura (Glosper) | 🟡 | Creatura preparata; uccisione da sorpresa e ramo Combatti→¶227 non gestiti. |
 | 180 | procedurale (incornata) | 🔴 | Perdita Resistenza (2 dadi, modificatori) poi rimando a ¶017 non gestiti. |
 | 181 | incontro-creatura (Garbrist, snodo) | 🔴 | Comunica(neuroscanner→¶230 / ¶016) non gestito. |
-| 182 | snodo «Incontro di spedizione» | 🔴 | Tabella condizionale (¶163/036/041/043) non valutata. |
+| 182 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (shuttle non occupato (spedizione lontana) / Citta Aliena / Mountain-Cliffs+clima artico / atmosfera corrosiva): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
 | 183 | procedurale (combattimento pirati) | 🔴 | Tiro 1d6 con esiti (Resistenza/¶191/game over) non automatizzato. |
 | 184 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶155/042/031/029 — atmosfera+robot / Città Aliena / Hill+clima sahariano / Heavy Veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 185 | procedurale (dispositivo alieno) | 🔴 | Tiro 1d6 → ¶161/034 non gestito. |

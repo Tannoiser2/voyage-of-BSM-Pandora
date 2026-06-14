@@ -777,7 +777,7 @@
   "168": [
     {
       "cond": {
-        "inert": "Modificatore di Rifornimento di uno stagno usato durante la spedizione: stato non tracciato"
+        "pond_supply_used": true
       },
       "goto": 152
     },
@@ -919,7 +919,7 @@
   "182": [
     {
       "cond": {
-        "inert": "shuttle in esagono non occupato da personaggio funzionante: stato shuttle non tracciato"
+        "shuttle_hex_unoccupied": true
       },
       "goto": 163
     },
