@@ -1790,6 +1790,38 @@ func _compute_shift(act: Dictionary) -> int:
 	return int(act.get("shift", 0))
 
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
+# Danneggia un robot a caso della spedizione (6.9).
+func _damage_random_robot() -> void:
+	var bots := _functioning_bots()
+	if bots.is_empty():
+		return
+	var b: String = bots[randi_range(0, bots.size() - 1)]
+	if not damaged_gear.has(b):
+		damaged_gear.append(b)
+	add_log("%s viene danneggiato." % GameData.get_unit(b).get("name", b))
+
+# Int più alta tra i personaggi vivi a bordo della Pandora.
+func _highest_aboard_intel() -> int:
+	var best := 0
+	for k in crew.keys():
+		if crew[k].get("alive", false):
+			best = maxi(best, character_intelligence(k))
+	return best
+
+# Uccide N personaggi vivi scelti a caso (contesto interstellare/pirati).
+func _kill_random_characters(n: int) -> void:
+	for _i in range(n):
+		var alive: Array = []
+		for k in crew.keys():
+			if crew[k].get("alive", false):
+				alive.append(k)
+		if alive.is_empty():
+			break
+		var v: String = alive[randi_range(0, alive.size() - 1)]
+		crew[v]["alive"] = false
+		lose_vp(10, "Personaggio ucciso: %s" % crew[v].get("name", v))
+		add_log("%s viene ucciso." % crew[v].get("name", v))
+
 # Tira `dice` dadi per i Punti Danno; se la spedizione ha l'armorig, un solo dado.
 func _roll_damage_armorig(dice: int) -> int:
 	var n := 1 if _gear_has("Armorig") else dice
@@ -1856,6 +1888,7 @@ func _apply_paragraph_effect(para: int) -> int:
 	if _landing_fx_applied.has(para):
 		return 0
 	var applied := true
+	var redirect := 0
 	match para:
 		32:
 			var d := _roll_damage_armorig(2)
@@ -1893,12 +1926,66 @@ func _apply_paragraph_effect(para: int) -> int:
 			_effect_008()
 		152:
 			_effect_152()
+		70:
+			var ni := character_intelligence("Nav") if crew.get("Nav", {}).get("alive", false) else 0
+			var r70 := randi_range(1, 6) + randi_range(1, 6)
+			if r70 <= ni - 2:
+				add_log("¶070: 2 dadi %d → atterraggio sicuro, nessun danno." % r70)
+			elif r70 <= ni + 1:
+				add_log("¶070: 2 dadi %d → atterraggio movimentato: un robot danneggiato." % r70)
+				_damage_random_robot()
+			else:
+				add_log("¶070: 2 dadi %d → schianto: 5 Punti Danno." % r70)
+				_apply_damage(5)
+		148:
+			var hi := _highest_aboard_intel()
+			var r148 := randi_range(1, 6) + randi_range(1, 6)
+			var dmg148 := 5 if r148 < hi else 12
+			add_log("¶148: 2 dadi %d vs Int %d → schianto: %d Punti Danno." % [r148, hi, dmg148])
+			_apply_damage(dmg148)
+		183:
+			var die183 := randi_range(1, 6)
+			if die183 <= 3:
+				var rl := randi_range(1, 6) + randi_range(1, 6)
+				add_log("¶183: dado %d → pirati respinti: %d Punti Resistenza, +1 Mese di Tour." % [die183, rl])
+				_apply_damage(rl)
+				_spend_tour_months(1, "¶183 riparazioni Pandora")
+			elif die183 <= 5:
+				add_log("¶183: dado %d → ¶191." % die183)
+				redirect = 191
+			else:
+				add_log("¶183: dado %d → i pirati distruggono la Pandora: tutti uccisi. Gioco finito." % die183)
+				for k in crew.keys():
+					crew[k]["alive"] = false
+				set_phase(Phase.GAME_OVER)
+		191:
+			var killed := randi_range(1, 6)
+			_kill_random_characters(killed)
+			for it in ["Turbolaser", "Netgun", "Stunbomb"]:
+				if _gear_has(it):
+					expedition_gear.erase(it)
+					if not damaged_gear.has(it):
+						damaged_gear.append(it)
+			var m191 := randi_range(1, 6)
+			if crew.get("MntO", {}).get("alive", false):
+				m191 = maxi(0, m191 - 2)
+			add_log("¶191: pirati in ritirata. %d personaggio/i ucciso/i; %d Mesi di Tour di riparazioni." % [killed, m191])
+			_spend_tour_months(m191, "¶191 riparazioni Pandora")
+		226:
+			if _gear_has("Rover"):
+				add_log("¶226: l'Oraloid fa a pezzi il rover (distrutto, non riparabile).")
+				expedition_gear.erase("Rover")
+				if not damaged_gear.has("Rover"):
+					damaged_gear.append("Rover")
+			else:
+				add_log("¶226: l'Oraloid divora un robot.")
+				_damage_random_robot()
 		_:
 			applied = false
 	if applied:
 		_landing_fx_applied.append(para)
 		state_updated.emit()
-	return 0
+	return redirect
 
 # Effetti d'intro di una creatura appena incontrata (8.1): sorpresa che ridireziona
 # o uccide, prima della scelta di strategia.

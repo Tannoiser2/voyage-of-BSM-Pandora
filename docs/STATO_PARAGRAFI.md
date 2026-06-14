@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 141 | 60,8% |
-| 🟡 Giallo | 39 | 16,8% |
-| 🔴 Rosso | 52 | 22,4% |
+| 🟢 Verde | 144 | 62,1% |
+| 🟡 Giallo | 40 | 17,2% |
+| 🔴 Rosso | 48 | 20,7% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 69,2%**
-( (141 + 39/2) / 232 ).
+come metà, l'indice di completezza è **≈ 70,7%**
+( (144 + 40/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 69,2%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **141** | **39** | **52** | **232** |
+| **Totale** | **144** | **40** | **48** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -190,7 +190,7 @@ come metà, l'indice di completezza è **≈ 69,2%**
 | 067 | evento-interstellare (esito) | 🟢 | follia temporanea: +1 Mese di Tour. Automatizzato. |
 | 068 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶004/173/181 — Città Aliena / Heavy Veg. / Marsh): salto al ramo giusto o ri-tiro Matrice. |
 | 069 | incontro-creatura (Glassman, snodo) | 🟢 | Comunica: 1 dado 1-3→¶213 / 4-6→¶217. Combatti: 1 dado 1-4→¶220 / 5-6→¶217. Azione roll_goto. |
-| 070 | procedurale (atterraggio shuttle) | 🔴 | Tre esiti su Intelligenza navigatore (danni/robot/5 Punti Danno) non automatizzati. |
+| 070 | procedurale (atterraggio) | 🟢 | 2 dadi vs Int navigatore: ≤Int−2 sicuro; Int−1..Int+1 un robot danneggiato; ≥Int+2 schianto (5 Punti Danno). Automatizzato. |
 | 071 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/051/043 — Città Aliena / gravità quasi assente / atmosfera velenosa): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 072 | incontro-creatura (Unithalo) | 🔴 | Sorpresa shift 1 sx, deviazione a ¶206 e ramo Fuga (rapimento) non gestiti. |
 | 073 | evento-interstellare (esito) | 🟢 | cura: 2 dadi vs Int Medico -> guarigione, oppure Ufficiale Scienze in animazione sospesa (Resistenza persa, inutilizzabile). Automatizzato. |
@@ -273,7 +273,7 @@ come metà, l'indice di completezza è **≈ 69,2%**
 | 145 | incontro-creatura (Erequito) | 🟡 | Creatura preparata; il filtro «solo unità più veloci possono combattere» non è imposto. |
 | 146 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cave / Hill+Light Veg+gravita): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 147 | incontro-creatura (Promite, procedurale) | 🔴 | Perdite di Resistenza da sorpresa (con modificatori) e rimando a ¶212 non gestiti. |
-| 148 | procedurale (atterraggio) | 🔴 | Due esiti di schianto (5/12 Punti Danno) su check Intelligenza non automatizzati. |
+| 148 | procedurale (atterraggio) | 🟢 | 2 dadi vs Int max a bordo: < Int → 5 Punti Danno; ≥ Int → 12 Punti Danno. Automatizzato. |
 | 149 | incontro-creatura (Bisape) | 🟡 | Sorpresa shift 1 sx (citata nel testo) non applicata; strategia offerta. |
 | 150 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/045/162 — Città Aliena / Cave+gravità / Solid Lava): salto al ramo giusto o ri-tiro Matrice. |
 
@@ -313,7 +313,7 @@ come metà, l'indice di completezza è **≈ 69,2%**
 | 180 | procedurale (incornata) | 🔴 | Perdita Resistenza (2 dadi, modificatori) poi rimando a ¶017 non gestiti. |
 | 181 | incontro-creatura (Radrod, snodo) | 🟢 | Comunica: con il Neuroscan → ¶230; altrimenti → ¶016. Codificato (come ¶009). |
 | 182 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (shuttle non occupato (spedizione lontana) / Citta Aliena / Mountain-Cliffs+clima artico / atmosfera corrosiva): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
-| 183 | procedurale (combattimento pirati) | 🔴 | Tiro 1d6 con esiti (Resistenza/¶191/game over) non automatizzato. |
+| 183 | procedurale (combattimento pirati) | 🟢 | 1 dado: 1-3 pirati respinti (2 dadi Resistenza +1 Mese); 4-5 → ¶191; 6 → Pandora distrutta, gioco finito. Automatizzato. |
 | 184 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶155/042/031/029 — atmosfera+robot / Città Aliena / Hill+clima sahariano / Heavy Veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 185 | procedurale (dispositivo alieno) | 🔴 | Tiro 1d6 → ¶161/034 non gestito. |
 | 186 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/027/051 — Città Aliena / Heavy Veg.+atmosfera / gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
@@ -321,7 +321,7 @@ come metà, l'indice di completezza è **≈ 69,2%**
 | 188 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (citta aliena non esplorata / Marsh+atmosfera / Liquid Surface): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 189 | procedurale (furto equipaggiamento) | 🔴 | Tiro 1d6 e rimozione casuale robot/strumenti non automatizzati. |
 | 190 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/037/164 — Città Aliena / Heavy Veg. / Mountain+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
-| 191 | procedurale (esito pirati) | 🔴 | Uccisioni casuali, perdita robot/strumenti e mesi di tour non automatizzati. |
+| 191 | procedurale (esito pirati) | 🟡 | 1 dado di personaggi uccisi + Mesi di Tour di riparazioni (−2 se MntO vivo) automatizzati. La perdita «uno per tipo con Valore di Combattimento di uccisione» è approssimata (Turbolaser/Netgun/Stunbomb). |
 | 192 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/037/159 — Città Aliena / Heavy Veg.+gravità / Mountain-Cliffs+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 193 | procedurale (combattimento struttura) | 🟢 | Pulsante «Affronta la struttura»: col turbolaser combattimento via Intelligenza (solo uccisione) → struttura distrutta e pezzo recuperato (artefatto ¶193, peso 3, PV al rientro); senza turbolaser −10 Punti Resistenza e fuga obbligata a ¶187. Caveat: la colonna-Intelligenza della Tabella Combattimento è modellata in modo approssimato. |
 | 194 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/063/069 — Città Aliena / Liquid Surface / River+clima tropicale): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
@@ -361,7 +361,7 @@ come metà, l'indice di completezza è **≈ 69,2%**
 | 223 | procedurale (aeron) | 🔴 | Rapimento robot o -2 Resistenza a un personaggio non automatizzati. |
 | 224 | procedurale (veleno fungo) | 🔴 | Perdita Resistenza a ogni controllo (modificata da MedO/medkit/armorig) non gestita. |
 | 225 | procedurale (combattimento gruppo) | 🔴 | Somma Valori di Combattimento e regole speciali risultato «E» non automatizzate. |
-| 226 | incontro-creatura (Oraloid) | 🟡 | Strategia offerta; distruzione rover/robot e inefficacia netgun non gestite. |
+| 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
 | 227 | procedurale (combattimento Glosper) | 🔴 | Rilettura risultati C/D/E (un personaggio fatto a pezzi) non automatizzata. |
 | 228 | procedurale (trappola crollo) | 🔴 | Tiri 2 dadi vs Velocità per unità, distruzioni e +5 PV non automatizzati. |
 | 229 | esito (monoke amichevole) | 🟡 | Cattura facoltativa e 1 ora: il flusso «scegli azione» è ok ma la cattura/ora non sono automatizzate. |
