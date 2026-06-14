@@ -96,6 +96,8 @@ var creature_rating: int = 0          # valutazione della creatura per l'esagono
 var damage_points: int = 0            # danni accumulati dalla spedizione
 var captured_creatures: Array = []    # creature catturate vive (PV extra)
 var acquired_artifacts: Array = []    # paragrafi degli artefatti acquisiti (PV, regole 2.6/9.1)
+var recorded_creatures: Array = []    # tipi di creatura registrati sul Registro Attributi (PV per attributi a zero, 9.1)
+var explored_planets: Array = []      # sistemi i cui pianeti sono stati esplorati (1 PV ciascuno, 9.1)
 
 # Superficie planetaria (environ) — regola 6.0
 # Ogni environ è una mappa reale di 6 colonne × 7 righe (42 esagoni).
@@ -144,6 +146,8 @@ func start_new_game(p_tour_length: int) -> void:
 	shuttle_capacity = 80
 	captured_creatures = []
 	acquired_artifacts = []
+	recorded_creatures = []
+	explored_planets = []
 	supply_track_pos = 0
 	pending_supply_checks = 0
 	reset_expedition_state()
@@ -216,6 +220,8 @@ func save_game(silent := false) -> bool:
 		"current_creature": current_creature, "creature_rating": creature_rating,
 		"damage_points": damage_points, "captured_creatures": captured_creatures,
 		"acquired_artifacts": acquired_artifacts,
+		"recorded_creatures": recorded_creatures,
+		"explored_planets": explored_planets,
 		"creature_attr_cache": creature_attr_cache,
 		"pending_combat_shift": pending_combat_shift, "pending_no_capture": pending_no_capture,
 		"pending_kill_as_capture": pending_kill_as_capture,
@@ -295,6 +301,8 @@ func load_game() -> bool:
 	damage_points = int(d.get("damage_points", 0))
 	captured_creatures = d.get("captured_creatures", [])
 	acquired_artifacts = d.get("acquired_artifacts", [])
+	recorded_creatures = d.get("recorded_creatures", [])
+	explored_planets = d.get("explored_planets", [])
 	creature_attr_cache = {}
 	var cac: Variant = d.get("creature_attr_cache", {})
 	if typeof(cac) == TYPE_DICTIONARY:
@@ -831,6 +839,10 @@ func land_on_planet(die_result: int) -> void:
 			break
 
 	current_planet = current_system
+	# 1 PV per ogni pianeta esplorato, a prescindere da cosa vi si trovi (9.1).
+	if current_system not in explored_planets:
+		explored_planets.append(current_system)
+		gain_vp(1, "Pianeta esplorato: %s (9.1)" % current_system)
 	surfaces_visited += 1  # una nuova superficie planetaria è stata visitata (per ¶058)
 	expedition_hours = 0
 	expedition_supply = shuttle_supply  # bring supplies from shuttle
@@ -1296,6 +1308,7 @@ func _apply_act(act: Dictionary) -> void:
 			if str(act.get("hours", "")) == "sum_pos_mods": add_expedition_hours(_sum_pos_mods())
 			var nm := current_creature
 			captured_creatures.append(nm)
+			_record_creature_attributes(nm)
 			encounter_outcome_text = "%s catturata! Riportala alla Pandora per i PV." % nm
 			_clear_encounter_state()
 		"attack_flee":
@@ -1310,6 +1323,7 @@ func _apply_act(act: Dictionary) -> void:
 			var h3: int = int(act.get("hours", 0))
 			if h3 > 0: add_expedition_hours(h3)
 			gain_vp(vp, "Vita intelligente studiata: %s" % current_creature)
+			_record_creature_attributes(current_creature)
 			encounter_outcome_text = "Vita senziente protetta: niente combattimento. +%d PV. Scegli un'azione." % vp
 			_clear_encounter_state()
 		"combat", "restrategy":
@@ -1426,6 +1440,10 @@ func _end_tour() -> void:
 			lost += MAX_ENDURANCE - int(crew[k].get("endurance", MAX_ENDURANCE))
 	if lost > 0:
 		lose_vp(lost, "Ferite dei sopravvissuti a fine tour (%d Resistenza)" % lost)
+	# Regola 9.2: 5 PV persi per ogni mese oltre il Tour di Servizio scelto.
+	var over := tour_months_used - tour_length
+	if over > 0:
+		lose_vp(over * 5, "%d mese/i oltre il Tour (9.2)" % over)
 	show_paragraph(232)
 	set_phase(Phase.GAME_OVER)
 
@@ -1983,12 +2001,29 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 
 func _capture_creature(name: String) -> void:
 	captured_creatures.append(name)
+	_record_creature_attributes(name)
 	add_log("%s catturata viva! (riportala alla Pandora per i PV)" % name)
 	_end_encounter()
 
 func _kill_creature(name: String) -> void:
+	_record_creature_attributes(name)
 	add_log("%s eliminata." % name)
 	_end_encounter()
+
+# Registra un tipo di creatura sul Registro degli Attributi (9.1): la prima volta
+# che la si studia (uccisione/cattura/studio) si guadagna 1 PV per ogni modificatore
+# di attributo pari a zero (il «*» del segnalino: Intelligenza/Combattimento/Aggressività/Velocità).
+func _record_creature_attributes(name: String) -> void:
+	if name.is_empty() or name in recorded_creatures:
+		return
+	recorded_creatures.append(name)
+	var c := GameData.get_creature(name)
+	var zeros := 0
+	for a in ["intel", "combat", "aggression", "speed"]:
+		if int(c.get(a, -1)) == 0:
+			zeros += 1
+	if zeros > 0:
+		gain_vp(zeros, "Attributi a zero registrati: %s (%d × «*», 9.1)" % [name, zeros])
 
 # I Punti Danno riducono la Resistenza dei personaggi imbarcati (8.8).
 # I robot funzionanti fanno da scudo: assorbono un colpo ciascuno danneggiandosi (6.9).

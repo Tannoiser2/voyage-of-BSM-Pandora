@@ -13,8 +13,8 @@ prototipo Godot.
 
 | Stato | Conteggio |
 |---|---|
-| 🟢 Verde | 28 |
-| 🟡 Giallo | 22 |
+| 🟢 Verde | 29 |
+| 🟡 Giallo | 21 |
 | 🔴 Rosso | 8 |
 
 Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
@@ -22,9 +22,11 @@ matrice di esplorazione → incontro creatura → combattimento) **solido**.
 Coperti in questa tornata: **Resistenza 5 (2.5)**, **Valore Intelligenza (3.3)**,
 **Rifornimento (7.0/7.1/7.2/7.3)**, **equipaggiamento d'atmosfera (5.2)**,
 **snodi "Incontro di spedizione" (6.5)**, **effetti eventi interstellari (4.2)**,
-**artefatti (2.4/2.6/9.1)**. Migliorie residue (🟡/🔴): arricchimento dati
+**artefatti (2.4/2.6/9.1)**, **scoring PV completo lato guadagni (9.1)** e
+**mesi oltre Tour (9.2)**. Migliorie residue (🟡/🔴): arricchimento dati
 environ (clima + terreni mancanti per attivare le condizioni 6.5 oggi inerti),
-PV-per-attributo-creatura (9.1), e dettagli di rover/porto individuale (5.6–5.8).
+perdite PV a fine gioco per equipaggiamento danneggiato/Crew Log (9.2, serve
+tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
 
 ---
 
@@ -112,8 +114,8 @@ PV-per-attributo-creatura (9.1), e dettagli di rover/porto individuale (5.6–5.
 ## [9.0] Condizioni di Vittoria
 | Caso | Regola | Stato | Nota |
 |---|---|:--:|---|
-| 9.1 | PV guadagnati (attributi creatura, cattura, artefatti, pianeta esplorato) | 🟡 | Creatura/pianeta/**artefatti** sì (`acquire_artifact`, `artifacts.json`, PV su linea Additional VP's); PV-per-attributo-creatura ancora parziale. |
-| 9.2 | PV persi (personaggio −10, Resistenza −1, bot/rover, tipo strumento, mesi oltre Tour) | 🟡 | Alcune voci sì; copertura non completa. |
+| 9.1 | PV guadagnati (attributi creatura, cattura, artefatti, pianeta esplorato) | 🟢 | Tutti i canali: **1 PV per attributo creatura a zero** (`_record_creature_attributes` su uccisione/cattura/studio), cattura riportata viva, artefatti, **1 PV per pianeta esplorato** (`land_on_planet`), e PV da paragrafo. |
+| 9.2 | PV persi (personaggio −10, Resistenza −1, bot/rover, tipo strumento, mesi oltre Tour) | 🟡 | Personaggio −10, Resistenza sopravvissuti −1, **mesi oltre il Tour −5** fatti. Residuo: bot/rover/strumenti danneggiati a fine gioco (serve tracker persistente, oggi `damaged_gear` è per-spedizione) e righe Crew Log. |
 | 9.3 | Totale finale PV / condizione di vittoria | 🟡 | `_end_tour` calcola il totale; soglie vittoria/sconfitta da rifinire. |
 
 ---
