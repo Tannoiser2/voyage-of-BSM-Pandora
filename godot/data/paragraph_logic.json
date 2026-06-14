@@ -738,5 +738,66 @@
     "para": 226
    }
   }
+ ],
+ "077": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ],
+    [
+     "has_gear",
+     "==",
+     "Neuroscan"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 211
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 16
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 215
+   }
+  }
+ ],
+ "072": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 206
+   }
+  }
  ]
 }

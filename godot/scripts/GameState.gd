@@ -2334,6 +2334,41 @@ func _apply_creature_intro(para: int) -> void:
 				if slow != "":
 					add_log("¶170: %s (il più lento) viene divorato!" % slow)
 					_kill_unit(slow)
+		66:
+			# Nebbia carnivora: sorpresa → combattimento con spostamento di 2 colonne a
+			# sinistra; con l'Holographer si guadagnano 4 PV.
+			if surprise_active:
+				pending_combat_shift = 2
+				add_log("¶066: sorpresa! Combattimento con spostamento di 2 colonne a sinistra.")
+			if _gear_has("Holographer"):
+				gain_vp(4, "¶066 nebbia documentata con l'Holographer")
+		72:
+			# Forma di vita blu (Unithalo): sorpresa → combattimento con spostamento di 1
+			# colonna a sinistra (il combattimento si risolve al ¶206).
+			if surprise_active:
+				pending_combat_shift = 1
+				add_log("¶072: sorpresa! Combattimento con spostamento di 1 colonna a sinistra.")
+		57:
+			# Creatura d'energia (Eleboid): folgora e danneggia tutti i robot, poi si
+			# risolve l'incontro normalmente.
+			var zapped := 0
+			for g in expedition_gear.duplicate():
+				if (g in ["Ambot", "Reconbot", "Imrebot", "Specibot"]) and not damaged_gear.has(g):
+					damaged_gear.append(g)
+					zapped += 1
+			if zapped > 0:
+				add_log("¶057: la creatura d'energia folgora e danneggia %d robot." % zapped)
+		208:
+			# Forma larvale (Reeler): con l'Ufficiale Scienze si riporta in salvo (+2 PV);
+			# altrimenti 1 dado: 1-3 la larva muore, 4-6 si trasforma e si combatte.
+			if "SO" in expedition_units:
+				gain_vp(2, "¶208 forma larvale riportata in salvo")
+				_clear_encounter_state()
+			elif randi_range(1, 6) <= 3:
+				add_log("¶208: la forma larvale muore; nessun Punto Vittoria.")
+				_clear_encounter_state()
+			else:
+				add_log("¶208: la forma larvale si trasforma in una creatura mortale simile a una manta!")
 
 # Risolve una scelta-paragrafo cliccata dal giocatore (override paragraph_choices.json):
 # goto diretto, tiro→goto, condizione speciale, oppure «lascia stare».
