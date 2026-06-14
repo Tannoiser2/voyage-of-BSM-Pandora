@@ -113,6 +113,7 @@ var expedition_pos: int = 0           # esagono attuale della spedizione (0 = no
 var landing_hex: int = 0
 var pond_supply_used: bool = false    # 6.5: stagno usato in un Controllo del Rifornimento
 var _landing_fx_applied: Array = []   # paragrafi-area i cui effetti numerici (LSV) sono già applicati
+var infected_chars: Array = []        # personaggi che perdono 1 Resistenza a ogni Controllo del Rifornimento (¶197/¶209)
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
@@ -256,7 +257,7 @@ func save_game(silent := false) -> bool:
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
-		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "current_environ_id": current_environ_id,
+		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "current_environ_id": current_environ_id,
 		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -355,6 +356,7 @@ func load_game() -> bool:
 	expedition_pos = int(d.get("expedition_pos", 0))
 	landing_hex = int(d.get("landing_hex", 0))
 	pond_supply_used = bool(d.get("pond_supply_used", false))
+	infected_chars = d.get("infected_chars", [])
 	current_environ_id = int(d.get("current_environ_id", 0))
 	hasty_path_terrains = d.get("hasty_path_terrains", [])
 	add_log("Partita caricata.")
@@ -1790,6 +1792,14 @@ func _compute_shift(act: Dictionary) -> int:
 	return int(act.get("shift", 0))
 
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
+# Personaggio vivo a caso della spedizione ("" se nessuno).
+func _random_alive_char() -> String:
+	var alive: Array = []
+	for k in expedition_units:
+		if crew.has(k) and crew[k].get("alive", false):
+			alive.append(k)
+	return alive[randi_range(0, alive.size() - 1)] if not alive.is_empty() else ""
+
 # Danneggia un robot a caso della spedizione (6.9).
 func _damage_random_robot() -> void:
 	var bots := _functioning_bots()
@@ -1980,6 +1990,52 @@ func _apply_paragraph_effect(para: int) -> int:
 			else:
 				add_log("¶226: l'Oraloid divora un robot.")
 				_damage_random_robot()
+		28:
+			if _gear_has("Neuroscan"):
+				gain_vp(4, "¶028 alieni invisibili rilevati (neuroscanner)")
+			else:
+				redirect = 189
+		207:
+			gain_vp(3, "¶207 orchidea raccolta")
+			if randi_range(1, 6) >= 4:
+				redirect = 33
+		210:
+			gain_vp(5, "¶210 teletrasporto degli alieni")
+		211:
+			gain_vp(4 + (2 if _gear_has("Holographer") else 0), "¶211 Garbrist telepate")
+		213:
+			var v213 := 0
+			if _gear_has("Neuroscan"):
+				v213 += 4
+			if _gear_has("Holographer"):
+				v213 += 2
+			if "GSO" in expedition_units:
+				v213 += 2
+			gain_vp(v213, "¶213 Glassman intelligente")
+		214:
+			var v214 := 0
+			if _gear_has("Holographer"):
+				v214 += 3
+			if _gear_has("Neuroscan"):
+				v214 += 2
+			gain_vp(v214, "¶214 la creatura svanisce")
+		197:
+			var vic197 := _random_alive_char()
+			if vic197 != "" and not _gear_has("Armorig"):
+				if not infected_chars.has(vic197):
+					infected_chars.append(vic197)
+				add_log("¶197: %s è ricoperto da un fungo parassita: perdita ricorrente di Resistenza fino al rientro." % crew[vic197].get("name", vic197))
+			elif vic197 != "":
+				add_log("¶197: l'armorig protegge dall'infezione del fungo.")
+		209:
+			var vic209 := _random_alive_char()
+			if vic209 != "":
+				crew[vic209]["endurance"] = maxi(0, int(crew[vic209].get("endurance", 0)) - 2)
+				add_log("¶209: %s ha le convulsioni: −2 Resistenza (germe alieno)." % crew[vic209].get("name", vic209))
+				if not ("MedO" in expedition_units) and not infected_chars.has(vic209):
+					infected_chars.append(vic209)
+				if int(crew[vic209]["endurance"]) <= 0:
+					_kill_character(vic209)
 		_:
 			applied = false
 	if applied:
@@ -2085,6 +2141,10 @@ func return_to_pandora() -> void:
 	if current_phase == Phase.EXPEDITION or current_phase == Phase.PARAGRAPH:
 		shuttle_supply += expedition_supply
 		expedition_supply = 0
+		# Le infezioni vengono curate dall'attrezzatura sofisticata della Pandora (6.9).
+		if not infected_chars.is_empty():
+			add_log("Rientro sulla Pandora: le infezioni dei personaggi vengono curate.")
+			infected_chars = []
 		# Assegna i PV per le creature catturate riportate sulla Pandora (8.0/9.0)
 		if captured_creatures.size() > 0:
 			for cname in captured_creatures:
@@ -2234,6 +2294,14 @@ func resolve_supply_check(die: int) -> void:
 	add_log("Controllo Rifornimento (7.2): dado %d · Utenti %d → %d · (LSV %d + terreno %d = %d) → %d · totale %d." % [
 		die, users, calc1, lsv, terr_supply, summ, calc2, total])
 	_expend_supply(total)
+	# Infezioni in corso (¶197/¶209): ogni personaggio infetto perde 1 Resistenza a
+	# ogni Controllo del Rifornimento, finché non rientra sulla Pandora.
+	for v in infected_chars.duplicate():
+		if crew.has(v) and crew[v].get("alive", false):
+			crew[v]["endurance"] = maxi(0, int(crew[v].get("endurance", 0)) - 1)
+			add_log("Infezione: %s perde 1 Punto Resistenza (%d/%d)." % [crew[v].get("name", v), crew[v]["endurance"], MAX_ENDURANCE])
+			if int(crew[v]["endurance"]) <= 0:
+				_kill_character(v)
 	state_updated.emit()
 
 # Totale degli Utenti di Rifornimento della spedizione (regola 7.1):

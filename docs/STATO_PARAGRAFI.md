@@ -80,13 +80,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 144 | 62,1% |
+| 🟢 Verde | 152 | 65,5% |
 | 🟡 Giallo | 40 | 17,2% |
-| 🔴 Rosso | 48 | 20,7% |
+| 🔴 Rosso | 40 | 17,2% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 70,7%**
-( (144 + 40/2) / 232 ).
+come metà, l'indice di completezza è **≈ 74,1%**
+( (152 + 40/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -99,7 +99,7 @@ come metà, l'indice di completezza è **≈ 70,7%**
 | evento-interstellare + esiti | 16 | 3 | 3 | 22 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
-| **Totale** | **144** | **40** | **48** | **232** |
+| **Totale** | **152** | **40** | **40** | **232** |
 
 > Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
 > con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
@@ -143,7 +143,7 @@ come metà, l'indice di completezza è **≈ 70,7%**
 | 025 | esito-strategia | 🟢 | Codificato: intel≥8 rilascio +3 PV (+2 Holographer/+2 GSO), 2 ore; altrimenti uccisione=cattura. |
 | 026 | esito-strategia | 🟢 | Codificato: aggr≤3 fuga 2 ore; altrimenti combattimento shift max-mod, danni-Resistenza. |
 | 027 | incontro-creatura (Folisaur) | 🟡 | Creatura preparata e strategia offerta; lo stordimento da sorpresa e lo «shift = 1 dado» del ramo combattimento non sono applicati. |
-| 028 | procedurale (alieni invisibili) | 🔴 | Check neuroscanner→+4 PV o ¶189 non gestito; solo testo. |
+| 028 | procedurale (alieni invisibili) | 🟢 | Col neuroscanner → +4 PV; altrimenti → ¶189. Automatizzato. |
 | 029 | incontro-creatura (Ivy Five) | 🟢 | Sorpresa→combattimento shift 3 sx codificata; ramo «non sorpreso» con azioni standard. |
 | 030 | procedurale (globo) | 🟢 | Pulsante «Esamina» (resolver `intel_check`, investigatore = Intelligenza più alta): con E-cage il globo è acquisito (PV al rientro); senza E-cage si ripiega sull'esito acido (−3 Resistenza all'investigatore, annullati dall'armorig); esito peggiore = morte dell'investigatore (con armorig: −3 Resistenza). Caveat: l'enviorig non è modellato, quindi il suo danneggiamento è inerte. |
 | 031 | incontro-creatura (Spiker) | 🟡 | Creatura preparata; l'uccisione automatica da sorpresa e il divieto netgun/stunbomb non sono modellati. |
@@ -327,7 +327,7 @@ come metà, l'indice di completezza è **≈ 70,7%**
 | 194 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/063/069 — Città Aliena / Liquid Surface / River+clima tropicale): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 195 | procedurale (comunicazione alieni) | 🔴 | Tiro 1d6 con modificatori CO/GSO/neuroscanner e PV/¶210 non gestiti. |
 | 196 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/079/048 — Città Aliena / Glacial Ice+gravità / veg.+clima temperato): il motore salta al ramo giusto o ri-tira la Matrice. |
-| 197 | procedurale (fungo parassita) | 🔴 | Perdita Resistenza a ogni controllo rifornimento (salvo armorig) non automatizzata. |
+| 197 | procedurale (fungo parassita) | 🟢 | Personaggio a caso infettato: −1 Resistenza a ogni Controllo del Rifornimento fino al rientro (curato sulla Pandora); l'armorig previene l'infezione. Automatizzato. |
 | 198 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Liquid Surface / vegetazione+atmosfera): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 199 | procedurale (combattimento alieni) | 🔴 | Tiro 1d6 con perdite equipaggiamento/PV/¶210 non gestiti. |
 | 200 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Liquid Surface+Cliffs-o-Abyss / Light Veg+atmosfera): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
@@ -342,14 +342,14 @@ come metà, l'indice di completezza è **≈ 70,7%**
 | 204 | procedurale (fuga alieni) | 🔴 | Tiro 1d6 con esiti multipli (prigionia/PV/rover/¶195/¶210) non gestiti. |
 | 205 | esito-strategia (modificatore) | 🟡 | «Aggressività auto +2, ritira sulla tabella 8.2»: il motore ha la tabella 8.2 ma non applica questa correzione né il rimando-incontro. |
 | 206 | procedurale (combattimento Unithalo) | 🔴 | Combattimento a due round con risultati riletti non automatizzato. |
-| 207 | incontro (orchidea, senza pedina) | 🔴 | +3 PV se raccolta + tiro 1d6 → ¶033 non gestiti. |
+| 207 | esito (orchidea, senza pedina) | 🟢 | Orchidea raccolta: +3 PV, poi 1 dado (4-6 → ¶033). Automatizzato. |
 | 208 | procedurale (forma larvale) | 🔴 | Check GSO/tiro 1d6 → +2 PV o incontro creatura non gestito. |
-| 209 | procedurale (infezione germe) | 🔴 | -2 Resistenza + perdita a ogni controllo (salvo MedO/medkit) non automatizzata. |
-| 210 | procedurale (teletrasporto) | 🔴 | Sparizione equipaggiamento/creature e +5 PV non automatizzati. |
-| 211 | esito (Garbrist amichevole) | 🔴 | +4 PV (+2 Holographer) non assegnati automaticamente. |
+| 209 | procedurale (infezione germe) | 🟢 | Personaggio a caso: −2 Resistenza subito e −1 a ogni Controllo del Rifornimento (salvo Ufficiale Medico presente), curato al rientro. Automatizzato. |
+| 210 | procedurale (teletrasporto) | 🟢 | Teletrasporto allo shuttle: +5 PV (una volta per spedizione). Automatizzato. |
+| 211 | esito (Garbrist amichevole) | 🟢 | +4 PV, +2 con l'Holographer. Automatizzato. |
 | 212 | procedurale (cattura verme) | 🔴 | Cattura su GSO/check Intelligenza e blocco PV non gestiti. |
-| 213 | esito (Glassman comunica) | 🔴 | PV cumulativi (neuroscanner/Holographer/GSO) non assegnati. |
-| 214 | esito (creatura svanisce) | 🔴 | +3 PV Holographer / +2 neuroscanner non assegnati. |
+| 213 | esito (Glassman comunica) | 🟢 | +4 col neuroscanner, +2 con Holographer, +2 con Ufficiale Scienze (cumulativi). Automatizzato. |
+| 214 | esito (creatura svanisce) | 🟢 | +3 con Holographer, +2 col neuroscanner. Automatizzato. |
 | 215 | procedurale (Garbrist combatte) | 🔴 | Danno a tutti i robot/strumenti, poi combattimento: non gestito. |
 | 216 | procedurale (Abomnid insegue) | 🔴 | Esito su rover/armorig o uccisione del più lento non automatizzato. |
 | 217 | procedurale (Glassman ostile) | 🔴 | Distruzione personaggio+robot e combattimento con mod +3 non gestiti. |
