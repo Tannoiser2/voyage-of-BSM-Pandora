@@ -45,9 +45,11 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   (fuga, cattura, rilascio con PV, shift di colonna, ore, ecc.). → 🟢 (con
   riserve 🟡 dove la regola cita enviorig/armorig che il motore non modella).
 - **evento-interstellare (testo):** il **routing** 2d6→paragrafo è corretto
-  (`interstellar_events`), ma le **meccaniche interne** (mesi di tour spesi,
-  uccisioni d'equipaggio, controlli d'Intelligenza, danni cerebrali) **non** sono
-  automatizzate: solo testo ⇒ 🔴/🟡.
+  (`interstellar_events`) **e** le meccaniche interne sono automatizzate
+  (`_apply_interstellar_event_effect`): mesi di tour spesi, uccisioni d'equipaggio,
+  controlli d'Intelligenza, danni cerebrali, deviazione Opoplo, evoluzione creatura
+  e tutti gli esiti (067/073/083/084/144/169). ⇒ 🟢 (055 🟡: solo l'Intelligenza è
+  memorizzata per personaggio).
 - **snodo «Incontro di spedizione» (053, 056, …):** tabelle di salto condizionato
   a terreno/gravità/clima/atmosfera. L'interprete valuta gravità, atmosfera,
   idrografia, geologia, vegetazione, **clima** (5.1, derivato dal testo dell'area:
@@ -70,7 +72,11 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
   `extra` per i terreni aggiuntivi sovrapposti al terreno base; `_current_terrain_is`
   soddisfa sia il base sia gli extra.
 - **procedurale-vario:** tiri/condizioni con effetti su Resistenza, PV, ore,
-  equipaggiamento. Quasi sempre solo testo ⇒ 🔴 (🟡 se in parte coperto).
+  equipaggiamento. Ora automatizzati da `_apply_paragraph_effect(para)` (danni con
+  eccezione armorig, PV condizionali, ore, uccisioni casuali, infezioni ricorrenti,
+  furti, trappole, catena pirati, ecc.) e dalle scelte-giocatore a bottoni
+  (`paragraph_choices.json` + `resolve_paragraph_choice`). ⇒ 🟢 (🟡 dove resta un
+  caveat documentato).
 
 ---
 
@@ -93,20 +99,23 @@ come metà, l'indice di completezza è **≈ 88,1%**
 | Tipo | 🟢 | 🟡 | 🔴 | Tot |
 |---|---|---|---|---|
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
-| atterraggio/superficie (incl. 002/070/076/148) | 16 | 9 | 4 | 29 |
+| atterraggio/superficie (incl. 002/070/076/148) | 19 | 10 | 0 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 15 | 21 | 12 | 48 |
-| evento-interstellare + esiti | 16 | 3 | 3 | 22 |
+| incontro-creatura (intro) | 19 | 25 | 0 | 44 |
+| evento-interstellare + esiti | 16 | 1 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 15 | 4 | 34 | 53 |
+| procedurale-vario / rimandi-testuali | 44 | 18 | 0 | 62 |
 | **Totale** | **177** | **55** | **0** | **232** |
 
-> Lettura: il cuore «sistemico» del gioco (orbita→pianeta→atterraggio→esplorazione
-> con tiro Matrice 6.4, incontro creatura 8.1/8.2/8.4 e combattimento 8.5/8.6) è
-> implementato. Manca quasi tutto il **contenuto ramificato** dei singoli
-> paragrafi: gli snodi «Incontro di spedizione» (36 tabelle condizionali), gli
-> eventi interstellari interni, e le decine di paragrafi procedurali con effetti su
-> Resistenza/PV/ore/equipaggiamento.
+> Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
+> sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
+> creatura 8.1/8.2/8.4, combattimento 8.5/8.6) e tutto il **contenuto ramificato**
+> sono automatizzati: i 36 snodi «Incontro di spedizione», gli eventi interstellari
+> interni e i loro esiti, le scelte-giocatore a bottoni, i combattimenti speciali, e
+> circa 60 paragrafi procedurali (danni/PV/ore/uccisioni/infezioni/pirati/trappole).
+> I 🟡 residui sono casi con un **caveat documentato** (es. enviorig/armorig
+> per-personaggio non modellati come oggetti, dettagli di combattimento a più round,
+> ridefinizioni di terreno per-area), non funzionalità mancanti.
 
 ---
 
