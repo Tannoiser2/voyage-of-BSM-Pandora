@@ -181,8 +181,88 @@ func _build_ui() -> void:
 	center_panel = Panel.new()
 	center_panel.name = "ParagraphPanel"
 	center_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	center_panel.custom_minimum_size = Vector2(0, 300)
+	center_panel.custom_minimum_size = Vector2(0, 180)
 	center_vbox.add_child(center_panel)
+
+	# --- Pannello DISPOSIZIONE (sotto il testo): dove sta ogni unità (5.6/5.7) ---
+	# Pedine grandi e sovrapposte a ventaglio (niente scroll), il nome è sulla pedina.
+	var disp_sec := UITheme.section("Disposizione · dove sta ogni unità")
+	disp_sec["panel"].name = "DispositionSection"
+	disp_sec["panel"].custom_minimum_size = Vector2(0, 300)
+	disp_sec["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
+	center_vbox.add_child(disp_sec["panel"])
+	var disp_vbox := VBoxContainer.new()
+	disp_vbox.add_theme_constant_override("separation", 6)
+	disp_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	disp_sec["vbox"].add_child(disp_vbox)
+	# Riga superiore: Pandora (box largo, molte pedine in orizzontale)
+	var _disp_add_bucket := func(parent: Control, bucket: String, h_stretch: int):
+		var col := PanelContainer.new()
+		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		col.size_flags_stretch_ratio = float(h_stretch)
+		var cv := VBoxContainer.new()
+		cv.add_theme_constant_override("separation", 2)
+		col.add_child(cv)
+		var hdr := Label.new()
+		hdr.text = bucket.to_upper()
+		hdr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hdr.add_theme_font_size_override("font_size", 12)
+		hdr.add_theme_color_override("font_color", UITheme.CYAN)
+		cv.add_child(hdr)
+		var box := Control.new()
+		box.name = "Disp_%s" % bucket
+		box.clip_contents = true
+		box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		box.resized.connect(_relayout_disp_box.bind(box))
+		cv.add_child(box)
+		parent.add_child(col)
+	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
+	# Riga inferiore: Shuttle (più grande) + A piedi + Rover
+	var disp_row := HBoxContainer.new()
+	disp_row.add_theme_constant_override("separation", 6)
+	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	disp_row.size_flags_stretch_ratio = 1.6
+	disp_vbox.add_child(disp_row)
+	_disp_add_bucket.call(disp_row, "Shuttle", 2)
+	_disp_add_bucket.call(disp_row, "A piedi", 1)
+	_disp_add_bucket.call(disp_row, "Rover", 1)
+	# Controlli di preparazione (rifornimenti + lancio), visibili solo in orbita.
+	var prep_ctrl := HBoxContainer.new()
+	prep_ctrl.name = "DispPrepControls"
+	prep_ctrl.add_theme_constant_override("separation", 8)
+	prep_ctrl.visible = false
+	disp_sec["vbox"].add_child(prep_ctrl)
+	var disp_load := Label.new()
+	disp_load.name = "DispLoad"
+	disp_load.add_theme_font_size_override("font_size", 12)
+	prep_ctrl.add_child(disp_load)
+	var sup_lbl2 := Label.new()
+	sup_lbl2.text = "·  Rifornimenti:"
+	sup_lbl2.add_theme_font_size_override("font_size", 12)
+	prep_ctrl.add_child(sup_lbl2)
+	var sup_slider := HSlider.new()
+	sup_slider.name = "DispSupply"
+	sup_slider.min_value = 0
+	sup_slider.max_value = GameData.max_supply()
+	sup_slider.step = 1
+	sup_slider.custom_minimum_size = Vector2(150, 0)
+	sup_slider.value_changed.connect(_on_prep_supply_changed)
+	prep_ctrl.add_child(sup_slider)
+	var sup_val2 := Label.new()
+	sup_val2.name = "DispSupplyVal"
+	sup_val2.custom_minimum_size = Vector2(26, 0)
+	prep_ctrl.add_child(sup_val2)
+	var spacer2 := Control.new()
+	spacer2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	prep_ctrl.add_child(spacer2)
+	var launch2 := Button.new()
+	launch2.name = "DispLaunch"
+	launch2.text = "🚀 Lancia lo shuttle"
+	launch2.add_theme_color_override("font_color", UITheme.CYAN)
+	launch2.pressed.connect(_on_prep_launch)
+	prep_ctrl.add_child(launch2)
 
 	var para_vbox := VBoxContainer.new()
 	para_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -397,58 +477,44 @@ func _build_ui() -> void:
 	sec_status["vbox"].add_child(status_display)
 	_build_status_rows(status_display)
 
-	# --- Sezione: Equipaggio (+ equipaggiamento in spedizione) ---
-	var sec_crew := UITheme.section("Equipaggio")
-	right_vbox.add_child(sec_crew["panel"])
-	var crew_grid := GridContainer.new()
-	crew_grid.name = "CrewCounters"
-	crew_grid.columns = 4
-	crew_grid.add_theme_constant_override("h_separation", 6)
-	crew_grid.add_theme_constant_override("v_separation", 6)
-	sec_crew["vbox"].add_child(crew_grid)
-	_build_crew_counters(crew_grid)
+	# (L'equipaggio e l'equipaggiamento sono ora nel pannello "Disposizione" sotto il
+	# testo centrale; la colonna destra resta solo informativa.)
 
-	var gear_title := Label.new()
-	gear_title.name = "GearTitle"
-	gear_title.text = "Equipaggiamento imbarcato"
-	gear_title.add_theme_font_size_override("font_size", 12)
-	gear_title.add_theme_color_override("font_color", UITheme.MUTED)
-	gear_title.visible = false
-	sec_crew["vbox"].add_child(gear_title)
-
-	var gear_grid := GridContainer.new()
-	gear_grid.name = "GearCounters"
-	gear_grid.columns = 4
-	gear_grid.add_theme_constant_override("h_separation", 6)
-	gear_grid.add_theme_constant_override("v_separation", 6)
-	sec_crew["vbox"].add_child(gear_grid)
-
-	# --- Sezione: Dado ---
-	var sec_dice := UITheme.section("Dado (1d6)")
+	# --- Sezione: Dado (compatta) ---
+	var sec_dice := UITheme.section("Dado")
 	right_vbox.add_child(sec_dice["panel"])
 	dice_panel = VBoxContainer.new()
 	dice_panel.name = "DicePanel"
+	dice_panel.add_theme_constant_override("separation", 4)
 	sec_dice["vbox"].add_child(dice_panel)
+
+	var dice_row := HBoxContainer.new()
+	dice_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	dice_row.add_theme_constant_override("separation", 10)
+	dice_panel.add_child(dice_row)
 
 	var dice_result_label := Label.new()
 	dice_result_label.name = "DiceResult"
 	dice_result_label.text = "—"
 	dice_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	dice_result_label.add_theme_font_size_override("font_size", 48)
+	dice_result_label.custom_minimum_size = Vector2(40, 0)
+	dice_result_label.add_theme_font_size_override("font_size", 26)
 	dice_result_label.add_theme_color_override("font_color", UITheme.AMBER)
-	dice_panel.add_child(dice_result_label)
+	dice_row.add_child(dice_result_label)
 
 	var roll_btn := Button.new()
 	roll_btn.name = "RollBtn"
-	roll_btn.text = "TIRA DADO"
-	roll_btn.custom_minimum_size = Vector2(0, 46)
+	roll_btn.text = "🎲 Tira"
+	roll_btn.custom_minimum_size = Vector2(0, 34)
+	roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	roll_btn.pressed.connect(_on_roll_dice)
-	dice_panel.add_child(roll_btn)
+	dice_row.add_child(roll_btn)
 
 	var manual_chk := CheckButton.new()
 	manual_chk.name = "ManualDiceChk"
 	manual_chk.text = "Tiri manuali"
 	manual_chk.button_pressed = GameState.manual_dice
+	manual_chk.add_theme_font_size_override("font_size", 12)
 	manual_chk.tooltip_text = "Se attivo, tiri tu i dadi dove la regola lo prevede; altrimenti li tira il sistema."
 	manual_chk.toggled.connect(func(on): GameState.manual_dice = on)
 	dice_panel.add_child(manual_chk)
@@ -458,7 +524,7 @@ func _build_ui() -> void:
 	dice_hint.text = ""
 	dice_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dice_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	dice_hint.add_theme_font_size_override("font_size", 12)
+	dice_hint.add_theme_font_size_override("font_size", 11)
 	dice_hint.add_theme_color_override("font_color", UITheme.MUTED)
 	dice_panel.add_child(dice_hint)
 
@@ -908,7 +974,7 @@ func _update_action_buttons(phase: String) -> void:
 	var encounter_busy := initial_creature or combat_outcome
 
 	# In orbita: scelta netta esplora/riparti
-	if btn_land: btn_land.visible = orbit_decision      # "Esplora il pianeta"
+	if btn_land: btn_land.visible = false               # prep+lancio ora nel pannello Disposizione
 	if btn_orbit: btn_orbit.visible = orbit_decision    # "Riparti (non esplorare)"
 	# "Torna alla Pandora" solo se sbarcati e fuori da un incontro attivo
 	if btn_return: btn_return.visible = on_surface and not encounter_busy
@@ -1032,6 +1098,7 @@ func _update_display() -> void:
 	_refresh_hex_buttons()
 	_refresh_crew_counters()
 	_refresh_gear_counters()
+	_refresh_disposition()
 	_update_left_panel_mode()
 
 func _refresh_hex_buttons() -> void:
@@ -1196,6 +1263,108 @@ func _unit_token_path(key: String) -> String:
 	if GameData.get_bot_keys().has(key): folder = "bots"
 	elif GameData.get_tool_keys().has(key): folder = "tools"
 	return "res://assets/%s/%s.png" % [folder, u.get("img", "")]
+
+# --- Pannello Disposizione (centro-basso): dove sta ogni unità (5.6/5.7) ---
+func _refresh_disposition() -> void:
+	if not find_child("DispositionSection", true, false):
+		return
+	var orbit := GameState.is_orbit_decision()
+	var landed := GameState.expedition_pos > 0
+	var rover := ("Rover" in GameState.expedition_gear) and not ("Rover" in GameState.damaged_gear)
+	var buckets := {"Pandora": [], "Shuttle": [], "A piedi": [], "Rover": []}
+	for k in GameData.get_character_keys():
+		if not GameState.crew.get(k, {}).get("alive", true):
+			continue
+		buckets[_unit_bucket(k in GameState.expedition_units, landed, rover)].append(k)
+	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
+		buckets[_unit_bucket(k in GameState.expedition_gear, landed, rover)].append(k)
+	for bucket in buckets:
+		var box := find_child("Disp_%s" % bucket, true, false) as Control
+		if box:
+			box.set_meta("keys", buckets[bucket])
+			box.set_meta("clickable", orbit)
+			_relayout_disp_box(box)
+	var prep_ctrl := find_child("DispPrepControls", true, false) as Control
+	if prep_ctrl:
+		prep_ctrl.visible = orbit
+	if orbit:
+		var slider := find_child("DispSupply", true, false) as HSlider
+		if slider:
+			_prep_updating = true
+			slider.max_value = max(GameState.max_planned_supply(), GameState.planned_supply)
+			slider.value = GameState.planned_supply
+			_prep_updating = false
+		var sval := find_child("DispSupplyVal", true, false) as Label
+		if sval: sval.text = "%d" % GameState.planned_supply
+		var ll := find_child("DispLoad", true, false) as Label
+		if ll:
+			var over := GameState.total_load() > GameState.shuttle_capacity
+			ll.text = "Carico %d/%d (unità %d + rif. %d)" % [GameState.total_load(), GameState.shuttle_capacity, GameState.units_weight(), GameState.planned_supply]
+			ll.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if over else UITheme.GREEN)
+		var launch := find_child("DispLaunch", true, false) as Button
+		if launch: launch.disabled = not GameState.prep_valid()
+
+# Dispone le pedine di un bucket a ventaglio (sovrapposte), grandi e senza scroll.
+func _relayout_disp_box(box: Control) -> void:
+	for c in box.get_children():
+		c.queue_free()
+	var keys: Array = box.get_meta("keys", [])
+	var clickable: bool = box.get_meta("clickable", false)
+	var n := keys.size()
+	if n == 0:
+		return
+	var bw := box.size.x
+	var bh := box.size.y
+	if bw <= 1.0 or bh <= 1.0:
+		return  # layout non ancora valido: il segnale resized richiamerà la funzione
+	var tw := clampf(bh * 0.82, 44.0, 78.0)   # larghezza pedina ≈ altezza box
+	var th := minf(bh, tw * 1.3)
+	# Passo orizzontale: pieno se entrano, altrimenti sovrapposte per stare nella larghezza.
+	var step := tw + 4.0
+	if n > 1:
+		step = clampf((bw - tw) / float(n - 1), 10.0, tw + 4.0)
+	for i in n:
+		var t := _make_disp_tile(str(keys[i]), clickable)
+		t.position = Vector2(i * step, (bh - th) * 0.5)
+		t.size = Vector2(tw, th)
+		t.z_index = i
+		box.add_child(t)
+
+# Bucket di un'unità: Pandora (a bordo) / Shuttle (in spedizione non sbarcata) /
+# A piedi o Rover (in spedizione, sbarcata, secondo l'uso del rover).
+func _unit_bucket(deployed: bool, landed: bool, rover: bool) -> String:
+	if not deployed:
+		return "Pandora"
+	if not landed:
+		return "Shuttle"
+	return "Rover" if rover else "A piedi"
+
+func _make_disp_tile(key: String, clickable: bool) -> Control:
+	var u := GameData.get_unit(key)
+	var damaged := key in GameState.damaged_gear
+	var base: Control = Button.new() if clickable else PanelContainer.new()
+	base.tooltip_text = "%s — Peso %d%s" % [u.get("name", key), int(u.get("weight", 0)), " (danneggiato)" if damaged else ""]
+	var tex := TextureRect.new()
+	var path := _unit_token_path(key)
+	if ResourceLoader.exists(path): tex.texture = load(path)
+	tex.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if damaged: tex.modulate = Color(0.62, 0.38, 0.38)
+	base.add_child(tex)
+	if clickable and base is Button:
+		(base as Button).pressed.connect(_disp_toggle.bind(key))
+	return base
+
+func _disp_toggle(key: String) -> void:
+	if not GameState.is_orbit_decision():
+		return
+	if GameData.get_character_keys().has(key):
+		GameState.toggle_expedition_unit(key)
+	else:
+		GameState.toggle_gear_unit(key)
+	_refresh_disposition()
 
 func _make_prep_tile(key: String, in_team: bool) -> Button:
 	var u := GameData.get_unit(key)
@@ -1540,8 +1709,8 @@ func _on_prep_supply_changed(value: float) -> void:
 	if _prep_updating:
 		return
 	GameState.planned_supply = clampi(int(value), 0, GameState.max_planned_supply())
-	# Aggiorna il pannello di preparazione ATTIVO (sinistra), non il vecchio overlay.
-	_refresh_prep_display()
+	# Aggiorna il pannello disposizione (dove ora vivono prep e rifornimenti).
+	_refresh_disposition()
 
 func _on_prep_cancel() -> void:
 	_prep_open = false
