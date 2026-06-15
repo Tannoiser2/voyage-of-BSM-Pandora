@@ -718,10 +718,11 @@ func _resolve_055(roll: int) -> void:
 	var old_int := character_intelligence(key)
 	var new_int := maxi(0, old_int - roll)
 	crew[key]["intelligence"] = new_int
-	add_log("¶055: danno cerebrale a %s — Intelligenza %d → %d (−%d)." % [
+	# Tutti gli altri Valori (Combattimento/Velocità/Porto/Peso) sono ridotti di 1,
+	# tramite un delta permanente per-personaggio applicato da effective_char_stat/best_combat.
+	crew[key]["rating_delta"] = int(crew[key].get("rating_delta", 0)) - 1
+	add_log("¶055: danno cerebrale a %s — Intelligenza %d → %d (−%d); tutti gli altri Valori −1." % [
 		crew[key]["name"], old_int, new_int, roll])
-	# NB: gli altri Valori (Combattimento/Velocità/Porto) non sono memorizzati per
-	# personaggio, quindi il «tutti i Valori −1» resta narrativo per quei valori.
 	if new_int <= 2:
 		lose_vp(4, "¶055 ufficio perso (%s)" % crew[key]["name"])
 		add_log("¶055: %s non è più in grado di svolgere i suoi compiti (Int ≤ 2)." % crew[key]["name"])
@@ -1065,6 +1066,8 @@ func toggle_gear_unit(key: String) -> void:
 func effective_char_stat(key: String, stat: String) -> int:
 	var c := GameData.get_character(key)
 	var base := int(c.get(stat, 0))
+	# Delta permanente sui Valori del personaggio (¶055: danno cerebrale −1 a tutti).
+	base += int(crew.get(key, {}).get("rating_delta", 0))
 	var atmo := str(planet_attrs.get("atmosphere", "Normal"))
 	match atmo:
 		"Thin":
@@ -1178,7 +1181,8 @@ func best_combat(mode: String) -> int:
 			continue  # personaggio stordito, non utilizzabile in combattimento (¶027)
 		var u := GameData.get_character(k)
 		var v: int = int(u.get("capture", 0)) if mode == "capture" else int(u.get("kill", 0))
-		best = maxi(best, v)
+		v += int(crew.get(k, {}).get("rating_delta", 0))  # ¶055: danno cerebrale −1
+		best = maxi(best, maxi(0, v))
 	for k in expedition_gear:
 		if k in damaged_gear:
 			continue  # robot/arma danneggiati non utilizzabili (6.9)
@@ -2430,9 +2434,24 @@ func _apply_paragraph_effect(para: int) -> int:
 			else:
 				redirect = 225
 		225:
-			# Combattimento di gruppo (valore combinato): qui se ne riassume l'esito
-			# (sopravvivenza +5 PV) e si prosegue al ¶231.
-			gain_vp(5, "¶225 sopravvissuti al combattimento di gruppo")
+			# Combattimento col VALORE COMBINATO del gruppo (somma dei Valori di
+			# Combattimento di ogni creatura, 8.4). Il gruppo non ha pedine nei dati:
+			# lo modelliamo come 3 creature (rating 8.4) sommate. Solo uccisione; tutti
+			# i Punti Danno come perdita di Resistenza; risultato «E» = 12 danni.
+			# Se la spedizione sopravvive, 5 PV e si prosegue al ¶231.
+			var group_combined := 0
+			for _gi in range(3):
+				group_combined += GameData.roll_creature_combat_rating_mod(0)
+			var pc225 := best_combat("kill")
+			var die225 := randi_range(1, 6)
+			var res225 := GameData.combat_result(pc225 - group_combined, die225, 0)
+			var dmg225 := 12 if res225 == "E" else _combat_damage(res225, false)
+			add_log("¶225: combattimento di gruppo — valore combinato %d vs squadra %d, dado %d → %s (%d danni come Resistenza)." % [
+				group_combined, pc225, die225, res225, dmg225])
+			if dmg225 > 0:
+				_apply_damage_to_chars(dmg225)
+			if has_character_selected():
+				gain_vp(5, "¶225 sopravvissuti al combattimento di gruppo")
 			redirect = 231
 		81, 82:
 			# Esiti terminali (¶080 evoluzione): la creatura prende/distrugge la Pandora.

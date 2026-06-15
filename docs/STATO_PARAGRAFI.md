@@ -86,13 +86,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 201 | 86,6% |
-| 🟡 Giallo | 31 | 13,4% |
+| 🟢 Verde | 203 | 87,5% |
+| 🟡 Giallo | 29 | 12,5% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 93,3%**
-( (201 + 31/2) / 232 ).
+come metà, l'indice di completezza è **≈ 93,8%**
+( (203 + 29/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -102,10 +102,10 @@ come metà, l'indice di completezza è **≈ 93,3%**
 | atterraggio/superficie (incl. 002/070/076/148) | 25 | 4 | 0 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
 | incontro-creatura (intro) | 28 | 16 | 0 | 44 |
-| evento-interstellare + esiti | 16 | 1 | 0 | 17 |
+| evento-interstellare + esiti | 17 | 0 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 53 | 9 | 0 | 62 |
-| **Totale** | **201** | **31** | **0** | **232** |
+| procedurale-vario / rimandi-testuali | 54 | 8 | 0 | 62 |
+| **Totale** | **203** | **29** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -184,7 +184,7 @@ come metà, l'indice di completezza è **≈ 93,3%**
 | 052 | evento-interstellare | 🟢 | una creatura catturata a bordo (a caso) muore, con perdita dei suoi PV. Automatizzato. |
 | 053 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶008/004/031/153 — Cliffs / Città Aliena / Flat+clima sahariano / gravità+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 054 | incontro-creatura (Aracat) | 🟢 | Intro «felino»: sorpresa+strategia gestite dal motore; nessun effetto extra oltre lo shift standard di sorpresa. |
-| 055 | evento-interstellare | 🟡 | danno cerebrale a un membro a caso: Intelligenza -1 dado e, se Int<=2, perdita di 4 PV e ufficio perso. Caveat: gli altri Valori (Combattimento/Velocita/Porto) non sono memorizzati per personaggio, quindi quel "-1" resta narrativo. |
+| 055 | evento-interstellare | 🟢 | Danno cerebrale a un membro a caso: Intelligenza −1 dado e **tutti gli altri Valori −1** (delta permanente per-personaggio `rating_delta`, applicato da `effective_char_stat`/`best_combat`); se Int≤2, −4 PV e ufficio perso. |
 | 056 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (lava fluente adiacente / Citta Aliena / Heavy Veg / Flat+idrografia): lava fluente = esagono adiacente Solid Lava+Liquid Surface (vicinato 6.7). |
 | 057 | incontro-creatura (Eleboid) | 🟡 | La creatura d'energia folgora e danneggia tutti i robot all'intro, poi incontro normale. Caveat: il danno è applicato all'intro anziché solo su Comunica/Combatti. |
 | 058 | evento-interstellare (procedurale) | 🟢 | follia dell'Ufficiale Scienze: Resistenza persa dagli altri + 2 dadi -> dirama a 067/073/144 (effetti applicati). Automatizzato. |
@@ -369,7 +369,7 @@ come metà, l'indice di completezza è **≈ 93,3%**
 | 222 | esito (gruppo creature) | 🟢 | Valore di Aggressività (tiro): ≤4 → +4 PV e ¶231; 5-8 → +PV (Int comandante o 4, +1 neuroscan, +1 Holographer); ≥9 → ¶225. Automatizzato. |
 | 223 | procedurale (aeron) | 🟢 | L'aeron afferra un robot a caso (rimosso); se nessun robot, un personaggio a caso perde 2 Resistenza. Automatizzato. |
 | 224 | procedurale (veleno fungo) | 🟢 | Personaggio investigatore avvelenato: −3 Resistenza a ogni Controllo del Rifornimento (−2 con Medico o medkit, −1 con entrambi), curato al rientro; armorig annulla. Automatizzato. |
-| 225 | procedurale (combattimento gruppo) | 🟡 | Esito riassunto: +5 PV e → ¶231. Caveat: il combattimento col valore combinato e il risultato «E» a 12 danni non sono modellati nel dettaglio. |
+| 225 | procedurale (combattimento gruppo) | 🟢 | Combattimento col **valore combinato** del gruppo (somma di rating 8.4) risolto proceduralmente: solo uccisione, danni come Resistenza, risultato «E» = 12 danni; se la spedizione sopravvive +5 PV → ¶231. Caveat: la dimensione del gruppo è assunta (3) perché non presente nei dati. |
 | 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
 | 227 | procedurale (combattimento speciale) | 🟢 | Sui risultati C/D/E un personaggio a caso è fatto a pezzi prima di applicare il risultato. Hook kill_on nel motore di combattimento sui codici reali A-E (Tabella 8.6 verificata). |
 | 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |

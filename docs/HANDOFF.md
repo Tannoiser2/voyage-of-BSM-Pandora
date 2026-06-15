@@ -14,8 +14,8 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 201 | |
-| 🟡 Giallo | 31 | **≈ 93,3%** |
+| 🟢 Verde | 203 | |
+| 🟡 Giallo | 29 | **≈ 93,8%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
 **Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un
@@ -131,11 +131,15 @@ Paragrafi: 024, 027, 048, 055, 072, 191, 206, 217, 225.
 - **048 → 🟢:** Comunica/Combatti → la creatura sfreccia via (`leave`).
 - **217 → 🟢:** Glassman rideterminato col modificatore +3 (8.4), non più approssimato
   come spostamento; solo uccisione.
-- **Residui 🟡:** **225** (combattimento col valore combinato del gruppo: modellare il
-  gruppo come creatura singola con rating-somma; serve la composizione del gruppo) e
-  **055** (¶: «tutti i Valori −1» richiede Valori per-personaggio, vedi punto A — oggi
-  solo Intelligenza è memorizzata). **024** (duello «singolo personaggio» multi-stadio)
-  e **191** restano approssimati ma ragionevoli.
+- **225 → 🟢 (2026-06-15):** combattimento col valore combinato del gruppo risolto
+  proceduralmente (somma di 3 rating 8.4; solo uccisione; danni come Resistenza;
+  «E» = 12; sopravvivenza → +5 PV → ¶231). Gruppo assunto di 3 (non nei dati).
+- **055 → 🟢 (2026-06-15):** «tutti i Valori −1» modellato con un delta permanente
+  per-personaggio `crew[k]["rating_delta"]`, applicato da `effective_char_stat` e
+  `best_combat` (oltre a Intelligenza −1d6). Sistema riusabile per futuri ¶ che
+  modificano i Valori.
+- **Residui:** **024** (duello «singolo personaggio» multi-stadio) e **191** restano
+  approssimati ma ragionevoli.
 
 ### D. ridefinizioni terreno / vincoli d'area — **FATTO (2026-06-15)** ✅
 Paragrafi 076, 117, 126, 129, 133, 139 → 🟢 (114 resta 🟡: esplorazione in immersione).
