@@ -86,13 +86,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 207 | 89,2% |
-| 🟡 Giallo | 25 | 10,8% |
+| 🟢 Verde | 212 | 91,4% |
+| 🟡 Giallo | 20 | 8,6% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 94,6%**
-( (207 + 25/2) / 232 ).
+come metà, l'indice di completezza è **≈ 95,7%**
+( (212 + 20/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -101,11 +101,11 @@ come metà, l'indice di completezza è **≈ 94,6%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 25 | 4 | 0 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 32 | 12 | 0 | 44 |
+| incontro-creatura (intro) | 33 | 11 | 0 | 44 |
 | evento-interstellare + esiti | 17 | 0 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 54 | 8 | 0 | 62 |
-| **Totale** | **207** | **25** | **0** | **232** |
+| procedurale-vario / rimandi-testuali | 58 | 4 | 0 | 62 |
+| **Totale** | **212** | **20** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -161,12 +161,12 @@ come metà, l'indice di completezza è **≈ 94,6%**
 | 034 | scelta (delegazione aliena) | 🟢 | Bottoni di scelta: Comunica → ¶195, Combatti → ¶199, Fuggi → ¶204. UI a scelte. |
 | 035 | incontro-creatura (Curder) | 🟢 | Comunica/Combatti: l'incontro si risolve normalmente solo se **tutti** i personaggi indossano un enviorig o un armorig (rig per-personaggio derivato dall'atmosfera, 5.2); altrimenti → ¶209. |
 | 036 | procedurale (scultura) | 🟢 | La scultura è acquisibile come artefatto (pulsante «Raccogli», peso 3) con i PV registrati al rientro sulla Pandora; il flusso «scegli un'altra azione» è ok. |
-| 037 | incontro-creatura (Snoup) | 🟡 | Creatura preparata; lo svanire + ricerca con scanner (¶020) o fuga non è automatizzato. |
+| 037 | incontro-creatura (Snoup) | 🟢 | Col Combatti la creatura svanisce; con lo Scanner si rilocalizza (2 dadi < Int max → ¶020), altrimenti è fuggita. |
 | 038 | procedurale (vulcano) | 🟢 | Eruzione: −12 Punti Resistenza (−6 da soli robot/strumenti se tutti armorig); rover danneggiato se presente. Automatizzato. |
 | 039 | incontro-creatura (Allidon) | 🟡 | 1 dado: 5-6 → ¶205; 1-4 incontro normale. Caveat: il rimando «poi → ¶197» dopo la risoluzione non è agganciato. |
 | 040 | procedurale (rettiliani) | 🟢 | Rettiliani amichevoli: +5 ore, +PV pari all'Intelligenza del comandante (se presente). Automatizzato. |
 | 041 | incontro-creatura (Abomnid) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo Fuga (¶216) usa il rimando. |
-| 042 | procedurale (uovo) | 🟡 | L'uovo è acquisibile come artefatto (PV al rientro); il tiro 1d6 al momento del trasporto (1-2 ok / 3-4 → ¶178 / 5-6 → ¶205) non è ancora gestito. |
+| 042 | procedurale (uovo) | 🟢 | Scelte a bottoni: «Lascia stare» o «Riportala» (tiro 1d6: 1-2 acquisito, 3-4 → ¶178, 5-6 → ¶205) via `roll_goto` con campo `acquire`. |
 | 043 | incontro-creatura (Crusher) | 🟢 | Un robot a caso è polverizzato all'intro; in combattimento valgono SOLO i Valori di armorig/specibot/turbolaser (`pending_combat_only_sources` in `best_combat`). |
 | 044 | evento-interstellare | 🟢 | sforzo FTL: 2 dadi vs Int Manutenzione -> Mesi di Tour. Automatizzato. |
 | 045 | incontro-creatura (Armeetle) | 🟢 | Comunica/Combatti → la creatura sparisce nel tunnel (esito `leave`, +2 ore). Caveat residuo: inefficacia di stunbomb/reconbot/specibot non modellata. |
@@ -174,7 +174,7 @@ come metà, l'indice di completezza è **≈ 94,6%**
 | 047 | evento-interstellare | 🟢 | avaria Processore Fuji: 9 - Int(Scienze/Manut). Automatizzato. |
 | 048 | incontro-creatura (Ornifly) | 🟢 | Comunica o Combatti → la creatura sfreccia via (esito `leave`, nessun combattimento); Fuggi normale. |
 | 049 | evento-interstellare | 🟢 | tempesta di asteroidi: 9 - Int(CO/Nav/Manut). Automatizzato. |
-| 050 | snodo-di-flusso | 🟡 | Il rientro alla Pandora e il movimento interstellare esistono; il paragrafo come «hub» (Azioni di Bordo 4.5) non è esplicitamente collegato. |
+| 050 | snodo-di-flusso | 🟢 | Hub Azioni di Bordo (4.5): cura tutti i personaggi (Resistenza al massimo) e ripara l'equipaggiamento danneggiato ma non distrutto (`_onboard_actions`); lo studio creature (PV) avviene al rientro. |
 
 ### 051–100 — creature, eventi, atterraggi, snodi
 
@@ -349,7 +349,7 @@ come metà, l'indice di completezza è **≈ 94,6%**
 | 202 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+gravita / lava fluente adiacente+clima sahariano): lava fluente = esagono adiacente Solid Lava+Liquid Surface (vicinato 6.7). |
 | 203 | procedurale (pirati: tributo) | 🟢 | Scelta: cedi un robot/strumento di ogni tipo (i pirati se ne vanno) oppure rifiuta → ¶183. UI a scelte. |
 | 204 | procedurale (fuga alieni) | 🟢 | 1 dado: 1 +5 PV; 2-3 rover distrutto →¶195; 4-5 imprigionati 1 Mese, rifornimenti confiscati +5 PV; 6→¶210. Automatizzato. |
-| 205 | esito-strategia (modificatore) | 🟡 | «Aggressività auto +2, ritira sulla tabella 8.2»: il motore ha la tabella 8.2 ma non applica questa correzione né il rimando-incontro. |
+| 205 | esito-strategia (modificatore) | 🟢 | Aggressività della creatura +2: ri-tiro sulla Tabella di Strategia (8.2) con la strategia già scelta → paragrafo di destinazione. |
 | 206 | procedurale (combattimento Unithalo) | 🟢 | Combattimento in 2 round: al 1° i risultati sono riletti (A nessun effetto; B −3 Resistenza, se muore +3 al rating; C un divorato +3; D/E due divorati +5), poi 2° round coi risultati normali sul differenziale ricalcolato (`pending_two_round`). |
 | 207 | esito (orchidea, senza pedina) | 🟢 | Orchidea raccolta: +3 PV, poi 1 dado (4-6 → ¶033). Automatizzato. |
 | 208 | incontro-creatura (Reeler) | 🟢 | Con l'Ufficiale Scienze la larva è riportata in salvo (+2 PV); altrimenti 1 dado: 1-3 muore, 4-6 si trasforma e si combatte. Codificato (intro). |
@@ -375,7 +375,7 @@ come metà, l'indice di completezza è **≈ 94,6%**
 | 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |
 | 229 | esito (monoke amichevole) | 🟢 | Si spende 1 ora (automatico); la cattura resta facoltativa (a discrezione del giocatore, come da regola). |
 | 230 | procedurale (radrod) | 🟢 | Studio: 2 dadi (−2 con SO) vs Int max: < → +3 PV e cattura (1 ora); ≥ → neuroscanner+creatura distrutti, un personaggio −2 Resistenza e svenuto (2 dadi di ore). Automatizzato. |
-| 231 | procedurale (razza ostile) | 🟡 | Razza locale ostile: a ogni Controllo del Rifornimento, 1 dado (1-2 → spedizione imboscata e distrutta). Resta non agganciato il trigger «ingresso in esagono struttura/città». |
+| 231 | procedurale (razza ostile) | 🟢 | Razza locale ostile: a ogni Controllo del Rifornimento **e all'ingresso in un esagono di città aliena** si tira 1 dado (1-2 → spedizione imboscata e distrutta), via `_hostile_ambush`. |
 | 232 | snodo-di-flusso (fine viaggio) | 🟢 | Attracco e calcolo PV finali: il motore mostra ¶232 a fine tour e produce il riepilogo PV (9.0/9.2). Fedele. |
 
 ---

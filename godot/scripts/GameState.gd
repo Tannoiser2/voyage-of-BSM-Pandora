@@ -2010,6 +2010,26 @@ func _effect_152() -> void:
 # Effetti procedurali per-paragrafo. Ritorna un paragrafo di destinazione (>0) per i
 # salti condizionati; 0 altrimenti. Gli effetti numerici sono applicati una sola
 # volta per spedizione (guardia _landing_fx_applied).
+# Azioni di Bordo (4.5) eseguite all'hub ¶050: cura tutti i personaggi sopravvissuti
+# (Resistenza al massimo) e ripara l'equipaggiamento danneggiato ma non distrutto
+# (ancora imbarcato). Lo studio delle creature catturate (PV) avviene al rientro.
+func _onboard_actions() -> void:
+	var healed := 0
+	for k in crew:
+		if crew[k].get("alive", false) and int(crew[k].get("endurance", MAX_ENDURANCE)) < MAX_ENDURANCE:
+			crew[k]["endurance"] = MAX_ENDURANCE
+			healed += 1
+	var repaired := 0
+	for g in damaged_gear.duplicate():
+		# Danneggiato ma ancora presente = riparabile; se è stato distrutto (rimosso
+		# dall'equipaggiamento) non torna.
+		if g in expedition_gear:
+			damaged_gear.erase(g)
+			repaired += 1
+	if healed > 0 or repaired > 0:
+		add_log("¶050 Azioni di Bordo: %d personaggio/i curato/i, %d unità riparate." % [healed, repaired])
+	state_updated.emit()
+
 func _apply_paragraph_effect(para: int) -> int:
 	# Salti condizionati (nessuna guardia: ridirezionano).
 	if para == 2:
@@ -2025,6 +2045,11 @@ func _apply_paragraph_effect(para: int) -> int:
 		pending_two_round = true
 		combat_round = 1
 		add_log("¶206: il combattimento con l'Unithalo si risolve in due round (conduci il combattimento).")
+	# ¶050: Azioni di Bordo (4.5) — al rientro sulla Pandora i personaggi sono curati
+	# e l'equipaggiamento danneggiato (non distrutto) è riparato. Non guardato: si
+	# applica ogni volta che si passa dall'hub di bordo.
+	if para == 50:
+		_onboard_actions()
 	if _landing_fx_applied.has(para):
 		return 0
 	var applied := true
@@ -2498,6 +2523,23 @@ func _apply_paragraph_effect(para: int) -> int:
 		229:
 			# Monoke amichevole: si lascia catturare (facoltativo) e si spende 1 ora.
 			add_expedition_hours(1)
+		205:
+			# Aggressività della creatura automaticamente +2: si ri-tira sulla Tabella
+			# di Strategia d'Incontro (8.2) con la strategia già scelta per il prossimo ¶.
+			if not current_creature.is_empty() and chosen_strategy != "":
+				var c205 := GameData.get_creature(current_creature)
+				var im205 := int(c205.get("intel", 0))
+				var am205 := int(c205.get("aggression", 0)) + 2
+				var mod205 := 0
+				match chosen_strategy:
+					"communicate": mod205 = im205 - abs(am205)
+					"capture_kill": mod205 = im205 + am205
+					"flee": mod205 = am205
+				var roll205 := randi_range(1, 6)
+				var dest205 := GameData.encounter_strategy_para(roll205 + mod205, chosen_strategy)
+				add_log("¶205: aggressività +2 → ri-tiro 8.2 (%s, dado %d %+d) → ¶%03d." % [chosen_strategy, roll205, mod205, dest205])
+				if dest205 > 0:
+					redirect = dest205
 		_:
 			applied = false
 	if applied:
@@ -2664,13 +2706,21 @@ func resolve_paragraph_choice(act: Dictionary) -> void:
 			for _i in range(nd):
 				t += randi_range(1, 6)
 			var dest := 0
+			var acquired := false
 			for rg in act.get("ranges", []):
 				if t <= int(rg.get("max", 6)):
 					dest = int(rg.get("para", 0))
+					if rg.has("acquire"):
+						acquire_artifact(int(rg["acquire"]))
+						acquired = true
 					break
 			if dest > 0:
 				add_log("Scelta: %d dado/i = %d → ¶%03d." % [nd, t, dest])
 				show_paragraph(dest)
+			elif acquired:
+				add_log("Scelta: %d dado/i = %d → oggetto recuperato senza incidenti." % [nd, t])
+				encounter_outcome_text = "Oggetto recuperato: scegli un'azione di spedizione."
+				choices_resolved.emit()
 			else:
 				add_log("Scelta: %d dado/i = %d → la creatura svanisce." % [nd, t])
 				encounter_outcome_text = "La creatura svanisce: scegli un'azione di spedizione."
@@ -3324,6 +3374,31 @@ func _hasty_path_terrains(from_hex: int, to_hex: int) -> Array:
 		node = prev[node]
 	return terrains
 
+# ¶231: con la razza locale ostile, entrando in un esagono di città aliena si
+# tira 1 dado; con 1-2 la spedizione è imboscata e distrutta. Ritorna true se
+# l'imboscata è avvenuta (la spedizione è perduta).
+func _hostile_ambush(context: String) -> bool:
+	var dr := randi_range(1, 6)
+	if dr <= 2:
+		add_log("¶231: dado %d → la spedizione è imboscata e distrutta dalle forze di sicurezza locali (%s)." % [dr, context])
+		for k in crew.keys():
+			if k in expedition_units:
+				crew[k]["alive"] = false
+		_end_encounter()
+		return_to_pandora()
+		return true
+	add_log("¶231: dado %d → nessuna imboscata (%s)." % [dr, context])
+	return false
+
+# Vero se l'esagono (base o strato extra) è una città aliena.
+func _cell_is_alien_city(cell: Dictionary) -> bool:
+	if GameData.terrain_real(str(cell.get("terrain", ""))) == "Alien City":
+		return true
+	for e in cell.get("extra", []):
+		if GameData.terrain_real(str(e)) == "Alien City":
+			return true
+	return false
+
 func move_expedition(hex_id: int) -> void:
 	if not can_move_expedition(hex_id):
 		return
@@ -3339,6 +3414,10 @@ func move_expedition(hex_id: int) -> void:
 	add_log("La spedizione entra in %s (esagono %s) — %d ore%s." % [
 		_terrain_it(terrain), real_id, enter_cost, _gear_cost_note(terrain)])
 	environ_changed.emit()
+	# ¶231: ingresso in città aliena con razza ostile → possibile imboscata.
+	if hostile_race and _cell_is_alien_city(cell):
+		if _hostile_ambush("ingresso in città aliena"):
+			return
 	# Esplora il nuovo esagono se non ancora esplorato
 	if not cell.get("explored", false):
 		explore_environ_hex(hex_id, terrain)
@@ -3457,6 +3536,19 @@ func choose_encounter_strategy(strategy: String) -> void:
 	# robot (danneggiati da sovraccarico elettrico); alla fuga non accade.
 	if current_paragraph == 57 and strategy != "flee":
 		_zap_all_bots("¶057: la creatura d'energia folgora e danneggia %d robot.")
+	# ¶037 (Snoup): col Combatti la creatura svanisce; con lo Scanner si può
+	# rilocalizzare (2 dadi < Intelligenza massima → ¶020), altrimenti è fuggita.
+	if current_paragraph == 37 and strategy == "capture_kill":
+		var roll37 := randi_range(1, 6) + randi_range(1, 6)
+		if _gear_has("Scanner") and roll37 < _expedition_max_intel():
+			add_log("¶037: lo Scanner rilocalizza la creatura (2 dadi %d < Int max) → ¶020." % roll37)
+			show_paragraph(20)
+		else:
+			add_log("¶037: la creatura svanisce ed è fuggita.")
+			_clear_encounter_state()
+			encounter_outcome_text = "La creatura è svanita ed è fuggita: scegli un'azione di spedizione."
+			state_updated.emit()
+		return
 	var sname0: String = {"communicate": "Comunica", "capture_kill": "Cattura/Uccidi", "flee": "Fuggi"}.get(strategy, strategy)
 	# Alcuni paragrafi d'incontro intro (es. ¶009 «tartaruga») descrivono un esito
 	# specifico per una certa strategia: se il paragrafo corrente ha rami che

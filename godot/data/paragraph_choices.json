@@ -114,5 +114,35 @@
     "para": 183
    }
   }
+ ],
+ "042": [
+  {
+   "label": "Lascia stare l'oggetto",
+   "act": {
+    "type": "none"
+   }
+  },
+  {
+   "label": "Riportala sulla Pandora (peso 1, tira un dado)",
+   "act": {
+    "type": "roll_goto",
+    "dice": 1,
+    "ranges": [
+     {
+      "max": 2,
+      "para": 0,
+      "acquire": 42
+     },
+     {
+      "max": 4,
+      "para": 178
+     },
+     {
+      "max": 6,
+      "para": 205
+     }
+    ]
+   }
+  }
  ]
 }

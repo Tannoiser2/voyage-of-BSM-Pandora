@@ -14,8 +14,8 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 207 | |
-| 🟡 Giallo | 25 | **≈ 94,6%** |
+| 🟢 Verde | 212 | |
+| 🟡 Giallo | 20 | **≈ 95,7%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
 **Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un
@@ -166,11 +166,15 @@ Paragrafi 076, 117, 126, 129, 133, 139 → 🟢 (114 resta 🟡: esplorazione in
   220 (Velocità creatura ≥ max squadra → fuga, altrimenti combatti), 229 (+1 ora).
   Nuovi rami in `paragraph_logic` (045/051/060/220) ed effetti in `_apply_paragraph_effect`
   (081/082/176/229).
-- **Residui 🟡 (caveat documentati):** 037 (scomparsa + ricerca scanner), 039 (rimando
-  post-esito → ¶197), 042 (tiro al trasporto dell'uovo), 050 (hub Azioni di Bordo 4.5),
-  063 (3 E-cage), 119/123/132 (ridefinizioni «struttura aliena» — non modellata come
-  terreno), 145/159/167 (restrizioni di combattimento per arma/velocità, come ¶043),
-  205 (Aggressività +2 con ri-tiro 8.2), 231 (trigger «ingresso in città/struttura»).
+- **Altri fatti → 🟢 (2026-06-15):** 037 (svanire + rilocalizzazione scanner → ¶020),
+  042 (scelta «Riportala» con tiro 1d6 → acquisito/¶178/¶205, via `roll_goto`+`acquire`),
+  050 (hub Azioni di Bordo 4.5: `_onboard_actions` cura+ripara), 145/159/167 (restrizioni
+  fonti di combattimento, vedi §A residuo ¶043), 205 (Aggressività +2, ri-tiro 8.2),
+  231 (imboscata anche all'ingresso in città aliena).
+- **Residui 🟡 (caveat documentati):** 039 (rimando post-esito → ¶197), 063 (3 E-cage —
+  conteggio E-cage non modellato), 114 (esplorazione in immersione non imposta),
+  119/123/132 (ridefinizioni «struttura aliena» — non modellata come terreno), 024
+  (duello «singolo personaggio» multi-stadio), 191 (perdita strumenti approssimata).
 
 ---
 
