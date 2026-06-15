@@ -1,5 +1,5 @@
 {
- "_legend": "Regole di ramo per i paragrafi d'incontro. Ogni regola: cond (tutte vere) -> act. Prima regola che combacia vince. lhs attributi creatura calcolati (aggression/speed/intel) o modificatori (aggr_mod/intel_mod/speed_mod); rhs numero o token max_spd/min_spd. lhs non numerici: 'surprised' (booleano, sorpresa 8.1), 'strategy' (token 'communicate'/'capture_kill'/'flee', strategia dichiarata 8.2) e 'has_gear' (rhs = chiave strumento/robot, es. 'Neuroscan', presente nella spedizione) confrontati con == o !=. Rami con cond 'strategy' su un paragrafo d'incontro intro (es. 009): risolti alla scelta della strategia, scavalcando la Tabella di Strategia. act.type: flee, capture, leave, attack_flee, release, combat, restrategy, goto. goto.para: paragrafo di destinazione (rimando narrativo); goto.new_creature: se true azzera l'incontro corrente così che la destinazione prepari una nuova creatura. shift: spostamento di colonne sul combattimento (positivo = a favore, verso A).",
+ "_legend": "Regole di ramo per i paragrafi d'incontro. Ogni regola: cond (tutte vere) -> act. Prima regola che combacia vince. lhs attributi creatura calcolati (aggression/speed/intel) o modificatori (aggr_mod/intel_mod/speed_mod); rhs numero o token max_spd/min_spd. lhs non numerici: 'surprised' (booleano, sorpresa 8.1), 'strategy' (token 'communicate'/'capture_kill'/'flee', strategia dichiarata 8.2) e 'has_gear' (rhs = chiave strumento/robot, es. 'Neuroscan', presente nella spedizione) confrontati con == o !=. Rami con cond 'strategy' su un paragrafo d'incontro intro (es. 009): risolti alla scelta della strategia, scavalcando la Tabella di Strategia. act.type: flee, capture, leave, attack_flee, release, combat, restrategy, goto. goto.para: paragrafo di destinazione (rimando narrativo); goto.new_creature: se true azzera l'incontro corrente così che la destinazione prepari una nuova creatura. shift: colonne a SINISTRA sul combattimento, come il regolamento (positivo = sfavorevole/verso E; negativo = a destra/verso A). shift_right_neg_intel/shift_sum_mods possono restituire valori negativi (a destra).",
  "010": [
   {
    "cond": [
@@ -835,6 +835,37 @@
    "act": {
     "type": "goto",
     "para": 209
+   }
+  }
+ ],
+ "075": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 208,
+    "new_creature": true
+   }
+  }
+ ],
+ "179": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 227
    }
   }
  ]

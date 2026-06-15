@@ -291,10 +291,12 @@ func combat_column_index(differential: int) -> int:
 
 # Risultato in lettere (A-E) della Tabella dei Risultati di Combattimento (8.6):
 # il differenziale (più gli spostamenti di colonna del paragrafo) individua la
-# colonna, il tiro di 1 dado (1-6) individua la riga. `col_shift` è in colonne
-# (positivo = a favore, verso A); gli spostamenti oltre i bordi sono ignorati.
+# colonna, il tiro di 1 dado (1-6) individua la riga. `col_shift` è in colonne a
+# SINISTRA, come il linguaggio del regolamento: positivo = verso E (sfavorevole
+# alla spedizione, es. sorpresa), negativo = verso A (a favore). Gli spostamenti
+# oltre i bordi della tabella sono ignorati.
 func combat_result(differential: int, die: int, col_shift: int = 0) -> String:
-	var col := clampi(combat_column_index(differential) + col_shift, 0, 8)
+	var col := clampi(combat_column_index(differential) - col_shift, 0, 8)
 	var rows: Dictionary = tables.get("combat_results", {}).get("rows", {})
 	var row: Array = rows.get(str(clampi(die, 1, 6)), [])
 	if col < row.size():

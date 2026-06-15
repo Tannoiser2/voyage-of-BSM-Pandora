@@ -1624,12 +1624,13 @@ func show_paragraph(para_num: int) -> void:
 var creature_attr_cache: Dictionary = {}
 const RATING_TABLE := {2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11: 9}
 # Modificatori di combattimento impostati dai rami dei paragrafi (8.5)
-var pending_combat_shift: int = 0      # spostamento di colonne sulla tabella combattimento (+ = a favore, verso A)
+var pending_combat_shift: int = 0      # colonne a sinistra sulla tabella combattimento (+ = sfavorevole/verso E, − = a favore/verso A)
 var pending_no_capture: bool = false   # cattura non permessa
 var pending_kill_as_capture: bool = false  # i risultati di uccisione contano come cattura
 var pending_combat_remap: Dictionary = {}  # rimappa i risultati di combattimento (¶218)
 var pending_combat_remap_destroy: String = ""  # equipaggiamento distrutto quando il remap scatta (¶218: turbolaser)
 var pending_combat_kill_on: Array = []     # risultati su cui un personaggio a caso è ucciso (¶227)
+var pending_combat_killall_on: Array = []  # risultati su cui TUTTI i personaggi sono uccisi (¶153: D/E)
 var encounter_outcome_text: String = ""    # esito risolto dal sistema, per la UI
 # Paragrafo di destinazione impostato da un ramo «goto» (rimando narrativo).
 var pending_goto: int = 0
@@ -1807,8 +1808,8 @@ func _apply_act(act: Dictionary) -> void:
 			pending_no_capture = bool(act.get("no_capture", false))
 			pending_kill_as_capture = bool(act.get("kill_as_capture", false))
 			var parts: Array = []
-			if pending_combat_shift > 0: parts.append("sposta %d col. a favore" % pending_combat_shift)
-			elif pending_combat_shift < 0: parts.append("sposta %d col. a sfavore" % (-pending_combat_shift))
+			if pending_combat_shift > 0: parts.append("sposta %d col. a sinistra (sfavore)" % pending_combat_shift)
+			elif pending_combat_shift < 0: parts.append("sposta %d col. a destra (favore)" % (-pending_combat_shift))
 			if pending_no_capture: parts.append("nessuna cattura")
 			if pending_kill_as_capture: parts.append("uccisione conta come cattura")
 			if bool(act.get("resistance_only", false)): parts.append("danni come Resistenza")
@@ -2384,7 +2385,7 @@ func _apply_paragraph_effect(para: int) -> int:
 				add_log("¶218: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto). Conduci il combattimento di uccisione.")
 			else:
 				pending_combat_shift = 2
-				add_log("¶218: senza turbolaser, combattimento di uccisione con spostamento di 2 colonne a favore.")
+				add_log("¶218: senza turbolaser, combattimento di uccisione con spostamento di 2 colonne a sinistra (sfavore).")
 		227:
 			pending_combat_kill_on = ["C", "D", "E"]
 			add_log("¶227: combattimento col glosper — sui risultati C/D/E un personaggio a caso è fatto a pezzi; conduci il combattimento.")
@@ -2443,25 +2444,67 @@ func _apply_creature_intro(para: int) -> void:
 			# sinistra; con l'Holographer si guadagnano 4 PV.
 			if surprise_active:
 				pending_combat_shift = 2
-				add_log("¶066: sorpresa! Combattimento con spostamento di 2 colonne a favore.")
+				add_log("¶066: sorpresa! Combattimento con spostamento di 2 colonne a sinistra (sfavore).")
 			if _gear_has("Holographer"):
 				gain_vp(4, "¶066 nebbia documentata con l'Holographer")
 		72:
 			# Forma di vita blu (Unithalo): sorpresa → combattimento con spostamento di 1
-			# colonna a favore (il combattimento si risolve al ¶206).
+			# colonna a sinistra/sfavore (il combattimento si risolve al ¶206).
 			if surprise_active:
 				pending_combat_shift = 1
-				add_log("¶072: sorpresa! Combattimento con spostamento di 1 colonna a favore.")
+				add_log("¶072: sorpresa! Combattimento con spostamento di 1 colonna a sinistra (sfavore).")
 		57:
-			# Creatura d'energia (Eleboid): folgora e danneggia tutti i robot, poi si
-			# risolve l'incontro normalmente.
-			var zapped := 0
-			for g in expedition_gear.duplicate():
-				if (g in ["Ambot", "Reconbot", "Imrebot", "Specibot"]) and not damaged_gear.has(g):
-					damaged_gear.append(g)
-					zapped += 1
-			if zapped > 0:
-				add_log("¶057: la creatura d'energia folgora e danneggia %d robot." % zapped)
+			# Creatura d'energia (Eleboid): folgora tutti i robot SOLO se la spedizione
+			# sceglie Comunica o Combatti (non alla fuga); gestito in
+			# choose_encounter_strategy. Nessun effetto all'intro.
+			pass
+		31:
+			# Spiker (creatura tipo scorpione): se colta di sorpresa, un personaggio a
+			# caso è ucciso dalla coda fulminea (anche se indossa enviorig/armorig).
+			if surprise_active:
+				var v31 := _random_alive_char()
+				if v31 != "":
+					add_log("¶031: la coda fulminea uccide %s (rig inutile)." % crew[v31].get("name", v31))
+					_kill_character(v31)
+		179:
+			# Glosper (bestia cornuta): se colta di sorpresa, un personaggio a caso è
+			# fatto a pezzi dalle corna (anche se indossa l'armorig). Il combattimento
+			# (Cattura/Uccidi) si risolve al ¶227 (vedi paragraph_logic).
+			if surprise_active:
+				var v179 := _random_alive_char()
+				if v179 != "":
+					add_log("¶179: le corna fanno a pezzi %s (armorig inutile)." % crew[v179].get("name", v179))
+					_kill_character(v179)
+		75:
+			# Aquan (umanoide acquatico): sorpresa → combattimento con 2 colonne a
+			# sinistra (sfavore). Comunica → ¶208 (vedi paragraph_logic).
+			if surprise_active:
+				pending_combat_shift = 2
+				add_log("¶075: sorpresa! Combattimento con spostamento di 2 colonne a sinistra (sfavore).")
+		142:
+			# Decapus (predatore tentacolato): sorpresa → 2 colonne a sinistra (sfavore).
+			if surprise_active:
+				pending_combat_shift = 2
+				add_log("¶142: sorpresa! Combattimento con spostamento di 2 colonne a sinistra (sfavore).")
+		149:
+			# Bisape (umanoide peloso): sorpresa → 1 colonna a sinistra (sfavore).
+			if surprise_active:
+				pending_combat_shift = 1
+				add_log("¶149: sorpresa! Combattimento con spostamento di 1 colonna a sinistra (sfavore).")
+		151:
+			# Ursamax (creatura orsina a otto zampe): sorpresa → 2 colonne a sinistra (sfavore).
+			if surprise_active:
+				pending_combat_shift = 2
+				add_log("¶151: sorpresa! Combattimento con spostamento di 2 colonne a sinistra (sfavore).")
+		153:
+			# Bubbler (gelatina luminosa): sorpresa → 1 colonna a sinistra (sfavore).
+			# In qualsiasi combattimento (sorpresa o no), con risultato D o E l'intera
+			# spedizione è uccisa e divorata.
+			if surprise_active:
+				pending_combat_shift = 1
+				add_log("¶153: sorpresa! Combattimento con spostamento di 1 colonna a sinistra (sfavore).")
+			pending_combat_killall_on = ["D", "E"]
+			add_log("¶153: attenzione — un risultato di combattimento D o E ucciderebbe l'intera spedizione.")
 		208:
 			# Forma larvale (Reeler): con l'Ufficiale Scienze si riporta in salvo (+2 PV);
 			# altrimenti 1 dado: 1-3 la larva muore, 4-6 si trasforma e si combatte.
@@ -2608,6 +2651,7 @@ func _begin_creature(name: String) -> void:
 	pending_combat_remap = {}
 	pending_combat_remap_destroy = ""
 	pending_combat_kill_on = []
+	pending_combat_killall_on = []
 	encounter_outcome_text = ""
 	chosen_strategy = ""
 	creature_rating = GameData.roll_creature_combat_rating(name)
@@ -3205,6 +3249,10 @@ func choose_encounter_strategy(strategy: String) -> void:
 		return
 	var c := GameData.get_creature(current_creature)
 	chosen_strategy = strategy
+	# ¶057 (Eleboid): scegliendo Comunica o Combatti la creatura folgora tutti i
+	# robot (danneggiati da sovraccarico elettrico); alla fuga non accade.
+	if current_paragraph == 57 and strategy != "flee":
+		_zap_all_bots("¶057: la creatura d'energia folgora e danneggia %d robot.")
 	var sname0: String = {"communicate": "Comunica", "capture_kill": "Cattura/Uccidi", "flee": "Fuggi"}.get(strategy, strategy)
 	# Alcuni paragrafi d'incontro intro (es. ¶009 «tartaruga») descrivono un esito
 	# specifico per una certa strategia: se il paragrafo corrente ha rami che
@@ -3235,6 +3283,17 @@ func choose_encounter_strategy(strategy: String) -> void:
 	add_log("Strategia «%s»: dado %d %+d = %d → Paragrafo %03d." % [sname0, roll, modifier, die, para])
 	if para > 0:
 		show_paragraph(para)
+
+# Danneggia tutti i robot imbarcati e funzionanti (es. ¶057 sovraccarico elettrico).
+func _zap_all_bots(msg_fmt: String) -> void:
+	var zapped := 0
+	for g in expedition_gear.duplicate():
+		if (g in GameData.get_bot_keys()) and not damaged_gear.has(g):
+			damaged_gear.append(g)
+			zapped += 1
+	if zapped > 0:
+		add_log(msg_fmt % zapped)
+		state_updated.emit()
 
 func start_encounter(creature_name: String) -> void:
 	if not GameData.get_creature(creature_name):
@@ -3279,17 +3338,28 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 			add_log("%s è considerato distrutto." % pending_combat_remap_destroy)
 		add_log("Risultato di combattimento %s rimappato a %s." % [result, newr])
 		result = newr
+	var shift_txt := (" [%+d col. sin.]" % pending_combat_shift) if pending_combat_shift != 0 else ""
+	var detail := "%s: val.%d vs creatura %d → diff %+d%s, dado %d → %s" % [
+		mode, player_combat, creature_rating, differential, shift_txt, die, result
+	]
+	add_log(detail)
 	# Vittime extra su certi risultati (¶227: il glosper fa a pezzi un personaggio).
 	if result in pending_combat_kill_on:
 		var vk := _random_alive_char()
 		if vk != "":
 			add_log("Il mostro fa a pezzi %s." % crew[vk].get("name", vk))
 			_kill_character(vk)
-	var shift_txt := (" [%+d col.]" % pending_combat_shift) if pending_combat_shift != 0 else ""
-	var detail := "%s: val.%d vs creatura %d → diff %+d%s, dado %d → %s" % [
-		mode, player_combat, creature_rating, differential, shift_txt, die, result
-	]
-	add_log(detail)
+	# Sterminio totale su certi risultati (¶153: con D o E l'intera spedizione è
+	# divorata). Si applica prima degli esiti standard e termina l'incontro.
+	if result in pending_combat_killall_on:
+		add_log("Risultato %s: ogni personaggio della spedizione è ucciso e divorato!" % result)
+		for k in expedition_units.duplicate():
+			if crew.has(k) and crew.get(k, {}).get("alive", false):
+				_kill_character(k)
+		_end_encounter()
+		combat_resolved.emit(result, detail)
+		state_updated.emit()
+		return
 
 	# La cattura ha sempre la precedenza; alcuni paragrafi fanno contare un'uccisione
 	# come cattura (8.7). Una creatura col morso velenoso (¶005) non è catturabile in
