@@ -11,17 +11,29 @@ func _ready() -> void:
 	vbox.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	vbox.offset_left = -250
 	vbox.offset_right = 250
-	vbox.offset_top = -200
-	vbox.offset_bottom = 200
+	vbox.offset_top = -340
+	vbox.offset_bottom = 360
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_theme_constant_override("separation", 20)
 	add_child(vbox)
+
+	# Copertina del gioco (se il file è presente in assets/): mostrata in cima al
+	# menu al posto del titolo testuale. Degrada con eleganza se manca.
+	var cover := _load_cover()
+	if cover:
+		var cover_rect := TextureRect.new()
+		cover_rect.texture = cover
+		cover_rect.expand_mode = TextureRect.EXPAND_FIT_HEIGHT_PROPORTIONAL
+		cover_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		cover_rect.custom_minimum_size = Vector2(0, 340)
+		vbox.add_child(cover_rect)
 
 	var title := Label.new()
 	title.text = "IL VIAGGIO\nDELLA B.S.M. PANDORA"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 32)
 	title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
+	title.visible = cover == null  # con la copertina il titolo è già illustrato
 	vbox.add_child(title)
 
 	var subtitle := Label.new()
@@ -69,6 +81,16 @@ func _ready() -> void:
 	version_label.add_theme_font_size_override("font_size", 11)
 	version_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	vbox.add_child(version_label)
+
+# Carica la copertina del gioco dai percorsi noti in assets/ (.png o .jpg), se esiste.
+func _load_cover() -> Texture2D:
+	for path in [
+		"res://assets/cover.png", "res://assets/cover.jpg",
+		"res://assets/copertina.png", "res://assets/copertina.jpg",
+	]:
+		if ResourceLoader.exists(path):
+			return load(path) as Texture2D
+	return null
 
 func _on_tour_selected(tour_length: int) -> void:
 	GameState.start_new_game(tour_length)
