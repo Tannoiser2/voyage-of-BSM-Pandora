@@ -83,6 +83,10 @@ var gear_damaged_log: Array = []
 var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
 # 5.7: la squadra si muove a piedi anche se ha il Rover (scelta del mezzo).
 var prefer_foot: bool = false
+# 5.6: unità che restano sullo shuttle (esagono di atterraggio) invece di muoversi
+# con la squadra in esplorazione. Finché almeno una unità presidia lo shuttle,
+# l'esagono dello shuttle è «occupato» (rilevante per ¶163).
+var shuttle_party: Array = []
 
 # Traccia Tempo e Rifornimento (6.8 / 7.0): la posizione avanza con le ore di
 # spedizione spese; quando raggiunge/supera lo «spazio di controllo» della gravità
@@ -264,7 +268,7 @@ func save_game(silent := false) -> bool:
 		"shuttle_capacity": shuttle_capacity, "expedition_units": expedition_units,
 		"expedition_gear": expedition_gear, "damaged_gear": damaged_gear,
 		"gear_damaged_log": gear_damaged_log,
-		"prefer_foot": prefer_foot,
+		"prefer_foot": prefer_foot, "shuttle_party": shuttle_party,
 		"planned_supply": planned_supply,
 		"supply_track_pos": supply_track_pos, "pending_supply_checks": pending_supply_checks,
 		"current_creature": current_creature, "creature_rating": creature_rating,
@@ -354,6 +358,7 @@ func load_game() -> bool:
 	damaged_gear = d.get("damaged_gear", [])
 	gear_damaged_log = d.get("gear_damaged_log", [])
 	prefer_foot = bool(d.get("prefer_foot", false))
+	shuttle_party = d.get("shuttle_party", [])
 	planned_supply = int(d.get("planned_supply", 6))
 	supply_track_pos = int(d.get("supply_track_pos", 0))
 	pending_supply_checks = int(d.get("pending_supply_checks", 0))
@@ -1586,7 +1591,30 @@ func _lava_in_area() -> bool:
 # Vero se lo shuttle (fermo sull'esagono di atterraggio) NON è occupato da un
 # personaggio funzionante, cioè la spedizione si è spostata altrove (6.5).
 func _shuttle_hex_unoccupied() -> bool:
+	# Lo shuttle è presidiato se la squadra è sull'esagono di atterraggio oppure se
+	# almeno una unità è rimasta a guardia dello shuttle (5.6).
+	if not shuttle_party.is_empty():
+		return false
 	return expedition_pos > 0 and expedition_pos != landing_hex
+
+# 5.6: una unità è rimasta a presidiare lo shuttle (non si muove con la squadra)?
+func unit_stays_at_shuttle(key: String) -> bool:
+	return key in shuttle_party
+
+# Alterna una unità tra «in spedizione con la squadra» e «resta sullo shuttle» (5.6).
+# Valido solo sulla superficie e per unità effettivamente schierate.
+func toggle_shuttle_stay(key: String) -> void:
+	if expedition_pos <= 0:
+		return
+	if not (key in expedition_units or key in expedition_gear):
+		return
+	if key in shuttle_party:
+		shuttle_party.erase(key)
+		add_log("%s raggiunge la squadra in esplorazione." % GameData.get_unit(key).get("name", key))
+	else:
+		shuttle_party.append(key)
+		add_log("%s resta a presidiare lo shuttle (5.6)." % GameData.get_unit(key).get("name", key))
+	state_updated.emit()
 
 func _unexplored_alien_city_in_area() -> bool:
 	for hid in environ_grid:
@@ -3279,6 +3307,7 @@ func reset_expedition_state() -> void:
 	captured_creatures = []
 	damage_points = 0
 	encounter_trail = ""
+	shuttle_party = []    # 5.6: nessuno resta sullo shuttle all'inizio di una spedizione
 	prefer_foot = false   # 5.7: ogni spedizione riparte con la scelta del mezzo di default
 	_archive_damaged_gear()   # 9.2: conserva i danni ai fini dello scoring finale
 	damaged_gear = []

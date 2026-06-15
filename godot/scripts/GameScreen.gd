@@ -1304,14 +1304,17 @@ func _refresh_disposition() -> void:
 	for k in GameData.get_character_keys():
 		if not GameState.crew.get(k, {}).get("alive", true):
 			continue
-		buckets[_unit_bucket(k in GameState.expedition_units, landed, on_rover)].append(k)
+		buckets[_disp_bucket_for(k, k in GameState.expedition_units, landed, on_rover)].append(k)
 	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
-		buckets[_unit_bucket(k in GameState.expedition_gear, landed, on_rover)].append(k)
+		buckets[_disp_bucket_for(k, k in GameState.expedition_gear, landed, on_rover)].append(k)
+	# In orbita i click spostano Pandora↔Shuttle (preparazione); sulla superficie
+	# spostano una unità tra «con la squadra» e «resta sullo shuttle» (5.6).
+	var clickable := orbit or landed
 	for bucket in buckets:
 		var box := find_child("Disp_%s" % bucket, true, false) as Control
 		if box:
 			box.set_meta("keys", buckets[bucket])
-			box.set_meta("clickable", orbit)
+			box.set_meta("clickable", clickable)
 	# 5.7: la spedizione è O nel Rover O a piedi → mostra un solo box di superficie.
 	for surf in ["Rover", "A piedi"]:
 		var sbox := find_child("Disp_%s" % surf, true, false) as Control
@@ -1350,12 +1353,14 @@ func _refresh_disp_info(orbit: bool, landed: bool, on_rover: bool) -> void:
 	if phase_lbl:
 		var txt := ""
 		if orbit:
-			txt = "Fase: preparazione in orbita"
+			txt = "Fase: preparazione in orbita · clic su una pedina per spostarla Pandora↔Shuttle"
 		elif GameState.expedition_pos > 0:
 			# Capacità di superficie (5.8): Rover per gravità o somma dei Porti a piedi.
 			var cap := GameState.surface_carry_capacity()
 			var mezzo := "Rover" if on_rover else "a piedi"
-			txt = "Fase: spedizione su %s (%s) · Capacità di Porto %d" % [GameState.current_planet, mezzo, cap]
+			var guard := GameState.shuttle_party.size()
+			var guard_txt := ("%d a guardia dello shuttle" % guard) if guard > 0 else "shuttle non presidiato"
+			txt = "Fase: spedizione su %s (%s) · Porto %d · %s · clic su una pedina per lasciarla allo shuttle" % [GameState.current_planet, mezzo, cap, guard_txt]
 		elif GameState.expedition_units.size() > 0:
 			txt = "Fase: shuttle in volo verso la superficie"
 		phase_lbl.text = txt
@@ -1468,6 +1473,13 @@ func _unit_bucket(deployed: bool, landed: bool, rover: bool) -> String:
 		return "Shuttle"
 	return "Rover" if rover else "A piedi"
 
+# Come _unit_bucket, ma sulla superficie le unità rimaste a presidiare lo shuttle
+# (5.6) finiscono nel box «Shuttle» invece che in Rover/A piedi.
+func _disp_bucket_for(key: String, deployed: bool, landed: bool, rover: bool) -> String:
+	if deployed and landed and GameState.unit_stays_at_shuttle(key):
+		return "Shuttle"
+	return _unit_bucket(deployed, landed, rover)
+
 func _make_disp_tile(key: String, clickable: bool) -> Control:
 	var u := GameData.get_unit(key)
 	var damaged := key in GameState.damaged_gear
@@ -1487,13 +1499,17 @@ func _make_disp_tile(key: String, clickable: bool) -> Control:
 	return base
 
 func _disp_toggle(key: String) -> void:
-	if not GameState.is_orbit_decision():
-		return
-	if GameData.get_character_keys().has(key):
-		GameState.toggle_expedition_unit(key)
-	else:
-		GameState.toggle_gear_unit(key)
-	_refresh_disposition()
+	if GameState.is_orbit_decision():
+		# In orbita: preparazione, sposta l'unità Pandora↔Shuttle.
+		if GameData.get_character_keys().has(key):
+			GameState.toggle_expedition_unit(key)
+		else:
+			GameState.toggle_gear_unit(key)
+		_refresh_disposition()
+	elif GameState.expedition_pos > 0:
+		# Sulla superficie: l'unità resta sullo shuttle o torna con la squadra (5.6).
+		GameState.toggle_shuttle_stay(key)
+		_refresh_disposition()
 
 func _make_prep_tile(key: String, in_team: bool) -> Button:
 	var u := GameData.get_unit(key)
