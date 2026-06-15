@@ -99,6 +99,7 @@ func _build_ui() -> void:
 	left_title.position = Vector2(10, 6)
 	left_title.add_theme_font_size_override("font_size", 13)
 	left_title.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
+	_style_map_title(left_title)
 	interstellar_display.add_child(left_title)
 
 	# Draw hex buttons
@@ -145,9 +146,8 @@ func _build_ui() -> void:
 	env_title.name = "EnvironTitle"
 	env_title.text = "Superficie Planetaria"
 	env_title.position = Vector2(10, 5)
-	env_title.add_theme_font_size_override("font_size", 13)
-	env_title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
 	env_title.z_index = 10
+	_style_map_title(env_title)
 	environ_display.add_child(env_title)
 
 	# Preparazione spedizione (drag-and-drop), sul pannello sinistro durante l'orbita
@@ -774,6 +774,21 @@ func _on_environ_hex_clicked(hex_id: int) -> void:
 		GameState.move_expedition(hex_id)            # mossa normale (adiacente)
 	elif GameState.can_hasty_move(hex_id):
 		GameState.hasty_move_to(hex_id)              # movimento affrettato (6.3)
+
+# Badge translucido per i titoli sovrapposti alle mappe (leggibilità sull'immagine).
+func _style_map_title(lbl: Label) -> void:
+	lbl.add_theme_color_override("font_color", UITheme.CYAN)
+	lbl.add_theme_font_size_override("font_size", 14)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.04, 0.06, 0.12, 0.82)
+	sb.set_corner_radius_all(6)
+	sb.set_border_width_all(1)
+	sb.border_color = UITheme.BORDER
+	sb.content_margin_left = 8
+	sb.content_margin_right = 8
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	lbl.add_theme_stylebox_override("normal", sb)
 
 func _update_left_panel_mode() -> void:
 	var on_surface := GameState.current_phase == GameState.Phase.EXPEDITION \
