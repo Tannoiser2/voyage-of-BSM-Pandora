@@ -188,17 +188,19 @@ func _build_ui() -> void:
 	# Pedine grandi e sovrapposte a ventaglio (niente scroll), il nome è sulla pedina.
 	var disp_sec := UITheme.section("Disposizione · dove sta ogni unità")
 	disp_sec["panel"].name = "DispositionSection"
-	disp_sec["panel"].custom_minimum_size = Vector2(0, 250)
+	disp_sec["panel"].custom_minimum_size = Vector2(0, 300)
 	disp_sec["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
 	center_vbox.add_child(disp_sec["panel"])
-	var disp_row := HBoxContainer.new()
-	disp_row.add_theme_constant_override("separation", 6)
-	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	disp_sec["vbox"].add_child(disp_row)
-	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
+	var disp_vbox := VBoxContainer.new()
+	disp_vbox.add_theme_constant_override("separation", 6)
+	disp_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	disp_sec["vbox"].add_child(disp_vbox)
+	# Riga superiore: Pandora (box largo, molte pedine in orizzontale)
+	var _disp_add_bucket := func(parent: Control, bucket: String, h_stretch: int):
 		var col := PanelContainer.new()
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		col.size_flags_stretch_ratio = float(h_stretch)
 		var cv := VBoxContainer.new()
 		cv.add_theme_constant_override("separation", 2)
 		col.add_child(cv)
@@ -215,7 +217,17 @@ func _build_ui() -> void:
 		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		box.resized.connect(_relayout_disp_box.bind(box))
 		cv.add_child(box)
-		disp_row.add_child(col)
+		parent.add_child(col)
+	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
+	# Riga inferiore: Shuttle (più grande) + A piedi + Rover
+	var disp_row := HBoxContainer.new()
+	disp_row.add_theme_constant_override("separation", 6)
+	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	disp_row.size_flags_stretch_ratio = 1.6
+	disp_vbox.add_child(disp_row)
+	_disp_add_bucket.call(disp_row, "Shuttle", 2)
+	_disp_add_bucket.call(disp_row, "A piedi", 1)
+	_disp_add_bucket.call(disp_row, "Rover", 1)
 	# Controlli di preparazione (rifornimenti + lancio), visibili solo in orbita.
 	var prep_ctrl := HBoxContainer.new()
 	prep_ctrl.name = "DispPrepControls"
