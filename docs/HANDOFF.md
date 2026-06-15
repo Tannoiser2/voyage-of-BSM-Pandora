@@ -14,8 +14,8 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 203 | |
-| 🟡 Giallo | 29 | **≈ 93,8%** |
+| 🟢 Verde | 207 | |
+| 🟡 Giallo | 25 | **≈ 94,6%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
 **Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un
@@ -109,9 +109,11 @@ Paragrafi 035, 147, 166, 180, 216 → 🟢 (043 resta 🟡, vedi sotto); fix anc
   (lasciato `_gear_has` dove l'armorig è *strumento/arma*: ¶199, combat).
 - Fix collaterale: `effective_char_stat` ora applica i modificatori enviorig anche
   in atmosfera `None` (prima solo `Poison`).
-- **Residuo (¶043):** la clausola «in combattimento valgono solo i Valori di
-  armorig/specibot/turbolaser» (restrizione delle fonti di combattimento) non è
-  ancora modellata — richiede un hook in `best_combat`. ¶043 resta 🟡 per questo.
+- **¶043 → 🟢 (2026-06-15):** la restrizione delle fonti di combattimento è ora
+  modellata in `best_combat` con tre hook — `pending_combat_only_sources` (lista
+  chiusa, ¶043: solo armorig/specibot/turbolaser), `pending_combat_exclude_sources`
+  (esclusioni, ¶159 turbolaser, ¶167 netgun/stunbomb) e `pending_combat_speed_filter`
+  (¶145: solo unità più veloci della creatura). Helper `_combat_source_allowed`.
 
 ### B. intro-creatura (effetti sorpresa) (8)
 Paragrafi: 031, 057, 075, 142, 149, 151, 153, 179.

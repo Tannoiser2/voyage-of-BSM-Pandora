@@ -260,6 +260,9 @@ func save_game(silent := false) -> bool:
 		"pending_kill_as_capture": pending_kill_as_capture,
 		"pending_two_round": pending_two_round, "combat_round": combat_round,
 		"stunned_chars": stunned_chars,
+		"pending_combat_only_sources": pending_combat_only_sources,
+		"pending_combat_exclude_sources": pending_combat_exclude_sources,
+		"pending_combat_speed_filter": pending_combat_speed_filter,
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
@@ -354,6 +357,9 @@ func load_game() -> bool:
 	pending_two_round = bool(d.get("pending_two_round", false))
 	combat_round = int(d.get("combat_round", 1))
 	stunned_chars = d.get("stunned_chars", [])
+	pending_combat_only_sources = d.get("pending_combat_only_sources", [])
+	pending_combat_exclude_sources = d.get("pending_combat_exclude_sources", [])
+	pending_combat_speed_filter = bool(d.get("pending_combat_speed_filter", false))
 	surprise_active = bool(d.get("surprise_active", false))
 	chosen_strategy = str(d.get("chosen_strategy", ""))
 	encounter_outcome_text = str(d.get("encounter_outcome_text", ""))
@@ -1176,9 +1182,15 @@ func launch_expedition(die_result: int) -> void:
 # Le armi (Netgun/Stunbomb/Turbolaser) sostituiscono i valori del personaggio (2.5).
 func best_combat(mode: String) -> int:
 	var best := 0
+	# Velocità calcolata della creatura, per il filtro di ¶145 (solo unità più veloci).
+	var cspeed := creature_attr("speed") if (pending_combat_speed_filter and not current_creature.is_empty()) else -999
 	for k in expedition_units:
 		if k in stunned_chars:
 			continue  # personaggio stordito, non utilizzabile in combattimento (¶027)
+		if not _combat_source_allowed(k):
+			continue
+		if pending_combat_speed_filter and effective_char_stat(k, "speed") <= cspeed:
+			continue  # ¶145: solo i personaggi più veloci della creatura combattono
 		var u := GameData.get_character(k)
 		var v: int = int(u.get("capture", 0)) if mode == "capture" else int(u.get("kill", 0))
 		v += int(crew.get(k, {}).get("rating_delta", 0))  # ¶055: danno cerebrale −1
@@ -1186,8 +1198,13 @@ func best_combat(mode: String) -> int:
 	for k in expedition_gear:
 		if k in damaged_gear:
 			continue  # robot/arma danneggiati non utilizzabili (6.9)
+		if not _combat_source_allowed(k):
+			continue
 		var g := GameData.get_unit(k)
 		if g.get("combat", false) or GameData.get_bot_keys().has(k):
+			# Filtro velocità (¶145): solo per i robot (le armi sono impugnate da un personaggio).
+			if pending_combat_speed_filter and GameData.get_bot_keys().has(k) and int(g.get("speed", 0)) <= cspeed:
+				continue
 			var gv: int = int(g.get("capture", 0)) if mode == "capture" else int(g.get("kill", 0))
 			best = maxi(best, gv)
 	# Armi-artefatto acquisite (es. Arma aliena ¶006, Cattura/Uccisione 9): una volta
@@ -1199,10 +1216,21 @@ func best_combat(mode: String) -> int:
 		# L'Arma aliena (¶006) è utilizzabile solo dopo essere stata compresa (¶006/¶175).
 		if akey == "006" and not weapon_usable:
 			continue
+		if not _combat_source_allowed(akey):
+			continue
 		var art := GameData.get_artifact(akey.to_int())
 		var av: int = int(art.get("capture", 0)) if mode == "capture" else int(art.get("kill", 0))
 		best = maxi(best, av)
 	return best if best > 0 else 3
+
+# Vero se una fonte di combattimento (personaggio/robot/arma/artefatto) può essere
+# usata, secondo le restrizioni del paragrafo: escluse (¶159/¶167) o lista chiusa (¶043).
+func _combat_source_allowed(key: String) -> bool:
+	if key in pending_combat_exclude_sources:
+		return false
+	if not pending_combat_only_sources.is_empty() and not (key in pending_combat_only_sources):
+		return false
+	return true
 
 # Acquisizione di un artefatto (2.6/9.1): si raccoglie ora, ma i PV indicati sul
 # retro del segnalino (linea Additional VP's) si guadagnano solo riportandolo sulla
@@ -1647,6 +1675,9 @@ var pending_combat_killall_on: Array = []  # risultati su cui TUTTI i personaggi
 var pending_two_round: bool = false        # combattimento a due round con risultati custom al 1° (¶206)
 var combat_round: int = 1                  # round corrente del combattimento speciale (¶206)
 var stunned_chars: Array = []              # personaggi storditi, non utilizzabili in combattimento (¶027)
+var pending_combat_only_sources: Array = []   # se non vuoto, SOLO queste fonti (gear/bot) contano in combattimento (¶043)
+var pending_combat_exclude_sources: Array = [] # fonti escluse dal combattimento (¶159 turbolaser, ¶167 netgun/stunbomb)
+var pending_combat_speed_filter: bool = false  # solo unità più veloci della creatura possono combattere (¶145)
 var encounter_outcome_text: String = ""    # esito risolto dal sistema, per la UI
 # Paragrafo di destinazione impostato da un ramo «goto» (rimando narrativo).
 var pending_goto: int = 0
@@ -2586,7 +2617,8 @@ func _apply_creature_intro(para: int) -> void:
 				add_log("¶208: la forma larvale si trasforma in una creatura mortale simile a una manta!")
 		43:
 			# Mostruosità al silicio (Crusher): un robot a caso viene polverizzato, poi
-			# l'incontro si risolve normalmente.
+			# l'incontro si risolve normalmente. In combattimento valgono SOLO i Valori
+			# di armorig, specibot e turbolaser.
 			var bots43 := _functioning_bots()
 			if not bots43.is_empty():
 				var b43: String = bots43[randi_range(0, bots43.size() - 1)]
@@ -2595,6 +2627,24 @@ func _apply_creature_intro(para: int) -> void:
 				if not damaged_gear.has(b43):
 					damaged_gear.append(b43)
 				add_log("¶043: la mostruosità al silicio polverizza %s." % GameData.get_unit(b43).get("name", b43))
+			pending_combat_only_sources = ["Armorig", "Specibot", "Turbolaser"]
+			add_log("¶043: in combattimento valgono solo i Valori di armorig, specibot e turbolaser.")
+		159:
+			# Mirror Fly: il carapace riflettente respinge il turbolaser, che non può
+			# essere usato in combattimento.
+			pending_combat_exclude_sources = ["Turbolaser"]
+			add_log("¶159: il carapace riflette il turbolaser — i suoi Valori non sono utilizzabili.")
+		167:
+			# Ironhorn: 1 ora per ispezionare la "statua"; netgun e stunbomb non hanno
+			# Valore di Combattimento contro questa creatura.
+			add_expedition_hours(1)
+			pending_combat_exclude_sources = ["Netgun", "Stunbomb"]
+			add_log("¶167: 1 ora d'ispezione; netgun e stunbomb sono inefficaci contro questa creatura.")
+		145:
+			# Erequito: la creatura tenta di fuggire; solo i personaggi/robot più veloci
+			# della creatura possono ingaggiare il combattimento.
+			pending_combat_speed_filter = true
+			add_log("¶145: solo le unità più veloci della creatura possono iniziare il combattimento.")
 		39:
 			# Anfibio di palude (Allidon): 1 dado, 5-6 → ¶205; 1-4 incontro normale.
 			if randi_range(1, 6) >= 5:
@@ -2723,6 +2773,9 @@ func _begin_creature(name: String) -> void:
 	pending_two_round = false
 	combat_round = 1
 	stunned_chars = []
+	pending_combat_only_sources = []
+	pending_combat_exclude_sources = []
+	pending_combat_speed_filter = false
 	encounter_outcome_text = ""
 	chosen_strategy = ""
 	creature_rating = GameData.roll_creature_combat_rating(name)

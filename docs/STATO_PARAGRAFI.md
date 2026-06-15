@@ -86,13 +86,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 203 | 87,5% |
-| 🟡 Giallo | 29 | 12,5% |
+| 🟢 Verde | 207 | 89,2% |
+| 🟡 Giallo | 25 | 10,8% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 93,8%**
-( (203 + 29/2) / 232 ).
+come metà, l'indice di completezza è **≈ 94,6%**
+( (207 + 25/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -101,11 +101,11 @@ come metà, l'indice di completezza è **≈ 93,8%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 25 | 4 | 0 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 28 | 16 | 0 | 44 |
+| incontro-creatura (intro) | 32 | 12 | 0 | 44 |
 | evento-interstellare + esiti | 17 | 0 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 54 | 8 | 0 | 62 |
-| **Totale** | **203** | **29** | **0** | **232** |
+| **Totale** | **207** | **25** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -167,7 +167,7 @@ come metà, l'indice di completezza è **≈ 93,8%**
 | 040 | procedurale (rettiliani) | 🟢 | Rettiliani amichevoli: +5 ore, +PV pari all'Intelligenza del comandante (se presente). Automatizzato. |
 | 041 | incontro-creatura (Abomnid) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo Fuga (¶216) usa il rimando. |
 | 042 | procedurale (uovo) | 🟡 | L'uovo è acquisibile come artefatto (PV al rientro); il tiro 1d6 al momento del trasporto (1-2 ok / 3-4 → ¶178 / 5-6 → ¶205) non è ancora gestito. |
-| 043 | incontro-creatura (Crusher) | 🟡 | Un robot a caso è polverizzato all'intro, poi incontro normale. Caveat: la restrizione dei valori di combattimento (solo armorig/specibot/turbolaser) non è modellata. |
+| 043 | incontro-creatura (Crusher) | 🟢 | Un robot a caso è polverizzato all'intro; in combattimento valgono SOLO i Valori di armorig/specibot/turbolaser (`pending_combat_only_sources` in `best_combat`). |
 | 044 | evento-interstellare | 🟢 | sforzo FTL: 2 dadi vs Int Manutenzione -> Mesi di Tour. Automatizzato. |
 | 045 | incontro-creatura (Armeetle) | 🟢 | Comunica/Combatti → la creatura sparisce nel tunnel (esito `leave`, +2 ore). Caveat residuo: inefficacia di stunbomb/reconbot/specibot non modellata. |
 | 046 | evento-interstellare | 🟢 | brillamenti stellari: +1 Mese di Tour. Automatizzato. |
@@ -279,7 +279,7 @@ come metà, l'indice di completezza è **≈ 93,8%**
 | 142 | incontro-creatura (Decapus) | 🟡 | Sorpresa+strategia gestite dal motore; nessun effetto extra ⇒ vicino al 🟢, ma lo shift di sorpresa è applicato solo dentro `paragraph_logic` (assente per 142). |
 | 143 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+idrografia / Cave+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 144 | evento-interstellare (esito) | 🟢 | morte dell'Ufficiale Scienze (PV) + 1 dado per Mesi di Tour (5-6=0); se Int Medico <=6 o assente, reinfezione di un altro membro -> ¶058 (guardia anti-ricorsione). Automatizzato. |
-| 145 | incontro-creatura (Erequito) | 🟡 | Creatura preparata; il filtro «solo unità più veloci possono combattere» non è imposto. |
+| 145 | incontro-creatura (Erequito) | 🟢 | Solo i personaggi/robot con Velocità maggiore della creatura possono ingaggiare il combattimento (`pending_combat_speed_filter`). |
 | 146 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cave / Hill+Light Veg+gravita): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 147 | procedurale (vermi-tunnel) | 🟢 | Se sorpresa: ogni personaggio **senza armorig** perde 1 dado di Resistenza (l'enviorig sottrae 1 ed è danneggiato; −2 con SO, −2 con GSO, cumulativi), poi → ¶212. Rig per-personaggio (5.2). |
 | 148 | procedurale (atterraggio) | 🟢 | 2 dadi vs Int max a bordo: < Int → 5 Punti Danno; ≥ Int → 12 Punti Danno. Automatizzato. |
@@ -298,7 +298,7 @@ come metà, l'indice di completezza è **≈ 93,8%**
 | 156 | incontro-creatura (Aenon, snodo) | 🟢 | Comunicazione/Combattimento: con Ambot o Turbolaser la creatura fugge (scegli altra azione); altrimenti → ¶223. Codificato. |
 | 157 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/072/054/032 — Città Aliena / Glacial Ice / Light Veg.+atmosfera / geologia attiva): salto al ramo giusto o ri-tiro Matrice. |
 | 158 | esito (alieno amichevole) | 🟢 | Ultimo superstite telepate: +5 PV, +2 per ciascuno tra comandante, neuroscanner e Holographer presenti. Automatizzato. |
-| 159 | incontro-creatura (Mirror Fly) | 🟡 | Creatura preparata; «il carapace respinge il turbolaser» non modellato. |
+| 159 | incontro-creatura (Mirror Fly) | 🟢 | Il carapace riflette il turbolaser: i suoi Valori sono esclusi dal combattimento (`pending_combat_exclude_sources`). |
 | 160 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/060/153 — Città Aliena / Flat+veg.+gravità / atmosfera+clima sahariano): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 161 | scelta (insetti bipedi) | 🟢 | Bottoni di scelta: Comunica → ¶222, Combatti → ¶125 (fuga impossibile). UI a scelte. |
 | 162 | incontro-creatura (Draloid, snodo) | 🟢 | Sorpresa → ¶226. Non sorpresa: se l'Ufficiale rilevamento terrestre (GSO) è assente, 2 dadi vs Int max spedizione (≥ → ¶226). Codificato (effetto-intro). |
@@ -306,7 +306,7 @@ come metà, l'indice di completezza è **≈ 93,8%**
 | 164 | scelta (vetta viva) | 🟢 | Bottoni con tiro: Comunica (1d6 1-4→¶214/5-6→¶221), Combatti (1d6 1-2→¶218/3-4→¶221/5-6 svanisce), Fuga → ¶221. UI a scelte. |
 | 165 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/151 — Città Aliena / Light Veg.+gravità / Hill+idrografia): salto al ramo giusto o ri-tiro Matrice. |
 | 166 | procedurale (gravità) | 🟢 | Caduta per gravità: 2 dadi di Punti Danno (1 se GSO o Reconbot), il rover assorbe per primo. Coi personaggi in enviorig tutti i danni vanno presi come Resistenza (enviorig danneggiati); altrimenti distribuzione normale (scudo robot/Resistenza). |
-| 167 | incontro-creatura (Ironhorn) | 🟡 | Creatura preparata; «1 ora per ispezionare» e inefficacia netgun/stunbomb non gestite. |
+| 167 | incontro-creatura (Ironhorn) | 🟢 | 1 ora d'ispezione (automatica); netgun e stunbomb esclusi dal combattimento contro questa creatura. |
 | 168 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (stagno usato nel rifornimento / Citta Aliena / Glacial Ice / Flat senza veg+atmosfera): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |
 | 169 | evento-interstellare (esito) | 🟢 | trattativa del Comandante coi pirati: 2 dadi vs sua Int -> fuga / ¶203 / ¶183. Automatizzato. |
 | 170 | incontro-creatura (Monoke, snodo) | 🟢 | Sorpresa: il membro col Valore di Velocità più basso (robot o personaggio) viene divorato. Fuga → ¶226. Codificato (intro + paragraph_logic). |
