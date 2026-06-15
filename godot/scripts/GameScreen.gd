@@ -181,13 +181,15 @@ func _build_ui() -> void:
 	center_panel = Panel.new()
 	center_panel.name = "ParagraphPanel"
 	center_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	center_panel.custom_minimum_size = Vector2(0, 240)
+	center_panel.custom_minimum_size = Vector2(0, 180)
 	center_vbox.add_child(center_panel)
 
 	# --- Pannello DISPOSIZIONE (sotto il testo): dove sta ogni unità (5.6/5.7) ---
+	# Pedine grandi e sovrapposte a ventaglio (niente scroll), il nome è sulla pedina.
 	var disp_sec := UITheme.section("Disposizione · dove sta ogni unità")
 	disp_sec["panel"].name = "DispositionSection"
-	disp_sec["panel"].custom_minimum_size = Vector2(0, 168)
+	disp_sec["panel"].custom_minimum_size = Vector2(0, 250)
+	disp_sec["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
 	center_vbox.add_child(disp_sec["panel"])
 	var disp_row := HBoxContainer.new()
 	disp_row.add_theme_constant_override("separation", 6)
@@ -196,26 +198,23 @@ func _build_ui() -> void:
 	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
 		var col := PanelContainer.new()
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		col.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		var cv := VBoxContainer.new()
 		cv.add_theme_constant_override("separation", 2)
 		col.add_child(cv)
 		var hdr := Label.new()
 		hdr.text = bucket.to_upper()
 		hdr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		hdr.add_theme_font_size_override("font_size", 11)
+		hdr.add_theme_font_size_override("font_size", 12)
 		hdr.add_theme_color_override("font_color", UITheme.CYAN)
 		cv.add_child(hdr)
-		var sc := ScrollContainer.new()
-		sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		sc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		cv.add_child(sc)
-		var grid := GridContainer.new()
-		grid.name = "Disp_%s" % bucket
-		grid.columns = 2
-		grid.add_theme_constant_override("h_separation", 4)
-		grid.add_theme_constant_override("v_separation", 4)
-		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		sc.add_child(grid)
+		var box := Control.new()
+		box.name = "Disp_%s" % bucket
+		box.clip_contents = true
+		box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		box.resized.connect(_relayout_disp_box.bind(box))
+		cv.add_child(box)
 		disp_row.add_child(col)
 	# Controlli di preparazione (rifornimenti + lancio), visibili solo in orbita.
 	var prep_ctrl := HBoxContainer.new()
@@ -1257,21 +1256,22 @@ func _unit_token_path(key: String) -> String:
 func _refresh_disposition() -> void:
 	if not find_child("DispositionSection", true, false):
 		return
-	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
-		var g := find_child("Disp_%s" % bucket, true, false) as GridContainer
-		if g:
-			for c in g.get_children():
-				g.remove_child(c)
-				c.free()
 	var orbit := GameState.is_orbit_decision()
 	var landed := GameState.expedition_pos > 0
 	var rover := ("Rover" in GameState.expedition_gear) and not ("Rover" in GameState.damaged_gear)
+	var buckets := {"Pandora": [], "Shuttle": [], "A piedi": [], "Rover": []}
 	for k in GameData.get_character_keys():
 		if not GameState.crew.get(k, {}).get("alive", true):
 			continue
-		_add_disp_tile(_unit_bucket(k in GameState.expedition_units, landed, rover), k, orbit)
+		buckets[_unit_bucket(k in GameState.expedition_units, landed, rover)].append(k)
 	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
-		_add_disp_tile(_unit_bucket(k in GameState.expedition_gear, landed, rover), k, orbit)
+		buckets[_unit_bucket(k in GameState.expedition_gear, landed, rover)].append(k)
+	for bucket in buckets:
+		var box := find_child("Disp_%s" % bucket, true, false) as Control
+		if box:
+			box.set_meta("keys", buckets[bucket])
+			box.set_meta("clickable", orbit)
+			_relayout_disp_box(box)
 	var prep_ctrl := find_child("DispPrepControls", true, false) as Control
 	if prep_ctrl:
 		prep_ctrl.visible = orbit
@@ -1292,6 +1292,32 @@ func _refresh_disposition() -> void:
 		var launch := find_child("DispLaunch", true, false) as Button
 		if launch: launch.disabled = not GameState.prep_valid()
 
+# Dispone le pedine di un bucket a ventaglio (sovrapposte), grandi e senza scroll.
+func _relayout_disp_box(box: Control) -> void:
+	for c in box.get_children():
+		c.queue_free()
+	var keys: Array = box.get_meta("keys", [])
+	var clickable: bool = box.get_meta("clickable", false)
+	var n := keys.size()
+	if n == 0:
+		return
+	var bw := box.size.x
+	var bh := box.size.y
+	if bw <= 1.0 or bh <= 1.0:
+		return  # layout non ancora valido: il segnale resized richiamerà la funzione
+	var tw := clampf(bh * 0.82, 44.0, 78.0)   # larghezza pedina ≈ altezza box
+	var th := minf(bh, tw * 1.3)
+	# Passo orizzontale: pieno se entrano, altrimenti sovrapposte per stare nella larghezza.
+	var step := tw + 4.0
+	if n > 1:
+		step = clampf((bw - tw) / float(n - 1), 10.0, tw + 4.0)
+	for i in n:
+		var t := _make_disp_tile(str(keys[i]), clickable)
+		t.position = Vector2(i * step, (bh - th) * 0.5)
+		t.size = Vector2(tw, th)
+		t.z_index = i
+		box.add_child(t)
+
 # Bucket di un'unità: Pandora (a bordo) / Shuttle (in spedizione non sbarcata) /
 # A piedi o Rover (in spedizione, sbarcata, secondo l'uso del rover).
 func _unit_bucket(deployed: bool, landed: bool, rover: bool) -> String:
@@ -1301,37 +1327,20 @@ func _unit_bucket(deployed: bool, landed: bool, rover: bool) -> String:
 		return "Shuttle"
 	return "Rover" if rover else "A piedi"
 
-func _add_disp_tile(bucket: String, key: String, clickable: bool) -> void:
-	var g := find_child("Disp_%s" % bucket, true, false) as GridContainer
-	if g:
-		g.add_child(_make_disp_tile(key, clickable))
-
 func _make_disp_tile(key: String, clickable: bool) -> Control:
 	var u := GameData.get_unit(key)
 	var damaged := key in GameState.damaged_gear
 	var base: Control = Button.new() if clickable else PanelContainer.new()
-	base.custom_minimum_size = Vector2(64, 46)
 	base.tooltip_text = "%s — Peso %d%s" % [u.get("name", key), int(u.get("weight", 0)), " (danneggiato)" if damaged else ""]
-	var v := VBoxContainer.new()
-	v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_theme_constant_override("separation", 0)
 	var tex := TextureRect.new()
 	var path := _unit_token_path(key)
 	if ResourceLoader.exists(path): tex.texture = load(path)
-	tex.custom_minimum_size = Vector2(0, 28)
-	tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	tex.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if damaged: tex.modulate = Color(0.62, 0.38, 0.38)
-	v.add_child(tex)
-	var lb := Label.new()
-	lb.text = str(u.get("name", key))
-	lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lb.add_theme_font_size_override("font_size", 8)
-	lb.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(lb)
-	base.add_child(v)
+	base.add_child(tex)
 	if clickable and base is Button:
 		(base as Button).pressed.connect(_disp_toggle.bind(key))
 	return base
