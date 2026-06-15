@@ -2,6 +2,24 @@
 
 Adattamento digitale in Godot del libro-gioco SPI *Voyage of the BSM Pandora* (1981).
 
+## v0.9.1 — 2026-06-15
+
+### Regole di sistema completate
+- **Danni e Porto (8.8/8.9):** ogni Punto Resistenza perso riduce di 1 il Valore di
+  Porto del personaggio (i Punti Danno «riducono il Porto»); il Porto non scende
+  sotto zero.
+- **Scoring di fine gioco (9.2):** oltre a personaggio ucciso −10 e Resistenza
+  sopravvissuti −1, ora si applicano **−1 per robot/rover danneggiato**, **−1 per
+  tipo di strumento danneggiato** (registro persistente svuotato dalla riparazione
+  al ¶050), **−5 per riga del Crew Log** (personaggio perso) e −5 per mese oltre il Tour.
+- **Condizione di vittoria (9.3):** verdetto finale `win`/`lose` — vittoria se i PV
+  sono almeno il doppio dei mesi del Tour scelto.
+
+### Interfaccia (UX)
+- **Pannello Disposizione** ridisegnato: Pandora in alto a tutta larghezza, sotto
+  Shuttle (più grande) · A piedi · Rover; pedine di **dimensione uniforme** disposte
+  in righe per categoria (equipaggio · equipaggiamento · robot) con a-capo automatico.
+
 ## v0.9.0 — 2026-06-15
 
 ### Paragrafi: 100% (232/232 automatizzati, fedeli al regolamento)
