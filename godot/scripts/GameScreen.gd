@@ -60,11 +60,9 @@ func _ready() -> void:
 	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
 func _build_ui() -> void:
-	# Background
-	var bg := ColorRect.new()
-	bg.color = Color(0.05, 0.08, 0.15)
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
+	# Tema visivo condiviso + sfondo a gradiente (blu notte, accenti ciano/ambra).
+	theme = UITheme.make_theme()
+	add_child(UITheme.make_background())
 
 	# Main HBoxContainer
 	var hbox := HBoxContainer.new()
@@ -101,6 +99,7 @@ func _build_ui() -> void:
 	left_title.position = Vector2(10, 6)
 	left_title.add_theme_font_size_override("font_size", 13)
 	left_title.add_theme_color_override("font_color", Color(0.85, 0.95, 1.0))
+	_style_map_title(left_title)
 	interstellar_display.add_child(left_title)
 
 	# Draw hex buttons
@@ -147,9 +146,8 @@ func _build_ui() -> void:
 	env_title.name = "EnvironTitle"
 	env_title.text = "Superficie Planetaria"
 	env_title.position = Vector2(10, 5)
-	env_title.add_theme_font_size_override("font_size", 13)
-	env_title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
 	env_title.z_index = 10
+	_style_map_title(env_title)
 	environ_display.add_child(env_title)
 
 	# Preparazione spedizione (drag-and-drop), sul pannello sinistro durante l'orbita
@@ -242,6 +240,7 @@ func _build_ui() -> void:
 	btn_land.name = "BtnLand"
 	btn_land.text = "🛬 Esplora il pianeta"
 	btn_land.visible = false
+	btn_land.add_theme_color_override("font_color", UITheme.CYAN)
 	btn_land.pressed.connect(_on_land)
 	actions_hbox.add_child(btn_land)
 
@@ -299,6 +298,7 @@ func _build_ui() -> void:
 	btn_kill.name = "BtnKill"
 	btn_kill.text = "Uccidi"
 	btn_kill.visible = false
+	btn_kill.add_theme_color_override("font_color", UITheme.RED)
 	btn_kill.pressed.connect(_on_combat.bind("kill"))
 	actions_hbox.add_child(btn_kill)
 
@@ -306,6 +306,7 @@ func _build_ui() -> void:
 	btn_capture.name = "BtnCapture"
 	btn_capture.text = "Cattura"
 	btn_capture.visible = false
+	btn_capture.add_theme_color_override("font_color", UITheme.GREEN)
 	btn_capture.pressed.connect(_on_combat.bind("capture"))
 	actions_hbox.add_child(btn_capture)
 
@@ -313,6 +314,7 @@ func _build_ui() -> void:
 	btn_comm.name = "BtnComm"
 	btn_comm.text = "💬 Comunica"
 	btn_comm.visible = false
+	btn_comm.add_theme_color_override("font_color", UITheme.CYAN)
 	btn_comm.pressed.connect(_on_strategy.bind("communicate"))
 	actions_hbox.add_child(btn_comm)
 
@@ -320,6 +322,7 @@ func _build_ui() -> void:
 	btn_strat.name = "BtnStrat"
 	btn_strat.text = "🎯 Cattura/Uccidi"
 	btn_strat.visible = false
+	btn_strat.add_theme_color_override("font_color", UITheme.AMBER)
 	btn_strat.pressed.connect(_on_strategy.bind("capture_kill"))
 	actions_hbox.add_child(btn_strat)
 
@@ -327,6 +330,7 @@ func _build_ui() -> void:
 	btn_flee.name = "BtnFlee"
 	btn_flee.text = "🏃 Fuggi"
 	btn_flee.visible = false
+	btn_flee.add_theme_color_override("font_color", UITheme.MUTED)
 	btn_flee.pressed.connect(_on_flee)
 	actions_hbox.add_child(btn_flee)
 
@@ -369,89 +373,75 @@ func _build_ui() -> void:
 
 	# (Il Registro di Bordo è nel pannello destro, in basso.)
 
-	# RIGHT PANEL - Status + Dice
+	# RIGHT PANEL - Stato della Missione (a sezioni/card)
 	right_panel = Panel.new()
-	right_panel.custom_minimum_size = Vector2(330, 0)
+	right_panel.custom_minimum_size = Vector2(340, 0)
 	right_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hbox.add_child(right_panel)
 
+	var right_margin := MarginContainer.new()
+	right_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for m in ["left", "top", "right", "bottom"]:
+		right_margin.add_theme_constant_override("margin_" + m, 8)
+	right_panel.add_child(right_margin)
+
 	var right_vbox := VBoxContainer.new()
-	right_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	right_vbox.offset_left = 8; right_vbox.offset_top = 8
-	right_vbox.offset_right = -8; right_vbox.offset_bottom = -8
-	right_vbox.add_theme_constant_override("separation", 10)
-	right_panel.add_child(right_vbox)
+	right_vbox.add_theme_constant_override("separation", 8)
+	right_margin.add_child(right_vbox)
 
-	# Status section
-	var status_title := Label.new()
-	status_title.text = "Stato della Missione"
-	status_title.add_theme_font_size_override("font_size", 14)
-	status_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	right_vbox.add_child(status_title)
-
+	# --- Sezione: Stato della Missione ---
+	var sec_status := UITheme.section("Stato della Missione")
+	right_vbox.add_child(sec_status["panel"])
 	status_display = VBoxContainer.new()
 	status_display.name = "StatusDisplay"
-	right_vbox.add_child(status_display)
-
+	sec_status["vbox"].add_child(status_display)
 	_build_status_rows(status_display)
 
-	# Segnalini dell'equipaggio (token originali + Resistenza)
-	var crew_title := Label.new()
-	crew_title.text = "Equipaggio"
-	crew_title.add_theme_font_size_override("font_size", 13)
-	crew_title.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
-	right_vbox.add_child(crew_title)
-
+	# --- Sezione: Equipaggio (+ equipaggiamento in spedizione) ---
+	var sec_crew := UITheme.section("Equipaggio")
+	right_vbox.add_child(sec_crew["panel"])
 	var crew_grid := GridContainer.new()
 	crew_grid.name = "CrewCounters"
 	crew_grid.columns = 4
 	crew_grid.add_theme_constant_override("h_separation", 6)
 	crew_grid.add_theme_constant_override("v_separation", 6)
-	right_vbox.add_child(crew_grid)
+	sec_crew["vbox"].add_child(crew_grid)
 	_build_crew_counters(crew_grid)
 
-	# Segnalini di robot/strumenti imbarcati (compaiono in spedizione)
 	var gear_title := Label.new()
 	gear_title.name = "GearTitle"
-	gear_title.text = "Equipaggiamento"
-	gear_title.add_theme_font_size_override("font_size", 13)
-	gear_title.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	gear_title.text = "Equipaggiamento imbarcato"
+	gear_title.add_theme_font_size_override("font_size", 12)
+	gear_title.add_theme_color_override("font_color", UITheme.MUTED)
 	gear_title.visible = false
-	right_vbox.add_child(gear_title)
+	sec_crew["vbox"].add_child(gear_title)
 
 	var gear_grid := GridContainer.new()
 	gear_grid.name = "GearCounters"
 	gear_grid.columns = 4
 	gear_grid.add_theme_constant_override("h_separation", 6)
 	gear_grid.add_theme_constant_override("v_separation", 6)
-	right_vbox.add_child(gear_grid)
+	sec_crew["vbox"].add_child(gear_grid)
 
-	var sep2 := HSeparator.new()
-	right_vbox.add_child(sep2)
-
-	# Dice section
-	var dice_title := Label.new()
-	dice_title.text = "Dado (1d6)"
-	dice_title.add_theme_font_size_override("font_size", 14)
-	dice_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	right_vbox.add_child(dice_title)
-
+	# --- Sezione: Dado ---
+	var sec_dice := UITheme.section("Dado (1d6)")
+	right_vbox.add_child(sec_dice["panel"])
 	dice_panel = VBoxContainer.new()
 	dice_panel.name = "DicePanel"
-	right_vbox.add_child(dice_panel)
+	sec_dice["vbox"].add_child(dice_panel)
 
 	var dice_result_label := Label.new()
 	dice_result_label.name = "DiceResult"
 	dice_result_label.text = "—"
 	dice_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dice_result_label.add_theme_font_size_override("font_size", 48)
-	dice_result_label.add_theme_color_override("font_color", Color(1.0, 1.0, 0.4))
+	dice_result_label.add_theme_color_override("font_color", UITheme.AMBER)
 	dice_panel.add_child(dice_result_label)
 
 	var roll_btn := Button.new()
 	roll_btn.name = "RollBtn"
 	roll_btn.text = "TIRA DADO"
-	roll_btn.custom_minimum_size = Vector2(0, 50)
+	roll_btn.custom_minimum_size = Vector2(0, 46)
 	roll_btn.pressed.connect(_on_roll_dice)
 	dice_panel.add_child(roll_btn)
 
@@ -469,44 +459,35 @@ func _build_ui() -> void:
 	dice_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dice_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dice_hint.add_theme_font_size_override("font_size", 12)
-	dice_hint.add_theme_color_override("font_color", Color(0.8, 0.8, 0.6))
+	dice_hint.add_theme_color_override("font_color", UITheme.MUTED)
 	dice_panel.add_child(dice_hint)
 
-	var sep3 := HSeparator.new()
-	right_vbox.add_child(sep3)
-
-	# VP and tour info
-	var info_vbox := VBoxContainer.new()
-	right_vbox.add_child(info_vbox)
-
+	# --- Sezione: Punti Vittoria ---
+	var sec_vp := UITheme.section("Punti Vittoria")
+	right_vbox.add_child(sec_vp["panel"])
 	var vp_label := Label.new()
 	vp_label.name = "VPLabel"
 	vp_label.text = "Punti Vittoria: 0"
-	vp_label.add_theme_font_size_override("font_size", 16)
-	vp_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-	info_vbox.add_child(vp_label)
+	vp_label.add_theme_font_size_override("font_size", 20)
+	vp_label.add_theme_color_override("font_color", UITheme.GREEN)
+	sec_vp["vbox"].add_child(vp_label)
 
 	var tour_label2 := Label.new()
 	tour_label2.name = "TourLabel"
 	tour_label2.text = "Tour: —"
 	tour_label2.add_theme_font_size_override("font_size", 13)
-	tour_label2.add_theme_color_override("font_color", Color(0.8, 0.8, 1.0))
-	info_vbox.add_child(tour_label2)
+	tour_label2.add_theme_color_override("font_color", UITheme.MUTED)
+	sec_vp["vbox"].add_child(tour_label2)
 
-	var sep4 := HSeparator.new()
-	right_vbox.add_child(sep4)
-
-	# Registro di Bordo (in fondo allo stato, occupa lo spazio rimanente)
-	var log_title := Label.new()
-	log_title.text = "Registro di Bordo"
-	log_title.add_theme_font_size_override("font_size", 13)
-	log_title.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
-	right_vbox.add_child(log_title)
+	# --- Sezione: Registro di Bordo (occupa lo spazio rimanente) ---
+	var sec_log := UITheme.section("Registro di Bordo")
+	sec_log["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_vbox.add_child(sec_log["panel"])
 
 	var log_scroll := ScrollContainer.new()
 	log_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	log_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right_vbox.add_child(log_scroll)
+	sec_log["vbox"].add_child(log_scroll)
 
 	log_display = RichTextLabel.new()
 	log_display.name = "LogDisplay"
@@ -516,7 +497,7 @@ func _build_ui() -> void:
 	log_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	log_display.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	log_display.add_theme_font_size_override("normal_font_size", 12)
-	log_display.add_theme_color_override("default_color", Color(0.8, 0.9, 0.8))
+	log_display.add_theme_color_override("default_color", Color(0.82, 0.88, 0.82))
 	log_scroll.add_child(log_display)
 
 func _build_status_rows(parent: Control) -> void:
@@ -794,6 +775,21 @@ func _on_environ_hex_clicked(hex_id: int) -> void:
 	elif GameState.can_hasty_move(hex_id):
 		GameState.hasty_move_to(hex_id)              # movimento affrettato (6.3)
 
+# Badge translucido per i titoli sovrapposti alle mappe (leggibilità sull'immagine).
+func _style_map_title(lbl: Label) -> void:
+	lbl.add_theme_color_override("font_color", UITheme.CYAN)
+	lbl.add_theme_font_size_override("font_size", 14)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.04, 0.06, 0.12, 0.82)
+	sb.set_corner_radius_all(6)
+	sb.set_border_width_all(1)
+	sb.border_color = UITheme.BORDER
+	sb.content_margin_left = 8
+	sb.content_margin_right = 8
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 3
+	lbl.add_theme_stylebox_override("normal", sb)
+
 func _update_left_panel_mode() -> void:
 	var on_surface := GameState.current_phase == GameState.Phase.EXPEDITION \
 		or (GameState.current_phase == GameState.Phase.PARAGRAPH and GameState.expedition_pos > 0) \
@@ -849,7 +845,8 @@ func _connect_signals() -> void:
 	GameState.game_saved.connect(func(): _play("save"))
 
 func _on_combat_resolved(result: String, _detail: String) -> void:
-	_play("success" if result in ["AE", "DR"] else "hit")
+	# A/B = esito netto a favore (poco danno); C/D/E = colpo duro alla spedizione.
+	_play("success" if result in ["A", "B"] else "hit")
 
 func _on_environ_changed() -> void:
 	_update_left_panel_mode()
@@ -903,7 +900,8 @@ func _update_action_buttons(phase: String) -> void:
 	var on_surface := GameState.expedition_pos > 0
 	var orbit_decision := GameState.is_orbit_decision() and not creature_active
 	# Incontro iniziale (paragrafo della creatura) → si dichiara la strategia (8.2)
-	var initial_creature := creature_active and GameData.creature_for_paragraph(current_para_num) == GameState.current_creature
+	# ¶226: paragrafo d'esito che offre comunque la strategia d'incontro (la creatura resta).
+	var initial_creature := creature_active and (GameData.creature_for_paragraph(current_para_num) == GameState.current_creature or current_para_num == 226)
 	# Paragrafo-esito che richiede combattimento (8.5)
 	var para_low := GameData.get_paragraph_text(current_para_num).to_lower()
 	var combat_outcome := creature_active and not initial_creature and ("combattiment" in para_low)
@@ -918,8 +916,10 @@ func _update_action_buttons(phase: String) -> void:
 	var here_explored: bool = GameState.environ_grid.get(GameState.expedition_pos, {}).get("explored", true)
 	var here_unexplored: bool = on_surface and not here_explored
 	if btn_explore: btn_explore.visible = (phase == "expedition") and not creature_active and here_unexplored
-	# Strategia d'incontro (8.2) sul paragrafo iniziale della creatura
-	if btn_comm: btn_comm.visible = initial_creature
+	# Strategia d'incontro (8.2) sul paragrafo iniziale della creatura.
+	# ¶033: la comunicazione non può essere scelta.
+	var comm_forbidden := current_para_num in [33]
+	if btn_comm: btn_comm.visible = initial_creature and not comm_forbidden
 	if btn_strat: btn_strat.visible = initial_creature
 	# Risoluzione del combattimento (8.5) sui paragrafi-esito di combattimento
 	if btn_kill:
@@ -1059,7 +1059,7 @@ func _refresh_hex_buttons() -> void:
 				if GameState.can_move_to(hex_id):
 					sb.border_color = Color(0.85, 0.9, 1.0, 0.7)
 
-			for st in ["normal", "hover", "pressed", "focus"]:
+			for st in ["normal", "hover", "pressed", "focus", "disabled"]:
 				btn.add_theme_stylebox_override(st, sb)
 
 			btn.disabled = (GameState.current_phase != GameState.Phase.INTERSTELLAR)
@@ -1856,21 +1856,15 @@ func _creature_combat_summary() -> String:
 		GameState.expedition_max_speed(), GameState.expedition_min_speed()]
 	return s
 
-# Anteprima delle probabilità d'esito del combattimento (8.5): per Uccidi e
-# Cattura mostra la percentuale di ciascun risultato della Tabella sul tiro 1d6.
+# Anteprima delle probabilità d'esito del combattimento (8.6/8.7): per Uccidi e
+# Cattura mostra la percentuale di ciascuna lettera (A-E) della Tabella sul tiro
+# 1d6, con l'esito e i Punti Danno relativi alla modalità.
 func _combat_odds_box() -> String:
 	if GameState.current_creature.is_empty():
 		return ""
-	var labels := {
-		"AE": "successo",
-		"DR": "la creatura fugge",
-		"AR": "ripieghi di 1 esagono",
-		"EX": "scambio (−1 Resistenza)",
-		"DE": "la creatura prevale (−2 Resistenza)",
-	}
-	var order := ["AE", "DR", "AR", "EX", "DE"]
+	var order := ["A", "B", "C", "D", "E"]
 	var s := "\n\n[color=#88ccff]Probabilità d'esito (tiro 1d6):[/color]"
-	for mode in [["kill", "Uccidi"], ["capture", "Cattura"]]:
+	for mode in [["kill", "Uccidi", false], ["capture", "Cattura", true]]:
 		if mode[0] == "capture" and GameState.pending_no_capture:
 			continue
 		var dist: Dictionary = GameState.combat_odds(mode[0])
@@ -1878,9 +1872,17 @@ func _combat_odds_box() -> String:
 		for code in order:
 			if dist.has(code):
 				var pct := int(round(float(dist[code]) * 100.0 / 6.0))
-				parts.append("%s %d%%" % [labels.get(code, code), pct])
+				parts.append("%s (%s) %d%%" % [code, _combat_result_label(code, bool(mode[2])), pct])
 		s += "\n[b]%s[/b]: %s" % [mode[1], " · ".join(parts)]
 	return s
+
+# Descrizione breve dell'esito di una lettera di risultato (8.7), per modalità.
+func _combat_result_label(code: String, as_capture: bool) -> String:
+	var dmg := {"A": 1, "B": 4 if as_capture else 2, "C": 8 if as_capture else 4,
+		"D": 8, "E": 12 if as_capture else 8}
+	var escapes: bool = (code == "E") or (code == "D" and as_capture)
+	var verb := "fugge" if escapes else ("catturata" if as_capture else "uccisa")
+	return "%s, −%d" % [verb, int(dmg.get(code, 0))]
 
 func _on_paragraph_request(para_num: int) -> void:
 	_play("page")
@@ -1892,8 +1894,9 @@ func _on_paragraph_request(para_num: int) -> void:
 	if title_lbl: title_lbl.text = "Paragrafo %03d" % para_num
 
 	# Questo paragrafo è l'incontro di una creatura attualmente in corso?
+	# ¶226 mantiene la creatura (Draloid/Oraloid) e offre la strategia.
 	var creature := GameData.creature_for_paragraph(para_num)
-	var is_creature_here := creature != "" and creature == GameState.current_creature
+	var is_creature_here := (creature != "" and creature == GameState.current_creature) or (para_num == 226 and not GameState.current_creature.is_empty())
 
 	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
 	if para_display:

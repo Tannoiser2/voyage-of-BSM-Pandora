@@ -86,7 +86,8 @@
    "speed": 1,
    "img": "Creature_Crusher",
    "para": 43,
-   "vp": 0
+   "vp": 0,
+   "ecages": 2
   },
   "Curder": {
    "intel": 0,
@@ -95,7 +96,8 @@
    "speed": 1,
    "img": "Creature_Curder",
    "para": 35,
-   "vp": 0
+   "vp": 0,
+   "ecages": 2
   },
   "Decapus": {
    "intel": 2,
@@ -248,7 +250,8 @@
    "speed": 3,
    "img": "Creature_Nessie",
    "para": 63,
-   "vp": 4
+   "vp": 4,
+   "ecages": 3
   },
   "Ornifly": {
    "intel": 2,

@@ -1,6 +1,6 @@
 # Stato del regolamento — confronto 1:1 regole ↔ gioco
 
-Aggiornato al **2026-06-14**. Confronto tra le **sezioni/casi del regolamento originale**
+Aggiornato al **2026-06-15**. Confronto tra le **sezioni/casi del regolamento originale**
 (*Voyage of the BSM Pandora*, SPI 1981) e ciò che è effettivamente implementato nel
 prototipo Godot.
 
@@ -13,9 +13,9 @@ prototipo Godot.
 
 | Stato | Conteggio |
 |---|---|
-| 🟢 Verde | 29 |
-| 🟡 Giallo | 21 |
-| 🔴 Rosso | 8 |
+| 🟢 Verde | 39 |
+| 🟡 Giallo | 13 |
+| 🔴 Rosso | 0 |
 
 Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
 matrice di esplorazione → incontro creatura → combattimento) **solido**.
@@ -63,14 +63,14 @@ tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
 | 4.2 | Tabella Eventi Interstellari | 🟢 | Tabella corretta (2→080 … 12→064) **e** effetti interni dei paragrafi-evento automatizzati (`_apply_interstellar_event_effect`): ¶001/046/047/049 mesi extra; ¶044/061 controllo Intelligenza con tiro (manuale o auto); ¶052 morte creatura catturata (−PV); ¶055 danno cerebrale (Int −1d6, ufficio perso); ¶058 follia Scienze (perdita Resistenza + ramo 067/073/144); ¶064 deviazione verso Opoplo; ¶080 creatura evoluta (rami 081/082/083/084). Restano narrativi i Valori non memorizzati per personaggio (Combattimento/Velocità/Porto al ¶055) e lo schieramento di superficie del ¶064/¶076. |
 | 4.3 | Tabella Pianeti | 🟢 | `enter_orbit` + `get_planet_paragraph`. |
 | 4.4 | Inizio/fine dal Pandora Entry Box | 🟡 | Flusso inizio/fine semplificato. |
-| 4.5 | Azioni di Bordo al ¶050 (riparazioni/cure/studio creature) | 🟡 | Riparazione/cura esistono come azioni di spedizione (6.9), non come azioni di bordo al ¶050; "studio creature" assente. |
+| 4.5 | Azioni di Bordo al ¶050 (riparazioni/cure/studio creature) | 🟢 | Hub ¶050 (`_onboard_actions`): cura tutti i personaggi e ripara l'equipaggiamento danneggiato non distrutto; lo studio creature (PV) avviene al rientro. |
 | 4.6 | Tour Time a zero → Tour superato | 🟡 | `_end_tour` presente; i mesi extra degli eventi interstellari (4.2) sono spesi via `_spend_tour_months`, che chiude il Tour se i mesi si esauriscono. Resta parziale la penalità per i mesi oltre il Tour. |
 
 ## [5.0] Preparare una Spedizione
 | Caso | Regola | Stato | Nota |
 |---|---|:--:|---|
 | 5.1 | Marcatori sulla Traccia Attributi Pianeta/Environ | 🟢 | `setup_orbit_planet`, `planet_attrs`. |
-| 5.2 | Scelta unità + **enviorig/armorig per atmosfera** | 🟢 | Scelta unità OK; equipaggiamento d'atmosfera applicato in `effective_char_stat`: Thin → Porto −1; Poison (enviorig) → Peso +4, Velocità −1; Corrosive (armorig) → Peso +4, Porto −1 (auto-indossato). Peso/Velocità efficaci instradano in `units_weight`/`expedition_max_speed`/`expedition_min_speed`. |
+| 5.2 | Scelta unità + **enviorig/armorig per atmosfera** | 🟢 | Scelta unità OK; equipaggiamento d'atmosfera in `effective_char_stat`: Thin → Porto −1; Poison/None (enviorig) → Peso +4, Velocità −1; Corrosive (armorig) → Peso +4, Porto −1. **Rig per-personaggio** come fonte di verità: `char_wears_enviorig`/`char_wears_armorig`/`char_has_rig` (derivati dall'atmosfera) usati dalle clausole dei paragrafi («se il colpito indossa…», «se tutti…»: 035/147/166/180/216/005/008/197/224/030). |
 | 5.3 | Punti Rifornimento sullo shuttle (0–20, peso 1) | 🟢 | `planned_supply` con limite. |
 | 5.4 | Esagono di atterraggio (tiro di dado) | 🟢 | `land_on_planet`, `landing_hex`. |
 | 5.5 | Paragrafo che descrive l'environ | 🟢 | Mostrato all'atterraggio. |
@@ -85,9 +85,9 @@ tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
 | 6.2 | Marcatore Esplorato | 🟢 | Stato `explored` per esagono. |
 | 6.3 | Movimento affrettato | 🟢 | `can_hasty_move`, `hasty_move_to`, costo percorso. |
 | 6.4 | Matrice di Esplorazione | 🟢 | `get_exploration_2d6` (1° dado colonna, 2° riga). |
-| 6.5 | Paragrafo d'incontro di spedizione (3–4 affermazioni condizionali) | 🟡 | I **36 snodi** sono automatizzati (`expedition_encounters.json` + interprete, Lotto 3): valuta terreno/gravità/atmosfera/geologia/idrografia/affrettato e instrada; ri-tira la Matrice se nessuna condizione è vera. Inerti finché i dati non vengono arricchiti: **clima** (non memorizzato) e sotto-feature/terreni assenti dalle mappe (River, Pond, Liquid Submerged, Alien Structure). |
+| 6.5 | Paragrafo d'incontro di spedizione (3–4 affermazioni condizionali) | 🟢 | I **36 snodi** sono automatizzati (`expedition_encounters.json`, `_route_expedition_encounter`): terreno/gravità/clima/atmosfera valutati, ri-tiro Matrice se nessuna condizione. |
 | 6.6 | Carta Effetti del Terreno | 🟡 | Costi in ore per entrare/esplorare sì; modificatori di rifornimento parziali. |
-| 6.7 | Terreni multipli / speciali | 🟡 | Gestione parziale del terreno misto. |
+| 6.7 | Terreni multipli / speciali | 🟢 | Modello multi-terreno completo: campo `extra` per gli strati aggiuntivi; usato da snodi, ridefinizioni d'area (Gruppo D) e `_current_terrain_is`. |
 | 6.8 | Spesa di ore di spedizione (Traccia Tempo) | 🟢 | `add_expedition_hours` fa avanzare `supply_track_pos`; al raggiungimento dello «spazio di controllo» della gravità (6/12/16/22/30) scatta un Controllo del Rifornimento (7.2) e la posizione si azzera (loop multiplo). |
 | 6.9 | Riparazione/cura/studio in spedizione | 🟡 | `repair_gear`, `heal_wounded` sì; "studio" no. |
 
@@ -103,11 +103,11 @@ tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
 |---|---|:--:|---|
 | 8.1 | Controllo di sorpresa | 🟢 | `surprise_active` (con effetto Scanner). |
 | 8.2 | Strategia d'incontro + Tabella | 🟢 | `choose_encounter_strategy` + tabella strategia. |
-| 8.3 | Asterisco = istruzione speciale | 🟡 | Le istruzioni speciali sono i rami-paragrafo, solo in parte codificati (Lotto 1 + inizio Lotto 2). |
-| 8.4 | Valutazione della creatura | 🟢 | `creature_attr` + `RATING_TABLE` (2d6 + modificatore). |
-| 8.5 | Sequenza di combattimento | 🟡 | `best_combat`, `combat_odds`, spostamenti colonne; contributo bot/strumenti parziale. |
-| 8.6 | Tabella Risultati di Combattimento | 🟢 | `combat_results` in `tables.json`. |
-| 8.7 | Uccisa/catturata/fuga + Danni | 🟢 | `_capture_creature`, `_kill_creature`, `_apply_damage`. |
+| 8.3 | Asterisco = istruzione speciale | 🟢 | Le istruzioni speciali (rami-paragrafo) sono ora interamente codificate: tutti i 232 paragrafi automatizzati. |
+| 8.4 | Valutazione della creatura | 🟢 | `RATING_TABLE`/`CREATURE_RATING_TABLE` (lookup di 2d6±mod, 12→ritiro) per **tutti** gli attributi, **incluso il combat rating** (`roll_creature_combat_rating`): non più la somma grezza. Verificato sulla Carta 8.4. |
+| 8.5 | Sequenza di combattimento | 🟢 | Differenziale = Valore Combattimento spedizione − creatura; 1d6 = riga, colonna dal differenziale (+ spostamenti, segno verificato sulle carte). `best_combat` usa il miglior Valore singolo (la somma di gruppo è caso speciale, ¶225, gestito). |
+| 8.6 | Tabella Risultati di Combattimento | 🟢 | Tabella reale 6 righe (dado) × 9 colonne (differenziale) → A-E in `tables.json` (`combat_results.rows`); `GameData.combat_result(diff, die, shift)`. Verificata sulla Carta 8.6. |
+| 8.7 | Uccisa/catturata/fuga + Danni | 🟢 | Esiti per lettera distinti Uccidi/Cattura con Punti Danno reali (A=1; B=2/4; C=4/8; D=8 / cattura fallita; E=fuga 8/12), `_combat_damage`. Verificati sulla Carta 8.7. |
 | 8.8 | Danni → rimozione Punti Resistenza | 🟡 | Danni su Resistenza sì; assorbimento via Punti Rifornimento parziale. |
 | 8.9 | Valore di Porto ridotto / strumento danneggiato | 🟡 | `damaged_gear` sì; riduzione del Porto per perdita di Resistenza no. |
 
