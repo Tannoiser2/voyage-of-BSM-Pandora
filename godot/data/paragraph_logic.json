@@ -868,5 +868,46 @@
     "para": 227
    }
   }
+ ],
+ "027": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "combat",
+    "shift_die_left": true
+   }
+  }
+ ],
+ "048": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "leave"
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "leave"
+   }
+  }
  ]
 }

@@ -86,13 +86,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 182 | 78,4% |
-| 🟡 Giallo | 50 | 21,6% |
+| 🟢 Verde | 186 | 80,2% |
+| 🟡 Giallo | 46 | 19,8% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 89,2%**
-( (182 + 50/2) / 232 ).
+come metà, l'indice di completezza è **≈ 90,1%**
+( (186 + 46/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -101,11 +101,11 @@ come metà, l'indice di completezza è **≈ 89,2%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 19 | 10 | 0 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 20 | 24 | 0 | 44 |
+| incontro-creatura (intro) | 22 | 22 | 0 | 44 |
 | evento-interstellare + esiti | 16 | 1 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 48 | 14 | 0 | 62 |
-| **Totale** | **182** | **50** | **0** | **232** |
+| procedurale-vario / rimandi-testuali | 50 | 12 | 0 | 62 |
+| **Totale** | **186** | **46** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -151,7 +151,7 @@ come metà, l'indice di completezza è **≈ 89,2%**
 | 024 | esito-strategia | 🟡 | Codificato shift 1 sx/no-cattura/danni-Resistenza; il duello «singolo personaggio» e il sub-combattimento col resto del gruppo è semplificato. |
 | 025 | esito-strategia | 🟢 | Codificato: intel≥8 rilascio +3 PV (+2 Holographer/+2 GSO), 2 ore; altrimenti uccisione=cattura. |
 | 026 | esito-strategia | 🟢 | Codificato: aggr≤3 fuga 2 ore; altrimenti combattimento shift max-mod, danni-Resistenza. |
-| 027 | incontro-creatura (Folisaur) | 🟡 | Creatura preparata e strategia offerta; lo stordimento da sorpresa e lo «shift = 1 dado» del ramo combattimento non sono applicati. |
+| 027 | incontro-creatura (Folisaur) | 🟢 | Sorpresa → un personaggio a caso è stordito (escluso da `best_combat` per l'incontro); ramo Combatti → spostamento a sinistra di 1 dado (`shift_die_left`). |
 | 028 | procedurale (alieni invisibili) | 🟢 | Col neuroscanner → +4 PV; altrimenti → ¶189. Automatizzato. |
 | 029 | incontro-creatura (Ivy Five) | 🟢 | Sorpresa→combattimento shift 3 sx codificata; ramo «non sorpreso» con azioni standard. |
 | 030 | procedurale (globo) | 🟢 | Pulsante «Esamina» (resolver `intel_check`, investigatore = Intelligenza più alta): con E-cage il globo è acquisito (PV al rientro); senza E-cage si ripiega sull'esito acido (−3 Resistenza all'investigatore, annullati dall'armorig); esito peggiore = morte dell'investigatore (con armorig: −3 Resistenza). Caveat: l'enviorig non è modellato, quindi il suo danneggiamento è inerte. |
@@ -172,7 +172,7 @@ come metà, l'indice di completezza è **≈ 89,2%**
 | 045 | incontro-creatura (Armeetle) | 🟡 | Creatura preparata; inefficacia di stunbomb/reconbot/specibot e fuga «2 ore» non gestite. |
 | 046 | evento-interstellare | 🟢 | brillamenti stellari: +1 Mese di Tour. Automatizzato. |
 | 047 | evento-interstellare | 🟢 | avaria Processore Fuji: 9 - Int(Scienze/Manut). Automatizzato. |
-| 048 | incontro-creatura (Ornifly) | 🟡 | Creatura preparata; ramo «la creatura sfreccia via» (niente combattimento) non forzato. |
+| 048 | incontro-creatura (Ornifly) | 🟢 | Comunica o Combatti → la creatura sfreccia via (esito `leave`, nessun combattimento); Fuggi normale. |
 | 049 | evento-interstellare | 🟢 | tempesta di asteroidi: 9 - Int(CO/Nav/Manut). Automatizzato. |
 | 050 | snodo-di-flusso | 🟡 | Il rientro alla Pandora e il movimento interstellare esistono; il paragrafo come «hub» (Azioni di Bordo 4.5) non è esplicitamente collegato. |
 
@@ -350,7 +350,7 @@ come metà, l'indice di completezza è **≈ 89,2%**
 | 203 | procedurale (pirati: tributo) | 🟢 | Scelta: cedi un robot/strumento di ogni tipo (i pirati se ne vanno) oppure rifiuta → ¶183. UI a scelte. |
 | 204 | procedurale (fuga alieni) | 🟢 | 1 dado: 1 +5 PV; 2-3 rover distrutto →¶195; 4-5 imprigionati 1 Mese, rifornimenti confiscati +5 PV; 6→¶210. Automatizzato. |
 | 205 | esito-strategia (modificatore) | 🟡 | «Aggressività auto +2, ritira sulla tabella 8.2»: il motore ha la tabella 8.2 ma non applica questa correzione né il rimando-incontro. |
-| 206 | procedurale (combattimento Unithalo) | 🟡 | Combattimento a 2 round con risultati riletti (¶072 vi instrada). Caveat: il dettaglio dei 2 round e l'aumento del Valore di Combattimento non sono modellati (combattimento normale). |
+| 206 | procedurale (combattimento Unithalo) | 🟢 | Combattimento in 2 round: al 1° i risultati sono riletti (A nessun effetto; B −3 Resistenza, se muore +3 al rating; C un divorato +3; D/E due divorati +5), poi 2° round coi risultati normali sul differenziale ricalcolato (`pending_two_round`). |
 | 207 | esito (orchidea, senza pedina) | 🟢 | Orchidea raccolta: +3 PV, poi 1 dado (4-6 → ¶033). Automatizzato. |
 | 208 | incontro-creatura (Reeler) | 🟢 | Con l'Ufficiale Scienze la larva è riportata in salvo (+2 PV); altrimenti 1 dado: 1-3 muore, 4-6 si trasforma e si combatte. Codificato (intro). |
 | 209 | procedurale (infezione germe) | 🟢 | Personaggio a caso: −2 Resistenza subito e −1 a ogni Controllo del Rifornimento (salvo Ufficiale Medico presente), curato al rientro. Automatizzato. |
@@ -361,7 +361,7 @@ come metà, l'indice di completezza è **≈ 89,2%**
 | 214 | esito (creatura svanisce) | 🟢 | +3 con Holographer, +2 col neuroscanner. Automatizzato. |
 | 215 | procedurale (campo mentale Garbrist) | 🟢 | Il campo mentale danneggia tutti i robot/strumenti (non armorig/enviorig/rover), poi si conduce il combattimento normale. Automatizzato. |
 | 216 | procedurale (Abomnid insegue) | 🟢 | Col rover o con **tutti** i personaggi in armorig si combatte; altrimenti (a piedi) il personaggio più lento senza armorig viene ucciso e la creatura fugge. Rig per-personaggio (5.2). |
-| 217 | procedurale (Glassman ostile) | 🟡 | Distrugge un personaggio e un robot a caso, poi combattimento di uccisione (shift impostato per il +3). Caveat: modificatore di Combattimento approssimato come shift. |
+| 217 | procedurale (Glassman ostile) | 🟢 | Distrugge un personaggio e un robot a caso, poi combattimento di sola uccisione con la Valutazione del Glassman rideterminata col modificatore +3 (8.4), non più approssimata come spostamento. |
 | 218 | procedurale (combattimento Glosper) | 🟢 | Combattimento di uccisione: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto); senza, spostamento di 2 colonne a favore. Hook remap nel motore sui codici reali A-E (Tabella 8.6 verificata). |
 | 219 | esito (fungo intelligente) | 🟢 | +3 col neuroscanner, +2 con Holographer; 1 dado di ore spese. Automatizzato. |
 | 220 | incontro-creatura (Glassman fugge) | 🟡 | La logica «fuga su velocità o combatti» è simile a quella codificata altrove, ma per ¶220 non è in `paragraph_logic`: solo testo. |

@@ -14,8 +14,8 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 182 | |
-| 🟡 Giallo | 50 | **≈ 89,2%** |
+| 🟢 Verde | 186 | |
+| 🟡 Giallo | 46 | **≈ 90,1%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
 **Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un
@@ -120,15 +120,22 @@ Paragrafi: 031, 057, 075, 142, 149, 151, 153, 179.
   di sorpresa specifico. 057: il danno ai robot va legato a Comunica/Combatti, non
   all'intro.
 
-### C. combattimento (round/valore combinato) (9)
+### C. combattimento (round/valore combinato) — **in gran parte FATTO (2026-06-15)**
 Paragrafi: 024, 027, 048, 055, 072, 191, 206, 217, 225.
-- **206:** combattimento a 2 round con risultati riletti + aumento del Valore di
-  Combattimento della creatura per il 2° round. Serve estendere `resolve_combat`
-  (concetto di round + risultati custom A/B/C/D/E → effetti).
-- **225:** combattimento col **valore combinato** del gruppo (somma combat) e
-  risultato «E» a 12 danni. Modellare il gruppo come singola creatura con rating somma.
-- **055/191/217:** già parziali (alcuni Valori non memorizzati per personaggio →
-  legati al punto A).
+- **206 → 🟢:** combattimento a 2 round (`pending_two_round`/`combat_round`): 1° round
+  con risultati riletti (A nessun effetto; B −3 Res., se muore +3 rating; C un divorato
+  +3; D/E due divorati +5), poi 2° round normale sul differenziale ricalcolato. ¶072
+  Combatti → ¶206.
+- **027 → 🟢:** sorpresa stordisce un personaggio (escluso da `best_combat`); Combatti →
+  `shift_die_left` (1 dado a sinistra).
+- **048 → 🟢:** Comunica/Combatti → la creatura sfreccia via (`leave`).
+- **217 → 🟢:** Glassman rideterminato col modificatore +3 (8.4), non più approssimato
+  come spostamento; solo uccisione.
+- **Residui 🟡:** **225** (combattimento col valore combinato del gruppo: modellare il
+  gruppo come creatura singola con rating-somma; serve la composizione del gruppo) e
+  **055** (¶: «tutti i Valori −1» richiede Valori per-personaggio, vedi punto A — oggi
+  solo Intelligenza è memorizzata). **024** (duello «singolo personaggio» multi-stadio)
+  e **191** restano approssimati ma ragionevoli.
 
 ### D. ridefinizioni terreno / vincoli d'area (7)
 Paragrafi: 076, 114, 117, 126, 129, 133, 139.

@@ -364,7 +364,11 @@ func get_creature_texture(name: String) -> Texture2D:
 # 2 dadi + Modificatore di Combattimento, mappati con la Tabella di Valutazione
 # (Carta 8.4) — non la somma grezza. Con totale 12 si ritira un dado.
 func roll_creature_combat_rating(name: String) -> int:
-	var modifier: int = int(get_creature(name).get("combat", 0))
+	return roll_creature_combat_rating_mod(int(get_creature(name).get("combat", 0)))
+
+# Come roll_creature_combat_rating ma con un Modificatore di Combattimento esplicito
+# (es. ¶217: il Glassman vale +3 invece del +1 stampato sul segnalino).
+func roll_creature_combat_rating_mod(modifier: int) -> int:
 	var total := clampi(randi_range(1, 6) + randi_range(1, 6) + modifier, 2, 12)
 	if total <= 11:
 		return int(CREATURE_RATING_TABLE.get(total, 1))

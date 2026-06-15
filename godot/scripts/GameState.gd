@@ -257,6 +257,8 @@ func save_game(silent := false) -> bool:
 		"creature_attr_cache": creature_attr_cache,
 		"pending_combat_shift": pending_combat_shift, "pending_no_capture": pending_no_capture,
 		"pending_kill_as_capture": pending_kill_as_capture,
+		"pending_two_round": pending_two_round, "combat_round": combat_round,
+		"stunned_chars": stunned_chars,
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
@@ -348,6 +350,9 @@ func load_game() -> bool:
 	pending_combat_shift = int(d.get("pending_combat_shift", 0))
 	pending_no_capture = bool(d.get("pending_no_capture", false))
 	pending_kill_as_capture = bool(d.get("pending_kill_as_capture", false))
+	pending_two_round = bool(d.get("pending_two_round", false))
+	combat_round = int(d.get("combat_round", 1))
+	stunned_chars = d.get("stunned_chars", [])
 	surprise_active = bool(d.get("surprise_active", false))
 	chosen_strategy = str(d.get("chosen_strategy", ""))
 	encounter_outcome_text = str(d.get("encounter_outcome_text", ""))
@@ -1167,6 +1172,8 @@ func launch_expedition(die_result: int) -> void:
 func best_combat(mode: String) -> int:
 	var best := 0
 	for k in expedition_units:
+		if k in stunned_chars:
+			continue  # personaggio stordito, non utilizzabile in combattimento (¶027)
 		var u := GameData.get_character(k)
 		var v: int = int(u.get("capture", 0)) if mode == "capture" else int(u.get("kill", 0))
 		best = maxi(best, v)
@@ -1631,6 +1638,9 @@ var pending_combat_remap: Dictionary = {}  # rimappa i risultati di combattiment
 var pending_combat_remap_destroy: String = ""  # equipaggiamento distrutto quando il remap scatta (¶218: turbolaser)
 var pending_combat_kill_on: Array = []     # risultati su cui un personaggio a caso è ucciso (¶227)
 var pending_combat_killall_on: Array = []  # risultati su cui TUTTI i personaggi sono uccisi (¶153: D/E)
+var pending_two_round: bool = false        # combattimento a due round con risultati custom al 1° (¶206)
+var combat_round: int = 1                  # round corrente del combattimento speciale (¶206)
+var stunned_chars: Array = []              # personaggi storditi, non utilizzabili in combattimento (¶027)
 var encounter_outcome_text: String = ""    # esito risolto dal sistema, per la UI
 # Paragrafo di destinazione impostato da un ramo «goto» (rimando narrativo).
 var pending_goto: int = 0
@@ -1847,6 +1857,11 @@ func _compute_shift(act: Dictionary) -> int:
 	if act.has("shift_if_gso"):
 		var has_sci: bool = ("GSO" in expedition_units) or ("Specibot" in expedition_gear)
 		return int(act["shift_if_gso"]) if has_sci else int(act.get("shift", 0))
+	if act.has("shift_die_left"):
+		# ¶027: lo spostamento (a sinistra) e' determinato da 1 dado.
+		var sd := randi_range(1, 6)
+		add_log("¶027: spostamento di %d colonne a sinistra (1 dado)." % sd)
+		return sd
 	return int(act.get("shift", 0))
 
 # Prepara lo stato d'incontro senza riscrivere la UI (il testo del paragrafo resta).
@@ -1967,6 +1982,12 @@ func _apply_paragraph_effect(para: int) -> int:
 	if para == 35 and not all_exploring_chars_have_rig():
 		add_log("¶035: non tutti i personaggi indossano un rig di protezione → ¶209.")
 		return 209
+	# ¶206: il combattimento con l'Unithalo si svolge in due round (risultati riletti
+	# al primo). Si arma il combattimento speciale alla prima visita dell'incontro.
+	if para == 206 and not current_creature.is_empty() and not pending_two_round:
+		pending_two_round = true
+		combat_round = 1
+		add_log("¶206: il combattimento con l'Unithalo si risolve in due round (conduci il combattimento).")
 	if _landing_fx_applied.has(para):
 		return 0
 	var applied := true
@@ -2219,8 +2240,11 @@ func _apply_paragraph_effect(para: int) -> int:
 				if not damaged_gear.has(b217):
 					damaged_gear.append(b217)
 				add_log("¶217: il Glassman ostile distrugge %s." % GameData.get_unit(b217).get("name", b217))
-			pending_combat_shift = 2
-			add_log("¶217: combattimento di uccisione contro il Glassman (modificatore di Combattimento +3).")
+			# Il Glassman vale Mod. di Combattimento +3 (invece del +1 stampato): si
+			# ridetermina la Valutazione (8.4) con +3; solo combattimento di uccisione.
+			pending_no_capture = true
+			creature_rating = GameData.roll_creature_combat_rating_mod(3)
+			add_log("¶217: combattimento di uccisione contro il Glassman (mod. +3 → Valutazione %d)." % creature_rating)
 		195:
 			var r195 := randi_range(1, 6)
 			if "CO" in expedition_units:
@@ -2475,6 +2499,15 @@ func _apply_creature_intro(para: int) -> void:
 				if v179 != "":
 					add_log("¶179: le corna fanno a pezzi %s (armorig inutile)." % crew[v179].get("name", v179))
 					_kill_character(v179)
+		27:
+			# Rettile arboricolo: se colta di sorpresa, un personaggio a caso è stordito
+			# dal colpo iniziale e non può essere usato in combattimento per l'incontro.
+			# In combattimento lo spostamento di colonne (a sinistra) è 1 dado (8.6).
+			if surprise_active:
+				var v27 := _random_alive_char()
+				if v27 != "" and not (v27 in stunned_chars):
+					stunned_chars.append(v27)
+					add_log("¶027: sorpresa! %s è stordito e non utilizzabile in combattimento." % crew[v27].get("name", v27))
 		75:
 			# Aquan (umanoide acquatico): sorpresa → combattimento con 2 colonne a
 			# sinistra (sfavore). Comunica → ¶208 (vedi paragraph_logic).
@@ -2652,6 +2685,9 @@ func _begin_creature(name: String) -> void:
 	pending_combat_remap_destroy = ""
 	pending_combat_kill_on = []
 	pending_combat_killall_on = []
+	pending_two_round = false
+	combat_round = 1
+	stunned_chars = []
 	encounter_outcome_text = ""
 	chosen_strategy = ""
 	creature_rating = GameData.roll_creature_combat_rating(name)
@@ -3343,6 +3379,46 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 		mode, player_combat, creature_rating, differential, shift_txt, die, result
 	]
 	add_log(detail)
+	# ¶206: combattimento in due round. Al PRIMO round i risultati sono riletti
+	# (non come da tabella); poi si ricalcola il differenziale e il SECONDO round usa
+	# i risultati normali. Il Valore di Combattimento della creatura può aumentare.
+	if pending_two_round and combat_round == 1:
+		match result:
+			"A":
+				add_log("¶206 round 1 — A: nessun effetto. Conduci il secondo round.")
+			"B":
+				var vb := _random_alive_char()
+				if vb != "":
+					_damage_character(vb, 3)
+					if not crew.get(vb, {}).get("alive", true):
+						creature_rating += 3
+						add_log("¶206 round 1 — B: %s muore; Valore creatura +3 per il 2° round." % crew[vb].get("name", vb))
+					else:
+						add_log("¶206 round 1 — B: %s perde 3 Punti Resistenza." % crew[vb].get("name", vb))
+			"C":
+				var vc := _random_alive_char()
+				if vc != "":
+					add_log("¶206 round 1 — C: %s è divorato." % crew[vc].get("name", vc))
+					_kill_character(vc)
+				creature_rating += 3
+				add_log("¶206: Valore di Combattimento della creatura +3 per il 2° round.")
+			"D", "E":
+				for _i in range(2):
+					var vd := _random_alive_char()
+					if vd != "":
+						add_log("¶206 round 1 — %s: %s è divorato." % [result, crew[vd].get("name", vd)])
+						_kill_character(vd)
+				creature_rating += 5
+				add_log("¶206: Valore di Combattimento della creatura +5 per il 2° round.")
+		combat_round = 2
+		if not current_creature.is_empty() and has_character_selected():
+			encounter_outcome_text = "¶206 — secondo round: conduci di nuovo il combattimento (risultati normali)."
+		combat_resolved.emit(result, "¶206 round 1 → %s" % result)
+		state_updated.emit()
+		return
+	# Secondo round del ¶206: da qui i risultati sono quelli normali.
+	if pending_two_round and combat_round == 2:
+		pending_two_round = false
 	# Vittime extra su certi risultati (¶227: il glosper fa a pezzi un personaggio).
 	if result in pending_combat_kill_on:
 		var vk := _random_alive_char()
