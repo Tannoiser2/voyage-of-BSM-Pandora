@@ -1,5 +1,7 @@
 extends Control
 
+const VERSION := "v0.9.0"
+
 func _ready() -> void:
 	theme = UITheme.make_theme()
 	add_child(UITheme.make_background())
@@ -80,12 +82,83 @@ func _ready() -> void:
 		col.add_child(btn)
 
 	col.add_child(_spacer(10))
+	# Pulsante "Novità" (changelog) + etichetta versione.
+	var changelog_btn := _menu_button("📋  Novità (changelog)", 44)
+	changelog_btn.add_theme_font_size_override("font_size", 15)
+	changelog_btn.add_theme_color_override("font_color", UITheme.CYAN)
+	changelog_btn.pressed.connect(_show_changelog)
+	col.add_child(changelog_btn)
+
 	var version_label := Label.new()
-	version_label.text = "Prototipo v0.1"
+	version_label.text = VERSION
 	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	version_label.add_theme_font_size_override("font_size", 11)
 	version_label.add_theme_color_override("font_color", UITheme.MUTED)
 	col.add_child(version_label)
+
+# Overlay con il changelog (res://CHANGELOG.md), reso leggibile nel menu.
+func _show_changelog() -> void:
+	if find_child("ChangelogOverlay", false, false):
+		return
+	var overlay := PanelContainer.new()
+	overlay.name = "ChangelogOverlay"
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.03, 0.05, 0.10, 0.97)
+	overlay.add_theme_stylebox_override("panel", sb)
+	add_child(overlay)
+
+	var margin := MarginContainer.new()
+	for m in ["left", "top", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + m, 40)
+	overlay.add_child(margin)
+
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 12)
+	margin.add_child(vb)
+
+	var title := Label.new()
+	title.text = "NOVITÀ"
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", UITheme.AMBER)
+	vb.add_child(title)
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	vb.add_child(scroll)
+	var rt := RichTextLabel.new()
+	rt.bbcode_enabled = true
+	rt.fit_content = true
+	rt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rt.add_theme_font_size_override("normal_font_size", 15)
+	rt.text = _changelog_bbcode()
+	scroll.add_child(rt)
+
+	var close := _menu_button("Chiudi", 44)
+	close.pressed.connect(overlay.queue_free)
+	vb.add_child(close)
+
+# Carica CHANGELOG.md e lo converte in BBCode leggibile (titoli/elenco).
+func _changelog_bbcode() -> String:
+	var src := "Changelog non disponibile."
+	if ResourceLoader.exists("res://CHANGELOG.md") or FileAccess.file_exists("res://CHANGELOG.md"):
+		var f := FileAccess.open("res://CHANGELOG.md", FileAccess.READ)
+		if f:
+			src = f.get_as_text()
+	var out := ""
+	for line in src.split("\n"):
+		var l: String = line
+		if l.begins_with("### "):
+			out += "[color=#46d3e0][b]" + l.substr(4) + "[/b][/color]\n"
+		elif l.begins_with("## "):
+			out += "\n[color=#f5b942][b]" + l.substr(3) + "[/b][/color]\n"
+		elif l.begins_with("# "):
+			out += "[b]" + l.substr(2) + "[/b]\n"
+		elif l.begins_with("- "):
+			out += "  • " + l.substr(2) + "\n"
+		else:
+			out += l + "\n"
+	return out
 
 func _menu_button(text: String, height: int) -> Button:
 	var b := Button.new()
