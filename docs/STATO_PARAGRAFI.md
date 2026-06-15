@@ -86,13 +86,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 222 | 95,7% |
-| 🟡 Giallo | 10 | 4,3% |
+| 🟢 Verde | 223 | 96,1% |
+| 🟡 Giallo | 9 | 3,9% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 97,8%**
-( (222 + 10/2) / 232 ).
+come metà, l'indice di completezza è **≈ 98,1%**
+( (223 + 9/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -104,8 +104,8 @@ come metà, l'indice di completezza è **≈ 97,8%**
 | incontro-creatura (intro) | 42 | 2 | 0 | 44 |
 | evento-interstellare + esiti | 17 | 0 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 59 | 3 | 0 | 62 |
-| **Totale** | **222** | **10** | **0** | **232** |
+| procedurale-vario / rimandi-testuali | 60 | 2 | 0 | 62 |
+| **Totale** | **223** | **9** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -330,7 +330,7 @@ come metà, l'indice di completezza è **≈ 97,8%**
 | 188 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (citta aliena non esplorata / Marsh+atmosfera / Liquid Surface): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 189 | procedurale (furto equipaggiamento) | 🟢 | Alieni invisibili: 1 dado di oggetti sottratti (robot per primi, poi strumenti; mai rover/armorig/enviorig). Automatizzato. |
 | 190 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/037/164 — Città Aliena / Heavy Veg. / Mountain+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
-| 191 | procedurale (esito pirati) | 🟡 | 1 dado di personaggi uccisi + Mesi di Tour di riparazioni (−2 se MntO vivo) automatizzati. La perdita «uno per tipo con Valore di Combattimento di uccisione» è approssimata (Turbolaser/Netgun/Stunbomb). |
+| 191 | procedurale (esito pirati) | 🟢 | 1 dado di personaggi uccisi; si perde uno di **ogni** tipo di strumento/robot con Valore di Combattimento di Uccisione (iterato sui dati); Mesi di Tour di riparazioni (−2 se MntO vivo). |
 | 192 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/037/159 — Città Aliena / Heavy Veg.+gravità / Mountain-Cliffs+atmosfera): salto al ramo giusto o ri-tiro Matrice. |
 | 193 | procedurale (combattimento struttura) | 🟢 | Pulsante «Affronta la struttura»: col turbolaser combattimento via Intelligenza (solo uccisione) → struttura distrutta e pezzo recuperato (artefatto ¶193, peso 3, PV al rientro); senza turbolaser −10 Punti Resistenza e fuga obbligata a ¶187. Caveat: la colonna-Intelligenza della Tabella Combattimento è modellata in modo approssimato. |
 | 194 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶172/063/069 — Città Aliena / Liquid Surface / River+clima tropicale): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |

@@ -2141,15 +2141,19 @@ func _apply_paragraph_effect(para: int) -> int:
 		191:
 			var killed := randi_range(1, 6)
 			_kill_random_characters(killed)
-			for it in ["Turbolaser", "Netgun", "Stunbomb"]:
-				if _gear_has(it):
-					expedition_gear.erase(it)
-					if not damaged_gear.has(it):
-						damaged_gear.append(it)
+			# Si perde uno di ogni tipo di strumento/robot con un Valore di Combattimento
+			# di Uccisione (netgun/stunbomb/turbolaser/armorig, ambot/reconbot/imrebot/specibot).
+			var lost191: Array = []
+			for g in expedition_gear.duplicate():
+				if int(GameData.get_unit(g).get("kill", 0)) > 0 and not (g in damaged_gear):
+					expedition_gear.erase(g)
+					damaged_gear.append(g)
+					lost191.append(str(GameData.get_unit(g).get("name", g)))
 			var m191 := randi_range(1, 6)
 			if crew.get("MntO", {}).get("alive", false):
 				m191 = maxi(0, m191 - 2)
-			add_log("¶191: pirati in ritirata. %d personaggio/i ucciso/i; %d Mesi di Tour di riparazioni." % [killed, m191])
+			var lost_txt191 := "" if lost191.is_empty() else " · persi: " + ", ".join(lost191)
+			add_log("¶191: pirati in ritirata. %d personaggio/i ucciso/i; %d Mesi di Tour di riparazioni%s." % [killed, m191, lost_txt191])
 			_spend_tour_months(m191, "¶191 riparazioni Pandora")
 		226:
 			if _gear_has("Rover"):
