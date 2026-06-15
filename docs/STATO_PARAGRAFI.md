@@ -86,13 +86,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 213 | 91,8% |
-| 🟡 Giallo | 19 | 8,2% |
+| 🟢 Verde | 222 | 95,7% |
+| 🟡 Giallo | 10 | 4,3% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 95,9%**
-( (213 + 19/2) / 232 ).
+come metà, l'indice di completezza è **≈ 97,8%**
+( (222 + 10/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -101,11 +101,11 @@ come metà, l'indice di completezza è **≈ 95,9%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 25 | 4 | 0 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 33 | 11 | 0 | 44 |
+| incontro-creatura (intro) | 42 | 2 | 0 | 44 |
 | evento-interstellare + esiti | 17 | 0 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
 | procedurale-vario / rimandi-testuali | 59 | 3 | 0 | 62 |
-| **Totale** | **213** | **19** | **0** | **232** |
+| **Totale** | **222** | **10** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -155,7 +155,7 @@ come metà, l'indice di completezza è **≈ 95,9%**
 | 028 | procedurale (alieni invisibili) | 🟢 | Col neuroscanner → +4 PV; altrimenti → ¶189. Automatizzato. |
 | 029 | incontro-creatura (Ivy Five) | 🟢 | Sorpresa→combattimento shift 3 sx codificata; ramo «non sorpreso» con azioni standard. |
 | 030 | procedurale (globo) | 🟢 | Pulsante «Esamina» (resolver `intel_check`, investigatore = Intelligenza più alta): con E-cage il globo è acquisito (PV al rientro); senza E-cage si ripiega sull'esito acido (−3 Resistenza all'investigatore, annullati dall'armorig); esito peggiore = morte dell'investigatore (con armorig: −3 Resistenza). Caveat: l'enviorig non è modellato, quindi il suo danneggiamento è inerte. |
-| 031 | incontro-creatura (Spiker) | 🟡 | Creatura preparata; l'uccisione automatica da sorpresa e il divieto netgun/stunbomb non sono modellati. |
+| 031 | incontro-creatura (Spiker) | 🟢 | Se sorpresa, un personaggio a caso è ucciso dalla coda fulminea (rig inutile); in combattimento netgun e stunbomb sono esclusi (`pending_combat_exclude_sources`). |
 | 032 | procedurale (sisma) | 🟢 | Scossa sismica: 2 dadi di Punti Danno (1 dado se tutti con armorig). Automatizzato. |
 | 033 | incontro-creatura (Florist) | 🟢 | Creatura preparata; la strategia «Comunica» è disabilitata nella UI (comunicazione non ammessa). |
 | 034 | scelta (delegazione aliena) | 🟢 | Bottoni di scelta: Comunica → ¶195, Combatti → ¶199, Fuggi → ¶204. UI a scelte. |
@@ -186,7 +186,7 @@ come metà, l'indice di completezza è **≈ 95,9%**
 | 054 | incontro-creatura (Aracat) | 🟢 | Intro «felino»: sorpresa+strategia gestite dal motore; nessun effetto extra oltre lo shift standard di sorpresa. |
 | 055 | evento-interstellare | 🟢 | Danno cerebrale a un membro a caso: Intelligenza −1 dado e **tutti gli altri Valori −1** (delta permanente per-personaggio `rating_delta`, applicato da `effective_char_stat`/`best_combat`); se Int≤2, −4 PV e ufficio perso. |
 | 056 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (lava fluente adiacente / Citta Aliena / Heavy Veg / Flat+idrografia): lava fluente = esagono adiacente Solid Lava+Liquid Surface (vicinato 6.7). |
-| 057 | incontro-creatura (Eleboid) | 🟡 | La creatura d'energia folgora e danneggia tutti i robot all'intro, poi incontro normale. Caveat: il danno è applicato all'intro anziché solo su Comunica/Combatti. |
+| 057 | incontro-creatura (Eleboid) | 🟢 | Scegliendo Comunica o Combatti (non in fuga) la creatura folgora e danneggia tutti i robot, poi si risolve l'incontro (`_zap_all_bots` in `choose_encounter_strategy`). |
 | 058 | evento-interstellare (procedurale) | 🟢 | follia dell'Ufficiale Scienze: Resistenza persa dagli altri + 2 dadi -> dirama a 067/073/144 (effetti applicati). Automatizzato. |
 | 059 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/039/147 — Città Aliena / Pond o Marsh / Cave+idrografia): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 060 | incontro-creatura (Scorsaur) | 🟢 | Combatti → ¶180 (incornata velenosa), via paragraph_logic; Comunica/Fuggi normali. |
@@ -201,10 +201,10 @@ come metà, l'indice di completezza è **≈ 95,9%**
 | 069 | incontro-creatura (Glassman, snodo) | 🟢 | Comunica: 1 dado 1-3→¶213 / 4-6→¶217. Combatti: 1 dado 1-4→¶220 / 5-6→¶217. Azione roll_goto. |
 | 070 | procedurale (atterraggio) | 🟢 | 2 dadi vs Int navigatore: ≤Int−2 sicuro; Int−1..Int+1 un robot danneggiato; ≥Int+2 schianto (5 Punti Danno). Automatizzato. |
 | 071 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/051/043 — Città Aliena / gravità quasi assente / atmosfera velenosa): il motore salta al ramo giusto o ri-tira la Matrice. |
-| 072 | incontro-creatura (Unithalo) | 🟡 | Sorpresa → combattimento con spostamento di 1 colonna; Combatti → ¶206. Caveat: il ramo Fuga (afferra il più lento) e il combattimento a 2 round di ¶206 non sono modellati. |
+| 072 | incontro-creatura (Unithalo) | 🟢 | Sorpresa → 1 colonna a sinistra; Combatti → ¶206 (2 round); Fuggi → il membro più lento è afferrato e perduto sottoterra, il resto si salva. |
 | 073 | evento-interstellare (esito) | 🟢 | cura: 2 dadi vs Int Medico -> guarigione, oppure Ufficiale Scienze in animazione sospesa (Resistenza persa, inutilizzabile). Automatizzato. |
 | 074 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/009/057 — Città Aliena / Flat+gravità / Cave): salto al ramo giusto o ri-tiro Matrice. |
-| 075 | incontro-creatura (Aquan) | 🟡 | Sorpresa+strategia gestite; il ramo «Comunica → dona larva → ¶208» non automatizzato. |
+| 075 | incontro-creatura (Aquan) | 🟢 | Sorpresa → 2 colonne a sinistra; Comunica → la creatura dona una forma larvale → ¶208 (paragraph_logic). |
 | 076 | atterraggio speciale (Opoplo) | 🟢 | Clima temperato; il vincolo «non lasciare l'area finché 0715 o 1016 non è esplorato» è imposto (`cannot_leave_until_explored`, blocco al rientro). |
 | 077 | incontro-creatura (Garbrist, snodo) | 🟢 | Comunica: col neuroscanner → ¶211, altrimenti → ¶016; Combatti → ¶215. Codificato (paragraph_logic). |
 | 078 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶009/009/005 — Città Aliena / Flat+clima tropicale / Marsh-Pond-River+clima): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
@@ -276,23 +276,23 @@ come metà, l'indice di completezza è **≈ 95,9%**
 | 139 | atterraggio (artico) | 🟢 | «+1 LSV» e clima artico; tutti i fiumi → ghiaccio (base+extra) e le paludi → ghiaccio glaciale al deploy. |
 | 140 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶006/003/170 — Città Aliena / Flat+atmosfera / Glacial Ice+gravità): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 141 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
-| 142 | incontro-creatura (Decapus) | 🟡 | Sorpresa+strategia gestite dal motore; nessun effetto extra ⇒ vicino al 🟢, ma lo shift di sorpresa è applicato solo dentro `paragraph_logic` (assente per 142). |
+| 142 | incontro-creatura (Decapus) | 🟢 | Sorpresa → combattimento con spostamento di 2 colonne a sinistra (`_apply_creature_intro`); altrimenti strategia. |
 | 143 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+idrografia / Cave+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 144 | evento-interstellare (esito) | 🟢 | morte dell'Ufficiale Scienze (PV) + 1 dado per Mesi di Tour (5-6=0); se Int Medico <=6 o assente, reinfezione di un altro membro -> ¶058 (guardia anti-ricorsione). Automatizzato. |
 | 145 | incontro-creatura (Erequito) | 🟢 | Solo i personaggi/robot con Velocità maggiore della creatura possono ingaggiare il combattimento (`pending_combat_speed_filter`). |
 | 146 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cave / Hill+Light Veg+gravita): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 147 | procedurale (vermi-tunnel) | 🟢 | Se sorpresa: ogni personaggio **senza armorig** perde 1 dado di Resistenza (l'enviorig sottrae 1 ed è danneggiato; −2 con SO, −2 con GSO, cumulativi), poi → ¶212. Rig per-personaggio (5.2). |
 | 148 | procedurale (atterraggio) | 🟢 | 2 dadi vs Int max a bordo: < Int → 5 Punti Danno; ≥ Int → 12 Punti Danno. Automatizzato. |
-| 149 | incontro-creatura (Bisape) | 🟡 | Sorpresa shift 1 sx (citata nel testo) non applicata; strategia offerta. |
+| 149 | incontro-creatura (Bisape) | 🟢 | Sorpresa → combattimento con spostamento di 1 colonna a sinistra; altrimenti strategia. |
 | 150 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/045/162 — Città Aliena / Cave+gravità / Solid Lava): salto al ramo giusto o ri-tiro Matrice. |
 
 ### 151–200 — creature, esiti speciali e snodi
 
 | ¶ | Tipo | Stato | Nota |
 |---|---|---|---|
-| 151 | incontro-creatura (Ursamax) | 🟡 | Sorpresa shift 2 sx non applicata automaticamente; strategia offerta. |
+| 151 | incontro-creatura (Ursamax) | 🟢 | Sorpresa → combattimento con spostamento di 2 colonne a sinistra; altrimenti strategia. |
 | 152 | procedurale (virus dello stagno) | 🟢 | Virus: un personaggio a caso muore, salvo medkit + Ufficiale Medico presenti (e la vittima non è il Medico). Automatizzato. |
-| 153 | incontro-creatura (Bubbler) | 🟡 | Strategia offerta; sorpresa shift 1 sx e «risultato D/E → tutti morti» non applicati. |
+| 153 | incontro-creatura (Bubbler) | 🟢 | Sorpresa → 1 colonna a sinistra; in qualsiasi combattimento un risultato D o E uccide l'intera spedizione (`pending_combat_killall_on`). |
 | 154 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+atmosfera / Flat+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
 | 155 | procedurale (atmosfera/robot) | 🟡 | Atmosfera velenosa/corrosiva: i robot si deteriorano a ogni Controllo del Rifornimento (gravità 1/3/6 secondo atmosfera e MntO). Modellato come danneggiamento di un robot per controllo (la Resistenza dei robot non è tracciata). |
 | 156 | incontro-creatura (Aenon, snodo) | 🟢 | Comunicazione/Combattimento: con Ambot o Turbolaser la creatura fugge (scegli altra azione); altrimenti → ¶223. Codificato. |
@@ -318,7 +318,7 @@ come metà, l'indice di completezza è **≈ 95,9%**
 | 176 | incontro (rete vivente, senza pedina) | 🟢 | Non catturabile/innocua; con l'Holographer si guadagnano 3 PV (automatico). |
 | 177 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/007/149 — Città Aliena / Mountain+gravità / veg.+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 178 | procedurale (uovo si schiude) | 🟢 | 1 dado automatico: 1-2 → ¶142, 3-4 → ¶159, 5-6 → ¶162. Instradamento a dado. |
-| 179 | incontro-creatura (Glosper) | 🟡 | Creatura preparata; uccisione da sorpresa e ramo Combatti→¶227 non gestiti. |
+| 179 | incontro-creatura (Glosper) | 🟢 | Se sorpresa, un personaggio a caso è fatto a pezzi dalle corna (armorig inutile); Cattura/Uccidi → ¶227 (paragraph_logic). |
 | 180 | procedurale (incornata) | 🟢 | Personaggio a caso: con armorig nessuna perdita; altrimenti 2 dadi di Resistenza (−3 Medico, −3 medkit, −2 enviorig poi danneggiato), poi → ¶017. Rig per-personaggio (5.2). |
 | 181 | incontro-creatura (Radrod, snodo) | 🟢 | Comunica: con il Neuroscan → ¶230; altrimenti → ¶016. Codificato (come ¶009). |
 | 182 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (shuttle non occupato (spedizione lontana) / Citta Aliena / Mountain-Cliffs+clima artico / atmosfera corrosiva): aggiunti i flag di stato pond_supply_used e shuttle_hex_unoccupied. |

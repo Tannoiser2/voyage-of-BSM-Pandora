@@ -14,8 +14,8 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 213 | |
-| 🟡 Giallo | 19 | **≈ 95,9%** |
+| 🟢 Verde | 222 | |
+| 🟡 Giallo | 10 | **≈ 97,8%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
 **Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un

@@ -2600,12 +2600,14 @@ func _apply_creature_intro(para: int) -> void:
 			pass
 		31:
 			# Spiker (creatura tipo scorpione): se colta di sorpresa, un personaggio a
-			# caso è ucciso dalla coda fulminea (anche se indossa enviorig/armorig).
+			# caso è ucciso dalla coda fulminea (anche se indossa enviorig/armorig). In
+			# combattimento netgun e stunbomb non possono essere usati.
 			if surprise_active:
 				var v31 := _random_alive_char()
 				if v31 != "":
 					add_log("¶031: la coda fulminea uccide %s (rig inutile)." % crew[v31].get("name", v31))
 					_kill_character(v31)
+			pending_combat_exclude_sources = ["Netgun", "Stunbomb"]
 		179:
 			# Glosper (bestia cornuta): se colta di sorpresa, un personaggio a caso è
 			# fatto a pezzi dalle corna (anche se indossa l'armorig). Il combattimento
@@ -3562,6 +3564,17 @@ func choose_encounter_strategy(strategy: String) -> void:
 	# robot (danneggiati da sovraccarico elettrico); alla fuga non accade.
 	if current_paragraph == 57 and strategy != "flee":
 		_zap_all_bots("¶057: la creatura d'energia folgora e danneggia %d robot.")
+	# ¶072 (Unithalo): scegliendo Fuggi, il personaggio col Valore di Velocità più
+	# basso è afferrato dalla creatura e sparisce sottoterra; il resto si salva.
+	if current_paragraph == 72 and strategy == "flee":
+		var slow72 := _slowest_unit()
+		if slow72 != "" and crew.has(slow72):
+			add_log("¶072: %s (il più lento) è afferrato e sparisce sottoterra." % crew[slow72].get("name", slow72))
+			_kill_unit(slow72)
+		_clear_encounter_state()
+		encounter_outcome_text = "La spedizione fugge: il membro più lento è perduto. Scegli un'azione di spedizione."
+		state_updated.emit()
+		return
 	# ¶037 (Snoup): col Combatti la creatura svanisce; con lo Scanner si può
 	# rilocalizzare (2 dadi < Intelligenza massima → ¶020), altrimenti è fuggita.
 	if current_paragraph == 37 and strategy == "capture_kill":
