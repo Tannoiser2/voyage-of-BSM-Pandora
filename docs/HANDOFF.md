@@ -14,8 +14,8 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 212 | |
-| 🟡 Giallo | 20 | **≈ 95,7%** |
+| 🟢 Verde | 213 | |
+| 🟡 Giallo | 19 | **≈ 95,9%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
 **Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un
@@ -155,9 +155,12 @@ Paragrafi 076, 117, 126, 129, 133, 139 → 🟢 (114 resta 🟡: esplorazione in
 - **Residuo 🟡:** ¶114 «tutta l'esplorazione in immersione (6.7)» non imposto come
   vincolo esplicito (l'environ è comunque Liquid Surface).
 
-### E. timing (1)
-- **163:** shuttle divorato se non si torna prima del prossimo Controllo del
-  Rifornimento → ¶050. Serve un flag con scadenza al prossimo supply check.
+### E. timing — **FATTO (2026-06-15)** ✅
+- **163 → 🟢:** flag `shuttle_devour_pending` impostato al ¶163; al prossimo
+  Controllo del Rifornimento, se la spedizione è allo shuttle (`expedition_pos ==
+  landing_hex`) gli insetti sono respinti, altrimenti lo shuttle è divorato e i
+  personaggi rientrano sulla Pandora → ¶050. Si azzera anche tornando allo shuttle
+  (`move_expedition`). Serializzato.
 
 ### F. altro/minore — **in gran parte FATTO (2026-06-15)**
 - **Fatti → 🟢:** 033 (Comunica disabilitato nella UI), 045 (Comunica/Combatti → fuga

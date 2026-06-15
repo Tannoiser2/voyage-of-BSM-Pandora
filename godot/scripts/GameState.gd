@@ -118,6 +118,7 @@ var infected_chars: Array = []        # {key, amt}: personaggi che perdono Resis
 var robot_decay: int = 0              # ¶155: i robot perdono Resistenza (qui: un robot danneggiato) a ogni Controllo del Rifornimento
 var hostile_race: bool = false        # ¶231: rischio d'imboscata a ogni Controllo del Rifornimento
 var cannot_leave_until_explored: Array = []  # ¶076: reali da esplorare prima di poter lasciare l'area
+var shuttle_devour_pending: bool = false     # ¶163: shuttle in pericolo; risolto al prossimo Controllo del Rifornimento
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
@@ -266,7 +267,7 @@ func save_game(silent := false) -> bool:
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
-		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "hostile_race": hostile_race, "cannot_leave_until_explored": cannot_leave_until_explored, "current_environ_id": current_environ_id,
+		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "hostile_race": hostile_race, "cannot_leave_until_explored": cannot_leave_until_explored, "shuttle_devour_pending": shuttle_devour_pending, "current_environ_id": current_environ_id,
 		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -372,6 +373,7 @@ func load_game() -> bool:
 	landing_hex = int(d.get("landing_hex", 0))
 	pond_supply_used = bool(d.get("pond_supply_used", false))
 	cannot_leave_until_explored = d.get("cannot_leave_until_explored", [])
+	shuttle_devour_pending = bool(d.get("shuttle_devour_pending", false))
 	infected_chars = d.get("infected_chars", [])
 	robot_decay = int(d.get("robot_decay", 0))
 	hostile_race = bool(d.get("hostile_race", false))
@@ -2523,6 +2525,12 @@ func _apply_paragraph_effect(para: int) -> int:
 		229:
 			# Monoke amichevole: si lascia catturare (facoltativo) e si spende 1 ora.
 			add_expedition_hours(1)
+		163:
+			# Insetti mangia-metallo: lo shuttle sarà divorato se la spedizione non torna
+			# allo shuttle prima del prossimo Controllo del Rifornimento (vedi
+			# resolve_supply_check e move_expedition).
+			shuttle_devour_pending = true
+			add_log("¶163: insetti mangia-metallo allo shuttle! Torna allo shuttle prima del prossimo Controllo del Rifornimento, o sarà divorato (→ ¶050).")
 		205:
 			# Aggressività della creatura automaticamente +2: si ri-tira sulla Tabella
 			# di Strategia d'Incontro (8.2) con la strategia già scelta per il prossimo ¶.
@@ -3002,6 +3010,19 @@ func resolve_pending_supply_check(die: int) -> void:
 func resolve_supply_check(die: int) -> void:
 	if die <= 0:
 		die = 1
+	# ¶163: se lo shuttle è in pericolo e la spedizione non è tornata allo shuttle,
+	# lo shuttle viene divorato: i soli personaggi rientrano sulla Pandora (→ ¶050).
+	if shuttle_devour_pending:
+		if expedition_pos == landing_hex:
+			shuttle_devour_pending = false
+			add_log("¶163: la spedizione è allo shuttle in tempo: gli insetti sono respinti.")
+		else:
+			shuttle_devour_pending = false
+			add_log("¶163: lo shuttle è stato divorato! I personaggi rientrano sulla Pandora con la navetta di soccorso (→ ¶050).")
+			_end_encounter()
+			return_to_pandora()
+			show_paragraph(50)
+			return
 	var users := supply_user_total()
 	var calc1 := mini(int(users / die), 4)
 	var lsv := int(planet_attrs.get("lsv", 0))
@@ -3137,6 +3158,7 @@ func generate_environ_at(landing_real: String, redef_para: int = 0) -> void:
 	robot_decay = 0
 	hostile_race = false
 	cannot_leave_until_explored = []
+	shuttle_devour_pending = false
 	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
 	if place.is_empty():
 		# Fallback: environ deterministico per sistema, atterraggio al centro.
@@ -3414,6 +3436,10 @@ func move_expedition(hex_id: int) -> void:
 	add_log("La spedizione entra in %s (esagono %s) — %d ore%s." % [
 		_terrain_it(terrain), real_id, enter_cost, _gear_cost_note(terrain)])
 	environ_changed.emit()
+	# ¶163: tornando allo shuttle in tempo, gli insetti sono respinti.
+	if shuttle_devour_pending and hex_id == landing_hex:
+		shuttle_devour_pending = false
+		add_log("¶163: la spedizione torna allo shuttle: gli insetti mangia-metallo sono respinti.")
 	# ¶231: ingresso in città aliena con razza ostile → possibile imboscata.
 	if hostile_race and _cell_is_alien_city(cell):
 		if _hostile_ambush("ingresso in città aliena"):

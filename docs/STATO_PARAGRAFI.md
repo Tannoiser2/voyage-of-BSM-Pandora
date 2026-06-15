@@ -86,13 +86,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 212 | 91,4% |
-| 🟡 Giallo | 20 | 8,6% |
+| 🟢 Verde | 213 | 91,8% |
+| 🟡 Giallo | 19 | 8,2% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 95,7%**
-( (212 + 20/2) / 232 ).
+come metà, l'indice di completezza è **≈ 95,9%**
+( (213 + 19/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -104,8 +104,8 @@ come metà, l'indice di completezza è **≈ 95,7%**
 | incontro-creatura (intro) | 33 | 11 | 0 | 44 |
 | evento-interstellare + esiti | 17 | 0 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 58 | 4 | 0 | 62 |
-| **Totale** | **212** | **20** | **0** | **232** |
+| procedurale-vario / rimandi-testuali | 59 | 3 | 0 | 62 |
+| **Totale** | **213** | **19** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -302,7 +302,7 @@ come metà, l'indice di completezza è **≈ 95,7%**
 | 160 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/060/153 — Città Aliena / Flat+veg.+gravità / atmosfera+clima sahariano): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 161 | scelta (insetti bipedi) | 🟢 | Bottoni di scelta: Comunica → ¶222, Combatti → ¶125 (fuga impossibile). UI a scelte. |
 | 162 | incontro-creatura (Draloid, snodo) | 🟢 | Sorpresa → ¶226. Non sorpresa: se l'Ufficiale rilevamento terrestre (GSO) è assente, 2 dadi vs Int max spedizione (≥ → ¶226). Codificato (effetto-intro). |
-| 163 | procedurale (shuttle divorato) | 🟡 | Se si torna allo shuttle prima del prossimo Controllo del Rifornimento gli insetti sono respinti; altrimenti shuttle divorato → ¶050. Caveat: il timing non è modellato. |
+| 163 | procedurale (shuttle divorato) | 🟢 | Flag `shuttle_devour_pending`: tornando allo shuttle prima del prossimo Controllo del Rifornimento gli insetti sono respinti; altrimenti lo shuttle è divorato e i personaggi rientrano sulla Pandora → ¶050. |
 | 164 | scelta (vetta viva) | 🟢 | Bottoni con tiro: Comunica (1d6 1-4→¶214/5-6→¶221), Combatti (1d6 1-2→¶218/3-4→¶221/5-6 svanisce), Fuga → ¶221. UI a scelte. |
 | 165 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶036/145/151 — Città Aliena / Light Veg.+gravità / Hill+idrografia): salto al ramo giusto o ri-tiro Matrice. |
 | 166 | procedurale (gravità) | 🟢 | Caduta per gravità: 2 dadi di Punti Danno (1 se GSO o Reconbot), il rover assorbe per primo. Coi personaggi in enviorig tutti i danni vanno presi come Resistenza (enviorig danneggiati); altrimenti distribuzione normale (scudo robot/Resistenza). |
