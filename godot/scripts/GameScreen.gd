@@ -1296,7 +1296,11 @@ func _refresh_prep_display() -> void:
 	var load_lbl := find_child("PrepDispLoad", true, false) as Label
 	if load_lbl:
 		var over := GameState.total_load() > GameState.shuttle_capacity
-		load_lbl.text = "Carico: %d / %d   ·   serve almeno 1 personaggio" % [GameState.total_load(), GameState.shuttle_capacity]
+		# Breakdown esplicito: i Punti Rifornimento pesano 1 ciascuno (5.3) e contano
+		# nel carico insieme alle unità.
+		load_lbl.text = "Carico: %d / %d   (unità %d + rifornimenti %d)" % [
+			GameState.total_load(), GameState.shuttle_capacity,
+			GameState.units_weight(), GameState.planned_supply]
 		load_lbl.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if over else Color(0.6, 1, 0.6))
 	var launch := find_child("PrepDispLaunch", true, false) as Button
 	if launch: launch.disabled = not GameState.prep_valid()
@@ -1536,7 +1540,8 @@ func _on_prep_supply_changed(value: float) -> void:
 	if _prep_updating:
 		return
 	GameState.planned_supply = clampi(int(value), 0, GameState.max_planned_supply())
-	_refresh_prep_panel()
+	# Aggiorna il pannello di preparazione ATTIVO (sinistra), non il vecchio overlay.
+	_refresh_prep_display()
 
 func _on_prep_cancel() -> void:
 	_prep_open = false

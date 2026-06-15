@@ -1443,24 +1443,40 @@ func combat_odds(mode: String) -> Dictionary:
 # per ottenere un altro snodo; con una guardia anti-ricorsione, oltre il limite si
 # mostra comunque il testo dello snodo corrente (fallback prudente).
 func _route_expedition_encounter(snodo: int, rules: Array) -> void:
+	# 1) Si valutano in ordine le condizioni dello snodo tirato dalla Matrice (6.5):
+	#    al primo goto la cui condizione è vera, si salta automaticamente.
 	for r in rules:
 		if _exp_cond_holds(r.get("cond", {})):
 			var dest := int(r.get("goto", 0))
 			add_log("Incontro di spedizione ¶%03d (6.5) → condizione soddisfatta → ¶%03d." % [snodo, dest])
 			show_paragraph(dest)
 			return
-	# Nessuna condizione vera: si ri-tira la Matrice di Esplorazione (6.5).
-	if _expedition_reroll_depth >= MAX_EXPEDITION_REROLLS:
-		add_log("Incontro di spedizione ¶%03d (6.5): nessuna condizione e troppi ri-tiri; mostro lo snodo." % snodo)
-		_expedition_reroll_depth = 0
-		_show_snodo_text(snodo)
+	# 2) Nessuna condizione dello snodo combacia con la situazione (terreno/atmosfera/
+	#    clima). La Matrice di Esplorazione è globale (non per-terreno): si cerca tra
+	#    TUTTI gli snodi una condizione adatta all'esagono attuale e si auto-risolve,
+	#    così il giocatore non deve mai scegliere a mano.
+	var matches: Array = []
+	for key in GameData.expedition_encounters:
+		if str(key).begins_with("_"):
+			continue
+		for r2 in GameData.expedition_encounters[key]:
+			if _exp_cond_holds(r2.get("cond", {})):
+				matches.append(int(r2.get("goto", 0)))
+				break  # un solo ramo (il primo vero) per snodo
+	if not matches.is_empty():
+		var dest2: int = matches[randi_range(0, matches.size() - 1)]
+		add_log("Incontro di spedizione ¶%03d (6.5): nessuna sua condizione vera; instradato a un incontro adatto all'esagono → ¶%03d." % [snodo, dest2])
+		show_paragraph(dest2)
 		return
-	_expedition_reroll_depth += 1
-	var d1 := randi_range(1, 6)
-	var d2 := randi_range(1, 6)
-	var other := GameData.get_exploration_2d6(d1, d2)
-	add_log("Incontro di spedizione ¶%03d (6.5): nessuna condizione vera; ri-tiro Matrice %d/%d → ¶%03d." % [snodo, d1, d2, other])
-	show_paragraph(other)
+	# 3) Caso estremo: nessuno snodo ha una condizione adatta all'esagono. Si usa il
+	#    ramo di default dello snodo tirato (l'ultima condizione, di norma la più comune),
+	#    auto-risolto: niente scelte manuali.
+	var fallback := int(rules[rules.size() - 1].get("goto", 0)) if not rules.is_empty() else 0
+	if fallback > 0:
+		add_log("Incontro di spedizione ¶%03d (6.5): nessun incontro adatto; ramo di default → ¶%03d." % [snodo, fallback])
+		show_paragraph(fallback)
+	else:
+		_show_snodo_text(snodo)
 
 # Mostra il testo grezzo di uno snodo (fallback quando si esauriscono i ri-tiri).
 func _show_snodo_text(para_num: int) -> void:
