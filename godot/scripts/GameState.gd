@@ -117,6 +117,7 @@ var _landing_fx_applied: Array = []   # paragrafi-area i cui effetti numerici (L
 var infected_chars: Array = []        # {key, amt}: personaggi che perdono Resistenza a ogni Controllo del Rifornimento (¶197/¶209/¶224)
 var robot_decay: int = 0              # ¶155: i robot perdono Resistenza (qui: un robot danneggiato) a ogni Controllo del Rifornimento
 var hostile_race: bool = false        # ¶231: rischio d'imboscata a ogni Controllo del Rifornimento
+var cannot_leave_until_explored: Array = []  # ¶076: reali da esplorare prima di poter lasciare l'area
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
@@ -262,7 +263,7 @@ func save_game(silent := false) -> bool:
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
-		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "hostile_race": hostile_race, "current_environ_id": current_environ_id,
+		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "hostile_race": hostile_race, "cannot_leave_until_explored": cannot_leave_until_explored, "current_environ_id": current_environ_id,
 		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -364,6 +365,7 @@ func load_game() -> bool:
 	expedition_pos = int(d.get("expedition_pos", 0))
 	landing_hex = int(d.get("landing_hex", 0))
 	pond_supply_used = bool(d.get("pond_supply_used", false))
+	cannot_leave_until_explored = d.get("cannot_leave_until_explored", [])
 	infected_chars = d.get("infected_chars", [])
 	robot_decay = int(d.get("robot_decay", 0))
 	hostile_race = bool(d.get("hostile_race", false))
@@ -997,7 +999,7 @@ func land_on_planet(die_result: int) -> void:
 	expedition_supply = shuttle_supply  # bring supplies from shuttle
 	shuttle_supply = 0
 	reset_expedition_state()
-	generate_environ_at(landing_real)
+	generate_environ_at(landing_real, landing_para)
 
 	add_log("Atterraggio su %s. Dado: %d → Paragrafo %03d" % [current_system, die_result, landing_para])
 	set_phase(Phase.EXPEDITION)
@@ -2700,9 +2702,27 @@ func _begin_creature(name: String) -> void:
 	if surprise_active:
 		add_log("Sorpresa (8.1)! %s coglie la spedizione di sorpresa (tiro %d)." % [name, sroll])
 
+# Vero se la spedizione può lasciare l'area (vincolo ¶076: serve esplorare uno
+# degli esagoni con struttura sotterranea).
+func can_leave_environ() -> bool:
+	if cannot_leave_until_explored.is_empty():
+		return true
+	for hid in environ_grid:
+		var c: Dictionary = environ_grid[hid]
+		if str(c.get("real", "")) in cannot_leave_until_explored and c.get("explored", false):
+			return true
+	return false
+
 func return_to_pandora() -> void:
 	# Return from expedition to orbit
 	if current_phase == Phase.EXPEDITION or current_phase == Phase.PARAGRAPH:
+		# ¶076: la spedizione non può lasciare l'area finché la struttura sotterranea
+		# non è stata esplorata.
+		if not can_leave_environ():
+			var msg076 := "¶076: non puoi lasciare l'area finché non esplori la struttura sotterranea (esagono 0715 o 1016)."
+			add_log(msg076)
+			message_posted.emit(msg076)
+			return
 		shuttle_supply += expedition_supply
 		expedition_supply = 0
 		# Le infezioni vengono curate dall'attrezzatura sofisticata della Pandora (6.9).
@@ -2973,13 +2993,14 @@ func environ_neighbors(hex_id: int) -> Array:
 
 # Genera l'environ a partire dall'esagono di atterraggio reale della carta pianeta
 # (es. "1502"), scegliendo l'environ corretto e l'esagono d'atterraggio corretto.
-func generate_environ_at(landing_real: String) -> void:
+func generate_environ_at(landing_real: String, redef_para: int = 0) -> void:
 	environ_grid = {}
 	pond_supply_used = false
 	_landing_fx_applied = []
 	infected_chars = []
 	robot_decay = 0
 	hostile_race = false
+	cannot_leave_until_explored = []
 	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
 	if place.is_empty():
 		# Fallback: environ deterministico per sistema, atterraggio al centro.
@@ -3006,9 +3027,70 @@ func generate_environ_at(landing_real: String) -> void:
 	landing_hex = place.get("local", _central_environ_hex()) if not place.is_empty() else _central_environ_hex()
 	if not environ_grid.has(landing_hex):
 		landing_hex = _central_environ_hex()
+	# Ridefinizioni di terreno per-area imposte dal paragrafo d'atterraggio (Gruppo D).
+	if redef_para > 0:
+		_apply_landing_terrain_redef(redef_para)
 	# L'esagono di atterraggio non è ancora esplorato: la spedizione può esplorarlo.
 	expedition_pos = landing_hex
 	environ_changed.emit()
+
+# Applica le ridefinizioni di terreno per-area di certi paragrafi d'atterraggio
+# (es. città aliena = ghiaccio glaciale, caverne inesistenti, fiumi ghiacciati).
+func _apply_landing_terrain_redef(para: int) -> void:
+	match para:
+		117:
+			_redef_base("Alien City", "Glacial Ice", [])
+			add_log("¶117: tutti gli esagoni di città aliena valgono ghiaccio glaciale.")
+		126:
+			_redef_base("Alien City", "Glacial Ice", ["1012"])
+			add_log("¶126: gli esagoni di città aliena (tranne 1012) valgono ghiaccio glaciale.")
+		129:
+			_redef_remove_extra("Cave", [])
+			add_log("¶129: le caverne non esistono.")
+		133:
+			_redef_remove_extra("Cave", ["1101", "1102", "1103"])
+			add_log("¶133: le caverne negli esagoni 1101/1102/1103 non esistono.")
+		139:
+			_redef_anywhere("River", "Glacial Ice", [])
+			_redef_base("Marsh", "Glacial Ice", [])
+			add_log("¶139: tutti i fiumi sono ghiacciati e le paludi valgono ghiaccio glaciale.")
+		76:
+			cannot_leave_until_explored = ["0715", "1016"]
+			add_log("¶076: la spedizione non può lasciare l'area finché 0715 o 1016 non è esplorato (struttura sotterranea).")
+
+# Sostituisce il terreno BASE `from` con `to` (eccetto gli esagoni reali elencati).
+func _redef_base(from: String, to: String, except_reals: Array) -> void:
+	for hid in environ_grid:
+		var c: Dictionary = environ_grid[hid]
+		if str(c.get("real", "")) in except_reals:
+			continue
+		if str(c.get("terrain", "")) == from:
+			c["terrain"] = to
+
+# Rimuove il terreno `term` dagli strati extra (in tutti gli esagoni, o solo nei reali dati).
+func _redef_remove_extra(term: String, only_reals: Array) -> void:
+	for hid in environ_grid:
+		var c: Dictionary = environ_grid[hid]
+		if not only_reals.is_empty() and not (str(c.get("real", "")) in only_reals):
+			continue
+		var ex: Array = c.get("extra", []).duplicate()
+		if term in ex:
+			ex.erase(term)
+			c["extra"] = ex
+
+# Sostituisce `from` con `to` sia nel terreno base che negli strati extra.
+func _redef_anywhere(from: String, to: String, except_reals: Array) -> void:
+	for hid in environ_grid:
+		var c: Dictionary = environ_grid[hid]
+		if str(c.get("real", "")) in except_reals:
+			continue
+		if str(c.get("terrain", "")) == from:
+			c["terrain"] = to
+		var ex: Array = c.get("extra", [])
+		var ni: Array = []
+		for e in ex:
+			ni.append(to if str(e) == from else e)
+		c["extra"] = ni
 
 # Esplora l'esagono attualmente occupato dalla spedizione (es. l'atterraggio).
 func explore_current_hex() -> void:

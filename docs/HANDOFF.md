@@ -14,8 +14,8 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 186 | |
-| 🟡 Giallo | 46 | **≈ 90,1%** |
+| 🟢 Verde | 192 | |
+| 🟡 Giallo | 40 | **≈ 91,4%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
 **Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un
@@ -137,12 +137,17 @@ Paragrafi: 024, 027, 048, 055, 072, 191, 206, 217, 225.
   solo Intelligenza è memorizzata). **024** (duello «singolo personaggio» multi-stadio)
   e **191** restano approssimati ma ragionevoli.
 
-### D. ridefinizioni terreno / vincoli d'area (7)
-Paragrafi: 076, 114, 117, 126, 129, 133, 139.
-- Applicare le ridefinizioni di terreno per-area all'atterraggio (es. «tutti gli
-  esagoni di città aliena = ghiaccio glaciale», «le caverne non esistono»). Si può
-  fare modificando `environ_grid` al deploy in base al paragrafo d'atterraggio.
-- Vincoli «non lasciare l'area finché…» (076) → flag + check sul movimento.
+### D. ridefinizioni terreno / vincoli d'area — **FATTO (2026-06-15)** ✅
+Paragrafi 076, 117, 126, 129, 133, 139 → 🟢 (114 resta 🟡: esplorazione in immersione).
+- `generate_environ_at(landing_real, redef_para)` applica le ridefinizioni al deploy via
+  `_apply_landing_terrain_redef(para)` con gli helper `_redef_base` (terreno base, con
+  eccezioni di esagono reale), `_redef_remove_extra` (rimuove uno strato extra) e
+  `_redef_anywhere` (base + extra): 117/126 città aliena→ghiaccio, 129/133 caverne
+  inesistenti, 139 fiumi/paludi→ghiaccio.
+- ¶076: vincolo «non lasciare l'area finché 0715 o 1016 esplorato» imposto via
+  `cannot_leave_until_explored` + `can_leave_environ()` (blocco in `return_to_pandora`).
+- **Residuo 🟡:** ¶114 «tutta l'esplorazione in immersione (6.7)» non imposto come
+  vincolo esplicito (l'environ è comunque Liquid Surface).
 
 ### E. timing (1)
 - **163:** shuttle divorato se non si torna prima del prossimo Controllo del
