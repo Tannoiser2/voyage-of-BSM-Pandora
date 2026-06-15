@@ -60,11 +60,9 @@ func _ready() -> void:
 	_update_action_buttons(GameState.phase_name(GameState.current_phase))
 
 func _build_ui() -> void:
-	# Background
-	var bg := ColorRect.new()
-	bg.color = Color(0.05, 0.08, 0.15)
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
+	# Tema visivo condiviso + sfondo a gradiente (blu notte, accenti ciano/ambra).
+	theme = UITheme.make_theme()
+	add_child(UITheme.make_background())
 
 	# Main HBoxContainer
 	var hbox := HBoxContainer.new()
@@ -1060,7 +1058,7 @@ func _refresh_hex_buttons() -> void:
 				if GameState.can_move_to(hex_id):
 					sb.border_color = Color(0.85, 0.9, 1.0, 0.7)
 
-			for st in ["normal", "hover", "pressed", "focus"]:
+			for st in ["normal", "hover", "pressed", "focus", "disabled"]:
 				btn.add_theme_stylebox_override(st, sb)
 
 			btn.disabled = (GameState.current_phase != GameState.Phase.INTERSTELLAR)
