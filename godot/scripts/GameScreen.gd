@@ -849,7 +849,8 @@ func _connect_signals() -> void:
 	GameState.game_saved.connect(func(): _play("save"))
 
 func _on_combat_resolved(result: String, _detail: String) -> void:
-	_play("success" if result in ["AE", "DR"] else "hit")
+	# A/B = esito netto a favore (poco danno); C/D/E = colpo duro alla spedizione.
+	_play("success" if result in ["A", "B"] else "hit")
 
 func _on_environ_changed() -> void:
 	_update_left_panel_mode()
@@ -1856,21 +1857,15 @@ func _creature_combat_summary() -> String:
 		GameState.expedition_max_speed(), GameState.expedition_min_speed()]
 	return s
 
-# Anteprima delle probabilità d'esito del combattimento (8.5): per Uccidi e
-# Cattura mostra la percentuale di ciascun risultato della Tabella sul tiro 1d6.
+# Anteprima delle probabilità d'esito del combattimento (8.6/8.7): per Uccidi e
+# Cattura mostra la percentuale di ciascuna lettera (A-E) della Tabella sul tiro
+# 1d6, con l'esito e i Punti Danno relativi alla modalità.
 func _combat_odds_box() -> String:
 	if GameState.current_creature.is_empty():
 		return ""
-	var labels := {
-		"AE": "successo",
-		"DR": "la creatura fugge",
-		"AR": "ripieghi di 1 esagono",
-		"EX": "scambio (−1 Resistenza)",
-		"DE": "la creatura prevale (−2 Resistenza)",
-	}
-	var order := ["AE", "DR", "AR", "EX", "DE"]
+	var order := ["A", "B", "C", "D", "E"]
 	var s := "\n\n[color=#88ccff]Probabilità d'esito (tiro 1d6):[/color]"
-	for mode in [["kill", "Uccidi"], ["capture", "Cattura"]]:
+	for mode in [["kill", "Uccidi", false], ["capture", "Cattura", true]]:
 		if mode[0] == "capture" and GameState.pending_no_capture:
 			continue
 		var dist: Dictionary = GameState.combat_odds(mode[0])
@@ -1878,9 +1873,17 @@ func _combat_odds_box() -> String:
 		for code in order:
 			if dist.has(code):
 				var pct := int(round(float(dist[code]) * 100.0 / 6.0))
-				parts.append("%s %d%%" % [labels.get(code, code), pct])
+				parts.append("%s (%s) %d%%" % [code, _combat_result_label(code, bool(mode[2])), pct])
 		s += "\n[b]%s[/b]: %s" % [mode[1], " · ".join(parts)]
 	return s
+
+# Descrizione breve dell'esito di una lettera di risultato (8.7), per modalità.
+func _combat_result_label(code: String, as_capture: bool) -> String:
+	var dmg := {"A": 1, "B": 4 if as_capture else 2, "C": 8 if as_capture else 4,
+		"D": 8, "E": 12 if as_capture else 8}
+	var escapes: bool = (code == "E") or (code == "D" and as_capture)
+	var verb := "fugge" if escapes else ("catturata" if as_capture else "uccisa")
+	return "%s, −%d" % [verb, int(dmg.get(code, 0))]
 
 func _on_paragraph_request(para_num: int) -> void:
 	_play("page")

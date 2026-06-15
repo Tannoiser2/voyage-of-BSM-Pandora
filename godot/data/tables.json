@@ -64,21 +64,16 @@
   ]
  },
  "combat_results": {
-  "-7": "DE",
-  "-6": "DE",
-  "-5": "DE",
-  "-4": "DR",
-  "-3": "DR",
-  "-2": "DR",
-  "-1": "EX",
-  "0": "EX",
-  "1": "EX",
-  "2": "AR",
-  "3": "AR",
-  "4": "AE",
-  "5": "AE",
-  "6": "AE",
-  "7": "AE"
+  "_note": "Tabella dei Risultati di Combattimento (8.6). Differenziale = Valore di Combattimento spedizione - Valore di Combattimento creatura. Le 9 colonne sono fasce di differenziale; il tiro di 1 dado (1-6) sceglie la RIGA. Risultato in lettere A-E (esiti in 8.7).",
+  "columns": ["<=-4", "-3..-2", "-1", "0", "+1", "+2..+3", "+4..+6", "+7..+10", ">=+11"],
+  "rows": {
+   "1": ["D", "C", "C", "B", "B", "A", "A", "A", "A"],
+   "2": ["D", "D", "C", "C", "B", "B", "A", "A", "A"],
+   "3": ["E", "D", "D", "C", "C", "B", "B", "A", "A"],
+   "4": ["E", "E", "D", "D", "C", "C", "B", "B", "A"],
+   "5": ["E", "E", "E", "D", "D", "C", "C", "B", "B"],
+   "6": ["E", "E", "E", "E", "D", "D", "C", "C", "B"]
+  }
  },
  "encounter_strategy": {
   "1": [

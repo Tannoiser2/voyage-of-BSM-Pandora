@@ -362,7 +362,7 @@ come metà, l'indice di completezza è **≈ 88,1%**
 | 215 | procedurale (campo mentale Garbrist) | 🟢 | Il campo mentale danneggia tutti i robot/strumenti (non armorig/enviorig/rover), poi si conduce il combattimento normale. Automatizzato. |
 | 216 | procedurale (Abomnid insegue) | 🟡 | Col rover o armorig si combatte; a piedi il membro più lento (senza armorig) viene ucciso e la creatura fugge. Caveat: «tutti armorig» approssimato come presenza di armorig. |
 | 217 | procedurale (Glassman ostile) | 🟡 | Distrugge un personaggio e un robot a caso, poi combattimento di uccisione (shift impostato per il +3). Caveat: modificatore di Combattimento approssimato come shift. |
-| 218 | procedurale (combattimento Glosper) | 🟢 | Combattimento di uccisione: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto); senza, spostamento di 2 colonne a sinistra. Hook remap nel motore (mappatura A/B/C/D/E ≈ AE/AR/EX/DR/DE). |
+| 218 | procedurale (combattimento Glosper) | 🟢 | Combattimento di uccisione: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto); senza, spostamento di 2 colonne a favore. Hook remap nel motore sui codici reali A-E (Tabella 8.6 verificata). |
 | 219 | esito (fungo intelligente) | 🟢 | +3 col neuroscanner, +2 con Holographer; 1 dado di ore spese. Automatizzato. |
 | 220 | incontro-creatura (Glassman fugge) | 🟡 | La logica «fuga su velocità o combatti» è simile a quella codificata altrove, ma per ¶220 non è in `paragraph_logic`: solo testo. |
 | 221 | procedurale (campo psionico) | 🟢 | Campo psionico: 1 dado di ore di incoscienza; Intelligenza di ogni personaggio ridotta permanentemente a 6 (se superiore). Automatizzato. |
@@ -371,7 +371,7 @@ come metà, l'indice di completezza è **≈ 88,1%**
 | 224 | procedurale (veleno fungo) | 🟢 | Personaggio investigatore avvelenato: −3 Resistenza a ogni Controllo del Rifornimento (−2 con Medico o medkit, −1 con entrambi), curato al rientro; armorig annulla. Automatizzato. |
 | 225 | procedurale (combattimento gruppo) | 🟡 | Esito riassunto: +5 PV e → ¶231. Caveat: il combattimento col valore combinato e il risultato «E» a 12 danni non sono modellati nel dettaglio. |
 | 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
-| 227 | procedurale (combattimento speciale) | 🟢 | Sui risultati C/D/E (EX/DR/DE) un personaggio a caso è fatto a pezzi prima di applicare il risultato. Hook kill_on nel motore di combattimento. |
+| 227 | procedurale (combattimento speciale) | 🟢 | Sui risultati C/D/E un personaggio a caso è fatto a pezzi prima di applicare il risultato. Hook kill_on nel motore di combattimento sui codici reali A-E (Tabella 8.6 verificata). |
 | 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |
 | 229 | esito (monoke amichevole) | 🟡 | Cattura facoltativa e 1 ora: il flusso «scegli azione» è ok ma la cattura/ora non sono automatizzate. |
 | 230 | procedurale (radrod) | 🟢 | Studio: 2 dadi (−2 con SO) vs Int max: < → +3 PV e cattura (1 ora); ≥ → neuroscanner+creatura distrutti, un personaggio −2 Resistenza e svenuto (2 dadi di ore). Automatizzato. |

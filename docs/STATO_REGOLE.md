@@ -104,10 +104,10 @@ tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
 | 8.1 | Controllo di sorpresa | 🟢 | `surprise_active` (con effetto Scanner). |
 | 8.2 | Strategia d'incontro + Tabella | 🟢 | `choose_encounter_strategy` + tabella strategia. |
 | 8.3 | Asterisco = istruzione speciale | 🟡 | Le istruzioni speciali sono i rami-paragrafo, solo in parte codificati (Lotto 1 + inizio Lotto 2). |
-| 8.4 | Valutazione della creatura | 🟢 | `creature_attr` + `RATING_TABLE` (2d6 + modificatore). |
-| 8.5 | Sequenza di combattimento | 🟡 | `best_combat`, `combat_odds`, spostamenti colonne; contributo bot/strumenti parziale. |
-| 8.6 | Tabella Risultati di Combattimento | 🟢 | `combat_results` in `tables.json`. |
-| 8.7 | Uccisa/catturata/fuga + Danni | 🟢 | `_capture_creature`, `_kill_creature`, `_apply_damage`. |
+| 8.4 | Valutazione della creatura | 🟢 | `RATING_TABLE`/`CREATURE_RATING_TABLE` (lookup di 2d6±mod, 12→ritiro) per **tutti** gli attributi, **incluso il combat rating** (`roll_creature_combat_rating`): non più la somma grezza. Verificato sulla Carta 8.4. |
+| 8.5 | Sequenza di combattimento | 🟡 | Differenziale = Valore Combattimento spedizione − creatura; 1d6 = riga, colonna dal differenziale (+ spostamenti). `best_combat` usa il **miglior** singolo Valore della squadra (la somma di gruppo resta caso speciale, es. ¶225); contributo bot/strumenti parziale. |
+| 8.6 | Tabella Risultati di Combattimento | 🟢 | Tabella reale 6 righe (dado) × 9 colonne (differenziale) → A-E in `tables.json` (`combat_results.rows`); `GameData.combat_result(diff, die, shift)`. Verificata sulla Carta 8.6. |
+| 8.7 | Uccisa/catturata/fuga + Danni | 🟢 | Esiti per lettera distinti Uccidi/Cattura con Punti Danno reali (A=1; B=2/4; C=4/8; D=8 / cattura fallita; E=fuga 8/12), `_combat_damage`. Verificati sulla Carta 8.7. |
 | 8.8 | Danni → rimozione Punti Resistenza | 🟡 | Danni su Resistenza sì; assorbimento via Punti Rifornimento parziale. |
 | 8.9 | Valore di Porto ridotto / strumento danneggiato | 🟡 | `damaged_gear` sì; riduzione del Porto per perdita di Resistenza no. |
 

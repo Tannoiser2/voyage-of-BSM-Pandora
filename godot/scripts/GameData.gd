@@ -1,5 +1,9 @@
 extends Node
 
+# Tabella di Valutazione (Carta 8.4): 2 dadi +/- modificatore -> valore d'attributo.
+# Il totale 12 ("*") si risolve con un ulteriore tiro di dado (gestito a parte).
+const CREATURE_RATING_TABLE := {2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11: 9}
+
 var paragraphs: Dictionary = {}
 var interstellar: Dictionary = {}
 var tables: Dictionary = {}
@@ -272,10 +276,30 @@ func get_exploration_2d6(first_die: int, second_die: int) -> int:
 		return int(m[r][c])
 	return 146
 
-func get_combat_result(differential: int) -> String:
-	var clamped := clampi(differential, -7, 7)
-	var results: Dictionary = tables.get("combat_results", {})
-	return results.get(str(clamped), "EX")
+# Indice di colonna (0..8) sulla Tabella dei Risultati di Combattimento (8.6) a
+# partire dal differenziale (Valore di Combattimento spedizione - creatura).
+func combat_column_index(differential: int) -> int:
+	if differential <= -4: return 0
+	if differential <= -2: return 1   # -3, -2
+	if differential == -1: return 2
+	if differential == 0:  return 3
+	if differential == 1:  return 4
+	if differential <= 3:  return 5   # +2, +3
+	if differential <= 6:  return 6   # +4..+6
+	if differential <= 10: return 7   # +7..+10
+	return 8                          # >= +11
+
+# Risultato in lettere (A-E) della Tabella dei Risultati di Combattimento (8.6):
+# il differenziale (più gli spostamenti di colonna del paragrafo) individua la
+# colonna, il tiro di 1 dado (1-6) individua la riga. `col_shift` è in colonne
+# (positivo = a favore, verso A); gli spostamenti oltre i bordi sono ignorati.
+func combat_result(differential: int, die: int, col_shift: int = 0) -> String:
+	var col := clampi(combat_column_index(differential) + col_shift, 0, 8)
+	var rows: Dictionary = tables.get("combat_results", {}).get("rows", {})
+	var row: Array = rows.get(str(clampi(die, 1, 6)), [])
+	if col < row.size():
+		return str(row[col])
+	return "E"
 
 func get_interstellar_event_para(die: int) -> int:
 	var events: Dictionary = tables.get("interstellar_events", {})
@@ -335,10 +359,12 @@ func get_creature_texture(name: String) -> Texture2D:
 	return null
 
 # Valutazione di combattimento della creatura per un esagono (regola 8.4):
-# 2d6 + Modificatore di Combattimento. Restituisce il totale.
+# 2 dadi + Modificatore di Combattimento, mappati con la Tabella di Valutazione
+# (Carta 8.4) — non la somma grezza. Con totale 12 si ritira un dado.
 func roll_creature_combat_rating(name: String) -> int:
-	var data := get_creature(name)
-	var modifier: int = data.get("combat", 0)
-	var d1 := randi_range(1, 6)
-	var d2 := randi_range(1, 6)
-	return d1 + d2 + modifier
+	var modifier: int = int(get_creature(name).get("combat", 0))
+	var total := clampi(randi_range(1, 6) + randi_range(1, 6) + modifier, 2, 12)
+	if total <= 11:
+		return int(CREATURE_RATING_TABLE.get(total, 1))
+	var d := randi_range(1, 6)
+	return 9 if d <= 2 else (10 if d <= 4 else (11 if d == 5 else 12))

@@ -1299,15 +1299,14 @@ func _resolve_structure_fight() -> void:
 	if _gear_has("Turbolaser"):
 		var col := highest_intelligence(expedition_units)
 		var die := randi_range(1, 6)
-		var differential := col + die - 7  # Intelligenza come colonna + tiro
-		var result := GameData.get_combat_result(differential)
+		var differential := col - 7  # Intelligenza come colonna (la struttura vale ~7)
+		var result := GameData.combat_result(differential, die)
 		# Solo risultati di uccisione: la struttura viene comunque distrutta; alla
-		# spedizione si applicano gli eventuali danni del risultato.
-		if result == "EX":
-			_apply_damage(1)
-		elif result == "DE":
-			_apply_damage(2)
-		add_log("¶193: combattimento col turbolaser (Intelligenza %d, tiro %d → %s)." % [col, die, result])
+		# spedizione si applicano i Punti Danno del risultato (8.7, lato uccisione).
+		var dmg := _combat_damage(result, false)
+		if dmg > 0:
+			_apply_damage(dmg)
+		add_log("¶193: combattimento col turbolaser (Intelligenza %d, dado %d → %s, %d danni)." % [col, die, result, dmg])
 		acquire_artifact(193)  # un pezzo della struttura può essere riportato (peso 3)
 		var msg := "La struttura vivente è neutralizzata: un pezzo è recuperato (riportalo per i PV)."
 		add_log(msg)
@@ -1324,10 +1323,10 @@ func _resolve_structure_fight() -> void:
 # sulla Tabella, restituendo {codice_risultato: conteggio_su_6}.
 func combat_odds(mode: String) -> Dictionary:
 	var pc := best_combat(mode)
+	var diff := pc - creature_rating
 	var dist := {}
 	for die in range(1, 7):
-		var diff := pc + die - creature_rating + pending_combat_shift
-		var res := GameData.get_combat_result(diff)
+		var res := GameData.combat_result(diff, die, pending_combat_shift)
 		dist[res] = int(dist.get(res, 0)) + 1
 	return dist
 
@@ -1575,7 +1574,7 @@ func show_paragraph(para_num: int) -> void:
 var creature_attr_cache: Dictionary = {}
 const RATING_TABLE := {2: 1, 3: 1, 4: 2, 5: 3, 6: 4, 7: 5, 8: 6, 9: 7, 10: 8, 11: 9}
 # Modificatori di combattimento impostati dai rami dei paragrafi (8.5)
-var pending_combat_shift: int = 0      # colonne a sinistra (+) sulla tabella combattimento
+var pending_combat_shift: int = 0      # spostamento di colonne sulla tabella combattimento (+ = a favore, verso A)
 var pending_no_capture: bool = false   # cattura non permessa
 var pending_kill_as_capture: bool = false  # i risultati di uccisione contano come cattura
 var pending_combat_remap: Dictionary = {}  # rimappa i risultati di combattimento (¶218)
@@ -1758,8 +1757,8 @@ func _apply_act(act: Dictionary) -> void:
 			pending_no_capture = bool(act.get("no_capture", false))
 			pending_kill_as_capture = bool(act.get("kill_as_capture", false))
 			var parts: Array = []
-			if pending_combat_shift > 0: parts.append("sposta %d col. a sinistra" % pending_combat_shift)
-			elif pending_combat_shift < 0: parts.append("sposta %d col. a destra" % (-pending_combat_shift))
+			if pending_combat_shift > 0: parts.append("sposta %d col. a favore" % pending_combat_shift)
+			elif pending_combat_shift < 0: parts.append("sposta %d col. a sfavore" % (-pending_combat_shift))
 			if pending_no_capture: parts.append("nessuna cattura")
 			if pending_kill_as_capture: parts.append("uccisione conta come cattura")
 			if bool(act.get("resistance_only", false)): parts.append("danni come Resistenza")
@@ -2294,14 +2293,14 @@ func _apply_paragraph_effect(para: int) -> int:
 				encounter_outcome_text = "L'Abomnid fugge: scegli un'azione di spedizione."
 		218:
 			if _gear_has("Turbolaser"):
-				pending_combat_remap = {"AR": "AE", "EX": "AE", "DR": "AE"}
+				pending_combat_remap = {"B": "A", "C": "A", "D": "A"}
 				pending_combat_remap_destroy = "Turbolaser"
 				add_log("¶218: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto). Conduci il combattimento di uccisione.")
 			else:
 				pending_combat_shift = 2
-				add_log("¶218: senza turbolaser, combattimento di uccisione con spostamento di 2 colonne a sinistra.")
+				add_log("¶218: senza turbolaser, combattimento di uccisione con spostamento di 2 colonne a favore.")
 		227:
-			pending_combat_kill_on = ["EX", "DR", "DE"]
+			pending_combat_kill_on = ["C", "D", "E"]
 			add_log("¶227: combattimento col glosper — sui risultati C/D/E un personaggio a caso è fatto a pezzi; conduci il combattimento.")
 		222:
 			var aggr := int(RATING_TABLE.get(clampi(randi_range(1, 6) + randi_range(1, 6), 2, 11), 9))
@@ -2358,15 +2357,15 @@ func _apply_creature_intro(para: int) -> void:
 			# sinistra; con l'Holographer si guadagnano 4 PV.
 			if surprise_active:
 				pending_combat_shift = 2
-				add_log("¶066: sorpresa! Combattimento con spostamento di 2 colonne a sinistra.")
+				add_log("¶066: sorpresa! Combattimento con spostamento di 2 colonne a favore.")
 			if _gear_has("Holographer"):
 				gain_vp(4, "¶066 nebbia documentata con l'Holographer")
 		72:
 			# Forma di vita blu (Unithalo): sorpresa → combattimento con spostamento di 1
-			# colonna a sinistra (il combattimento si risolve al ¶206).
+			# colonna a favore (il combattimento si risolve al ¶206).
 			if surprise_active:
 				pending_combat_shift = 1
-				add_log("¶072: sorpresa! Combattimento con spostamento di 1 colonna a sinistra.")
+				add_log("¶072: sorpresa! Combattimento con spostamento di 1 colonna a favore.")
 		57:
 			# Creatura d'energia (Eleboid): folgora e danneggia tutti i robot, poi si
 			# risolve l'incontro normalmente.
@@ -3173,13 +3172,16 @@ func start_encounter(creature_name: String) -> void:
 # Risolve un round di combattimento.
 # mode: "kill" (uccisione) o "capture" (cattura)
 # player_combat: valore di combattimento del personaggio/strumento usato
+# Conduce un round di combattimento (8.5/8.6/8.7). `player_combat` è il Valore di
+# Combattimento (Uccidi o Cattura) della spedizione; il differenziale con la
+# creatura individua la colonna, 1d6 la riga; la lettera A-E determina l'esito —
+# distinto per Uccidi/Cattura — e i Punti Danno (8.7).
 func resolve_combat(mode: String, player_combat: int) -> void:
 	if current_creature.is_empty():
 		return
-	var player_total := player_combat + randi_range(1, 6)
-	# Spostamento di colonne dai rami del paragrafo (8.5): a sinistra = a favore.
-	var differential := player_total - creature_rating + pending_combat_shift
-	var result := GameData.get_combat_result(differential)
+	var die := randi_range(1, 6)
+	var differential := player_combat - creature_rating
+	var result := GameData.combat_result(differential, die, pending_combat_shift)
 	# Rimappa il risultato per i paragrafi speciali (¶218: col turbolaser B/C/D → A,
 	# con il turbolaser considerato distrutto).
 	if pending_combat_remap.has(result):
@@ -3198,34 +3200,46 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 			add_log("Il mostro fa a pezzi %s." % crew[vk].get("name", vk))
 			_kill_character(vk)
 	var shift_txt := (" [%+d col.]" % pending_combat_shift) if pending_combat_shift != 0 else ""
-	var detail := "%s: %d (val.%d +1d6) vs creatura %d → diff %+d%s → %s" % [
-		mode, player_total, player_combat, creature_rating, differential, shift_txt, result
+	var detail := "%s: val.%d vs creatura %d → diff %+d%s, dado %d → %s" % [
+		mode, player_combat, creature_rating, differential, shift_txt, die, result
 	]
 	add_log(detail)
 
-	match result:
-		"AE":  # l'attaccante elimina/cattura il difensore
-			# Una creatura col morso velenoso (¶005) non può essere catturata in
-			# combattimento: si applica comunque l'uccisione (e morde prima di morire).
-			var venomous: bool = GameData.get_creature(current_creature).has("poison_bite")
-			if (mode == "capture" or pending_kill_as_capture) and not venomous:
-				_capture_creature(current_creature)
-			else:
-				_kill_creature(current_creature)
-		"AR":  # l'attaccante ripiega
-			add_log("La creatura resiste; la spedizione ripiega di un esagono.")
-		"EX":  # scambio: danni a entrambi
-			_apply_damage(1)
-			add_log("Scambio di colpi: 1 Punto Danno alla spedizione.")
-		"DR":  # il difensore (creatura) ripiega/fugge
-			add_log("%s fugge." % current_creature)
-			_end_encounter()
-		"DE":  # il difensore elimina l'attaccante
-			_apply_damage(2)
-			add_log("La creatura ha la meglio: 2 Punti Danno alla spedizione!")
+	# La cattura ha sempre la precedenza; alcuni paragrafi fanno contare un'uccisione
+	# come cattura (8.7). Una creatura col morso velenoso (¶005) non è catturabile in
+	# combattimento: l'esito di cattura riuscita diventa un'uccisione.
+	var venomous: bool = GameData.get_creature(current_creature).has("poison_bite")
+	var as_capture: bool = (mode == "capture" or pending_kill_as_capture) and not venomous
+	# Punti Danno per lettera (8.7), per modalità (uccidi / cattura).
+	var dmg: int = _combat_damage(result, as_capture)
+	# Esito della creatura: A/B/C = successo; D = cattura fallita (fugge); E = sia
+	# uccisione che cattura falliscono (fugge).
+	var escapes: bool = (result == "E") or (result == "D" and as_capture)
+
+	if dmg > 0:
+		_apply_damage(dmg)
+		add_log("Risultato %s: %d Punto/i Danno alla spedizione." % [result, dmg])
+	if escapes:
+		add_log("%s sfugge al combattimento e fugge." % current_creature)
+		_end_encounter()
+	elif as_capture:
+		_capture_creature(current_creature)
+	else:
+		_kill_creature(current_creature)
 
 	combat_resolved.emit(result, detail)
 	state_updated.emit()
+
+# Punti Danno subiti dalla spedizione per lettera di risultato (8.7), distinti per
+# uccisione e cattura.
+func _combat_damage(result: String, as_capture: bool) -> int:
+	match result:
+		"A": return 1
+		"B": return 4 if as_capture else 2
+		"C": return 8 if as_capture else 4
+		"D": return 8
+		"E": return 12 if as_capture else 8
+	return 0
 
 func _capture_creature(name: String) -> void:
 	captured_creatures.append(name)

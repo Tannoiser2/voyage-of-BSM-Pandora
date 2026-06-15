@@ -1,6 +1,6 @@
 # Handoff — riprendere il lavoro (Voyage of the BSM Pandora)
 
-**Ultimo aggiornamento:** 2026-06-14 · **Branch:** `claude/spi-game-godot-digital-fb861w` · **PR:** #29 (draft)
+**Ultimo aggiornamento:** 2026-06-15 · **Branch:** `claude/tabelle-materiale-voyage-bsm-iaeefu` (PR #29 mergiata in `main`)
 
 Documento per ripartire in una nuova sessione. Riassume **dove siamo**, **come
 funziona il codice** e **cosa resta da fare** (i 55 🟡).
@@ -142,9 +142,15 @@ Paragrafi: 033, 037, 039, 042, 045, 050, 051, 060, 063, 081, 082, 119, 123, 132,
 ---
 
 ## 5. Note / rischi noti
-- **Mappatura risultati combattimento:** A/B/C/D/E del regolamento ≈ AE/AR/EX/DR/DE
-  del motore (`tables.json` → `combat_results`). È un'interpretazione ragionevole ma
-  **da verificare** col regolamento originale (impatta 218/227/206/225).
+- **Mappatura risultati combattimento — RISOLTO (2026-06-15).** Verificata sulle carte
+  originali (Carte 8.4/8.6/8.7 in `Tabelle_Materiali/Voyage BSM Pandora`). Il proxy
+  AE/AR/EX/DR/DE è sostituito dal modello reale: `combat_results.rows` in `tables.json`
+  (6 righe-dado × 9 colonne-differenziale → A-E), `GameData.combat_result(diff, die, shift)`,
+  esiti 8.7 per Uccidi/Cattura con Punti Danno reali (`_combat_damage`), e fix del combat
+  rating creatura via lookup 8.4 (`roll_creature_combat_rating`, non più la somma grezza).
+  Hook ¶218/¶227 e ¶193 riportati ad A-E. Smoke test headless superato. **Nota residua:**
+  `best_combat` usa il miglior Valore singolo della squadra; la *somma* di gruppo resta un
+  caso speciale da modellare (¶225) — vedi §4.C.
 - **CI «Pubblica su Pages» fallisce** su tutti i commit del branch (pubblica solo da
   `main`): non è un errore del codice.
 - Verificare sempre con smoke test prima di marcare 🟢; usare 🟡 con caveat quando si
