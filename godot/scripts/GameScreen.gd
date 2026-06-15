@@ -240,6 +240,7 @@ func _build_ui() -> void:
 	btn_land.name = "BtnLand"
 	btn_land.text = "🛬 Esplora il pianeta"
 	btn_land.visible = false
+	btn_land.add_theme_color_override("font_color", UITheme.CYAN)
 	btn_land.pressed.connect(_on_land)
 	actions_hbox.add_child(btn_land)
 
@@ -297,6 +298,7 @@ func _build_ui() -> void:
 	btn_kill.name = "BtnKill"
 	btn_kill.text = "Uccidi"
 	btn_kill.visible = false
+	btn_kill.add_theme_color_override("font_color", UITheme.RED)
 	btn_kill.pressed.connect(_on_combat.bind("kill"))
 	actions_hbox.add_child(btn_kill)
 
@@ -304,6 +306,7 @@ func _build_ui() -> void:
 	btn_capture.name = "BtnCapture"
 	btn_capture.text = "Cattura"
 	btn_capture.visible = false
+	btn_capture.add_theme_color_override("font_color", UITheme.GREEN)
 	btn_capture.pressed.connect(_on_combat.bind("capture"))
 	actions_hbox.add_child(btn_capture)
 
@@ -311,6 +314,7 @@ func _build_ui() -> void:
 	btn_comm.name = "BtnComm"
 	btn_comm.text = "💬 Comunica"
 	btn_comm.visible = false
+	btn_comm.add_theme_color_override("font_color", UITheme.CYAN)
 	btn_comm.pressed.connect(_on_strategy.bind("communicate"))
 	actions_hbox.add_child(btn_comm)
 
@@ -318,6 +322,7 @@ func _build_ui() -> void:
 	btn_strat.name = "BtnStrat"
 	btn_strat.text = "🎯 Cattura/Uccidi"
 	btn_strat.visible = false
+	btn_strat.add_theme_color_override("font_color", UITheme.AMBER)
 	btn_strat.pressed.connect(_on_strategy.bind("capture_kill"))
 	actions_hbox.add_child(btn_strat)
 
@@ -325,6 +330,7 @@ func _build_ui() -> void:
 	btn_flee.name = "BtnFlee"
 	btn_flee.text = "🏃 Fuggi"
 	btn_flee.visible = false
+	btn_flee.add_theme_color_override("font_color", UITheme.MUTED)
 	btn_flee.pressed.connect(_on_flee)
 	actions_hbox.add_child(btn_flee)
 
