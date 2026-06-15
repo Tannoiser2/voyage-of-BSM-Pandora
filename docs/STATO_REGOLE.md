@@ -70,7 +70,7 @@ tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
 | Caso | Regola | Stato | Nota |
 |---|---|:--:|---|
 | 5.1 | Marcatori sulla Traccia Attributi Pianeta/Environ | 🟢 | `setup_orbit_planet`, `planet_attrs`. |
-| 5.2 | Scelta unità + **enviorig/armorig per atmosfera** | 🟢 | Scelta unità OK; equipaggiamento d'atmosfera applicato in `effective_char_stat`: Thin → Porto −1; Poison (enviorig) → Peso +4, Velocità −1; Corrosive (armorig) → Peso +4, Porto −1 (auto-indossato). Peso/Velocità efficaci instradano in `units_weight`/`expedition_max_speed`/`expedition_min_speed`. |
+| 5.2 | Scelta unità + **enviorig/armorig per atmosfera** | 🟢 | Scelta unità OK; equipaggiamento d'atmosfera in `effective_char_stat`: Thin → Porto −1; Poison/None (enviorig) → Peso +4, Velocità −1; Corrosive (armorig) → Peso +4, Porto −1. **Rig per-personaggio** come fonte di verità: `char_wears_enviorig`/`char_wears_armorig`/`char_has_rig` (derivati dall'atmosfera) usati dalle clausole dei paragrafi («se il colpito indossa…», «se tutti…»: 035/147/166/180/216/005/008/197/224/030). |
 | 5.3 | Punti Rifornimento sullo shuttle (0–20, peso 1) | 🟢 | `planned_supply` con limite. |
 | 5.4 | Esagono di atterraggio (tiro di dado) | 🟢 | `land_on_planet`, `landing_hex`. |
 | 5.5 | Paragrafo che descrive l'environ | 🟢 | Mostrato all'atterraggio. |

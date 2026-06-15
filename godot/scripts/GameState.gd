@@ -1063,7 +1063,7 @@ func effective_char_stat(key: String, stat: String) -> int:
 		"Thin":
 			if stat == "port":
 				base -= 1
-		"Poison":
+		"Poison", "None":
 			if stat == "weight":
 				base += 4
 			elif stat == "speed":
@@ -1074,6 +1074,56 @@ func effective_char_stat(key: String, stat: String) -> int:
 			elif stat == "port":
 				base -= 1
 	return base
+
+# --- Stato dei rig di protezione per-personaggio (regola 5.2) -----------------
+# L'enviorig e l'armorig sono indossati per personaggio. La regola 5.2 li rende
+# obbligatori e uniformi in base all'atmosfera del pianeta: enviorig in atmosfera
+# assente o velenosa, armorig in atmosfera corrosiva. Questi helper sono la fonte
+# di verità per le clausole dei paragrafi («se il personaggio colpito indossa…»,
+# «se tutti i personaggi indossano…»).
+func _orbit_atmosphere() -> String:
+	return str(planet_attrs.get("atmosphere", "Normal"))
+
+func char_wears_enviorig(key: String) -> bool:
+	var atmo := _orbit_atmosphere()
+	return (atmo == "None" or atmo == "Poison") and crew.get(key, {}).get("alive", false)
+
+func char_wears_armorig(key: String) -> bool:
+	return _orbit_atmosphere() == "Corrosive" and crew.get(key, {}).get("alive", false)
+
+# Indossa una qualsiasi protezione d'atmosfera (enviorig o armorig).
+func char_has_rig(key: String) -> bool:
+	return char_wears_enviorig(key) or char_wears_armorig(key)
+
+# Vero se tutti i personaggi vivi della spedizione indossano enviorig o armorig.
+func all_exploring_chars_have_rig() -> bool:
+	var any := false
+	for k in expedition_units:
+		if crew.has(k) and crew[k].get("alive", false):
+			any = true
+			if not char_has_rig(k):
+				return false
+	return any
+
+# Vero se tutti i personaggi vivi della spedizione indossano un armorig.
+func all_exploring_chars_wear_armorig() -> bool:
+	var any := false
+	for k in expedition_units:
+		if crew.has(k) and crew[k].get("alive", false):
+			any = true
+			if not char_wears_armorig(k):
+				return false
+	return any
+
+# Personaggio imbarcato vivo, scelto a caso, che NON indossa alcuna protezione
+# ("" se tutti sono protetti o non ci sono personaggi).
+func _random_unprotected_char() -> String:
+	var pool: Array = []
+	for k in expedition_units:
+		if crew.has(k) and crew[k].get("alive", false) and not char_has_rig(k):
+			pool.append(k)
+	return pool[randi_range(0, pool.size() - 1)] if not pool.is_empty() else ""
+
 
 func units_weight() -> int:
 	var w := 0
@@ -1211,13 +1261,13 @@ func resolve_intel_check(para: int) -> void:
 	# Danno mirato all'investigatore, eventualmente annullato da un equipaggiamento
 	# (es. armorig protegge dagli schizzi acidi del globo).
 	if b.has("damage_investigator") and investigator != "":
-		if b.has("negated_by") and _gear_has(str(b["negated_by"])):
+		if b.has("negated_by") and (char_wears_armorig(investigator) if str(b["negated_by"]) == "Armorig" else _gear_has(str(b["negated_by"]))):
 			extra.append("%s protegge: nessun danno" % b["negated_by"])
 		else:
 			_damage_character(investigator, int(b["damage_investigator"]))
 	# Morte dell'investigatore, ridotta a un danno se indossa un certo equipaggiamento.
 	if bool(b.get("kill_investigator", false)) and investigator != "":
-		if b.has("armorig_reduces_to") and _gear_has("Armorig"):
+		if b.has("armorig_reduces_to") and char_wears_armorig(investigator):
 			extra.append("Armorig danneggiato")
 			_damage_character(investigator, int(b["armorig_reduces_to"]))
 		else:
@@ -1870,7 +1920,7 @@ func _effect_008() -> void:
 		return
 	var victim: String = expedition_units[randi_range(0, expedition_units.size() - 1)]
 	var is_char := crew.has(victim)
-	var protected: bool = str(planet_attrs.get("gravity", "")) == "Near weightless" or _gear_has("Climbkit") or (is_char and _gear_has("Armorig"))
+	var protected: bool = str(planet_attrs.get("gravity", "")) == "Near weightless" or _gear_has("Climbkit") or (is_char and char_wears_armorig(victim))
 	if protected:
 		if is_char:
 			var loss := randi_range(1, 6)
@@ -1911,6 +1961,11 @@ func _apply_paragraph_effect(para: int) -> int:
 	# Salti condizionati (nessuna guardia: ridirezionano).
 	if para == 2:
 		return 70 if crew.get("Nav", {}).get("alive", false) else 148
+	# ¶035: l'incontro si risolve normalmente solo se TUTTI i personaggi indossano un
+	# enviorig o un armorig; altrimenti la mandria carica e si va al ¶209.
+	if para == 35 and not all_exploring_chars_have_rig():
+		add_log("¶035: non tutti i personaggi indossano un rig di protezione → ¶209.")
+		return 209
 	if _landing_fx_applied.has(para):
 		return 0
 	var applied := true
@@ -1933,7 +1988,20 @@ func _apply_paragraph_effect(para: int) -> int:
 			for _i in range(nd):
 				d3 += randi_range(1, 6)
 			add_log("¶166: caduta dovuta alla gravità → %d Punti Danno." % d3)
-			_apply_damage(d3)
+			# Il rover, se presente e integro, assorbe per primo (si danneggia).
+			if _gear_has("Rover") and not damaged_gear.has("Rover"):
+				damaged_gear.append("Rover")
+				d3 = maxi(0, d3 - 1)
+				add_log("¶166: il rover assorbe un colpo e viene danneggiato.")
+			if d3 > 0:
+				# Coi personaggi in enviorig (atmosfera assente/velenosa) tutti i danni
+				# vanno presi come perdita di Resistenza (gli enviorig si danneggiano);
+				# altrimenti distribuzione normale (scudo robot / Resistenza).
+				if _orbit_atmosphere() == "None" or _orbit_atmosphere() == "Poison":
+					add_log("¶166: i personaggi in enviorig assorbono tutti i danni come Resistenza (enviorig danneggiati).")
+					_apply_damage_to_chars(d3)
+				else:
+					_apply_damage(d3)
 		40:
 			add_expedition_hours(5)
 			var vp40 := character_intelligence("CO") if crew.get("CO", {}).get("alive", false) else 0
@@ -2037,11 +2105,11 @@ func _apply_paragraph_effect(para: int) -> int:
 			gain_vp(v214, "¶214 la creatura svanisce")
 		197:
 			var vic197 := _random_alive_char()
-			if vic197 != "" and not _gear_has("Armorig"):
+			if vic197 != "" and not char_wears_armorig(vic197):
 				_infect(vic197, 1)
 				add_log("¶197: %s è ricoperto da un fungo parassita: perdita ricorrente di Resistenza fino al rientro." % crew[vic197].get("name", vic197))
 			elif vic197 != "":
-				add_log("¶197: l'armorig protegge dall'infezione del fungo.")
+				add_log("¶197: l'armorig di %s lo protegge dall'infezione del fungo." % crew[vic197].get("name", vic197))
 		209:
 			var vic209 := _random_alive_char()
 			if vic209 != "":
@@ -2091,34 +2159,52 @@ func _apply_paragraph_effect(para: int) -> int:
 					crew[vc223]["endurance"] = maxi(0, int(crew[vc223].get("endurance", 0)) - 2)
 					add_log("¶223: l'aeron colpisce %s di striscio: −2 Resistenza." % crew[vc223].get("name", vc223))
 		147:
-			if surprise_active and not _gear_has("Armorig"):
+			# Vermi-tunnel (8.1): se colti di sorpresa, ogni personaggio che NON indossa
+			# un armorig perde 1d6 Resistenza (tiro per ciascuno); l'enviorig sottrae 1
+			# (ed è considerato danneggiato), l'Uff. Scienze −2 e l'Uff. Rilevamento −2
+			# (cumulativi).
+			if surprise_active:
 				var sub := 0
 				if "SO" in expedition_units:
 					sub += 2
 				if "GSO" in expedition_units:
 					sub += 2
 				for k in expedition_units:
-					if crew.has(k) and crew[k].get("alive", false):
-						var loss := maxi(0, randi_range(1, 6) - sub)
-						if loss > 0:
-							crew[k]["endurance"] = maxi(0, int(crew[k]["endurance"]) - loss)
-							add_log("¶147: %s perde %d Resistenza (vermi-tunnel)." % [crew[k].get("name", k), loss])
-							if int(crew[k]["endurance"]) <= 0:
-								_kill_character(k)
+					if not (crew.has(k) and crew[k].get("alive", false)):
+						continue
+					if char_wears_armorig(k):
+						continue  # l'armorig protegge del tutto
+					var ksub := sub + (1 if char_wears_enviorig(k) else 0)
+					var loss := maxi(0, randi_range(1, 6) - ksub)
+					if loss > 0:
+						crew[k]["endurance"] = maxi(0, int(crew[k]["endurance"]) - loss)
+						var rignote := " (enviorig danneggiato)" if char_wears_enviorig(k) else ""
+						add_log("¶147: %s perde %d Resistenza (vermi-tunnel)%s." % [crew[k].get("name", k), loss, rignote])
+						if int(crew[k]["endurance"]) <= 0:
+							_kill_character(k)
 			redirect = 212
 		180:
+			# Sperone velenoso: un personaggio a caso. Con armorig non perde nulla;
+			# l'enviorig sottrae 2 (ed è danneggiato), Uff. Medico −3, Medkit −3.
 			var vic180 := _random_alive_char()
-			if vic180 != "" and not _gear_has("Armorig"):
-				var loss180 := randi_range(1, 6) + randi_range(1, 6)
-				if "MedO" in expedition_units:
-					loss180 -= 3
-				if _gear_has("Medkit"):
-					loss180 -= 3
-				loss180 = maxi(0, loss180)
-				crew[vic180]["endurance"] = maxi(0, int(crew[vic180]["endurance"]) - loss180)
-				add_log("¶180: %s incornato da uno sperone velenoso: −%d Resistenza." % [crew[vic180].get("name", vic180), loss180])
-				if int(crew[vic180]["endurance"]) <= 0:
-					_kill_character(vic180)
+			if vic180 != "":
+				if char_wears_armorig(vic180):
+					add_log("¶180: %s è incornato ma l'armorig lo protegge: nessuna perdita." % crew[vic180].get("name", vic180))
+				else:
+					var loss180 := randi_range(1, 6) + randi_range(1, 6)
+					if "MedO" in expedition_units:
+						loss180 -= 3
+					if _gear_has("Medkit"):
+						loss180 -= 3
+					var has_env := char_wears_enviorig(vic180)
+					if has_env:
+						loss180 -= 2
+					loss180 = maxi(0, loss180)
+					crew[vic180]["endurance"] = maxi(0, int(crew[vic180]["endurance"]) - loss180)
+					var note180 := " (enviorig danneggiato)" if has_env else ""
+					add_log("¶180: %s incornato da uno sperone velenoso: −%d Resistenza%s." % [crew[vic180].get("name", vic180), loss180, note180])
+					if int(crew[vic180]["endurance"]) <= 0:
+						_kill_character(vic180)
 			redirect = 17
 		217:
 			var vc217 := _random_alive_char()
@@ -2248,7 +2334,7 @@ func _apply_paragraph_effect(para: int) -> int:
 				redirect = 210
 		224:
 			var vic224 := _random_alive_char()
-			if vic224 != "" and not _gear_has("Armorig"):
+			if vic224 != "" and not char_wears_armorig(vic224):
 				var amt224 := 3
 				var hasMed := "MedO" in expedition_units
 				var hasKit := _gear_has("Medkit")
@@ -2259,7 +2345,7 @@ func _apply_paragraph_effect(para: int) -> int:
 				_infect(vic224, amt224)
 				add_log("¶224: %s è spruzzato da veleno corrosivo: −%d Resistenza a ogni Controllo del Rifornimento fino al rientro." % [crew[vic224].get("name", vic224), amt224])
 			elif vic224 != "":
-				add_log("¶224: l'armorig protegge dal veleno del fungo.")
+				add_log("¶224: l'armorig di %s lo protegge dal veleno del fungo." % crew[vic224].get("name", vic224))
 		155:
 			var atmo := str(planet_attrs.get("atmosphere", ""))
 			var mnt := "MntO" in expedition_units
@@ -2282,8 +2368,8 @@ func _apply_paragraph_effect(para: int) -> int:
 					dmgd += 1
 			add_log("¶215: il campo di forza mentale del Garbrist danneggia %d tra robot e strumenti; poi si conduce il combattimento." % dmgd)
 		216:
-			if _gear_has("Rover") or _gear_has("Armorig"):
-				add_log("¶216: col rover o con l'armorig, si conduce il combattimento con l'Abomnid.")
+			if _gear_has("Rover") or all_exploring_chars_wear_armorig():
+				add_log("¶216: col rover o con tutti i personaggi in armorig, si conduce il combattimento con l'Abomnid.")
 			else:
 				var slow216 := _slowest_unit()
 				if slow216 != "":
@@ -3256,11 +3342,15 @@ func _kill_creature(name: String) -> void:
 	add_log("%s eliminata." % name)
 	_end_encounter()
 
-# Morso velenoso (¶005): un personaggio scelto a caso perde Punti Resistenza
-# (un dado, −2 con l'Ufficiale Medico, −2 col Medkit); la perdita è da veleno e
-# va contrassegnata (poison_endurance_lost). Nota: l'eventuale protezione di
-# enviorig/armorig non è modellata (l'enviorig non esiste come oggetto).
+# Morso velenoso (¶005): solo un personaggio che NON indossa un enviorig né un
+# armorig (scelto a caso) può essere morso; perde Punti Resistenza (un dado, −2
+# con l'Ufficiale Medico, −2 col Medkit), perdita da veleno contrassegnata
+# (poison_endurance_lost). Se tutti i personaggi sono protetti, nessun morso.
 func _apply_poison_bite(name: String, cfg: Dictionary) -> void:
+	var who := _random_unprotected_char()
+	if who == "":
+		add_log("%s tenta di mordere, ma i personaggi sono protetti dai rig d'atmosfera." % name)
+		return
 	var loss := randi_range(1, int(cfg.get("die", 6)))
 	if "MedO" in expedition_units:
 		loss -= int(cfg.get("minus_medic", 0))
@@ -3268,10 +3358,7 @@ func _apply_poison_bite(name: String, cfg: Dictionary) -> void:
 		loss -= int(cfg.get("minus_medkit", 0))
 	loss = maxi(0, loss)
 	if loss <= 0:
-		add_log("%s tenta di mordere, ma il veleno è neutralizzato (medico/medkit)." % name)
-		return
-	var who := _pick_random_alive()
-	if who == "":
+		add_log("%s morde %s, ma il veleno è neutralizzato (medico/medkit)." % [name, crew[who]["name"]])
 		return
 	poison_endurance_lost += loss
 	add_log("Morso velenoso di %s: %s perde %d Punti Resistenza da veleno (contrassegnati)." % [name, crew[who]["name"], loss])
@@ -3311,6 +3398,23 @@ func _apply_damage(points: int) -> void:
 			damaged_gear.append(bot)
 			add_log("%s incassa il colpo al posto dell'equipaggio: danneggiato (6.9)." % GameData.get_unit(bot).get("name", bot))
 			continue
+		var target := _pick_wound_target()
+		if target == "":
+			add_log("Nessun personaggio può assorbire altri danni!")
+			break
+		crew[target]["endurance"] = maxi(0, int(crew[target].get("endurance", MAX_ENDURANCE)) - 1)
+		add_log("%s subisce 1 Punto Danno (Resistenza %d/%d)." % [
+			crew[target]["name"], crew[target]["endurance"], MAX_ENDURANCE])
+		if crew[target]["endurance"] <= 0:
+			_kill_character(target)
+	state_updated.emit()
+
+# Variante di _apply_damage in cui i Punti Danno colpiscono direttamente la
+# Resistenza dei personaggi, senza scudo dei robot (es. ¶166 coi personaggi in
+# enviorig: tutti i danni vanno presi come perdita di Resistenza).
+func _apply_damage_to_chars(points: int) -> void:
+	damage_points += points
+	for _i in range(points):
 		var target := _pick_wound_target()
 		if target == "":
 			add_log("Nessun personaggio può assorbire altri danni!")

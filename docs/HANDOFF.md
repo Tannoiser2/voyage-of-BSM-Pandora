@@ -14,8 +14,8 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 177 | |
-| 🟡 Giallo | 55 | **≈ 88,1%** |
+| 🟢 Verde | 182 | |
+| 🟡 Giallo | 50 | **≈ 89,2%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
 **Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un
@@ -96,13 +96,22 @@ Tutto il motore è in `godot/scripts/GameState.gd` (+ `GameData.gd`, `GameScreen
 
 Ordine consigliato: dal più sistematico (sblocca molti) al più di nicchia.
 
-### A. enviorig/armorig per-personaggio (6) — **alto valore sistematico**
-Paragrafi: 035, 043, 147, 166, 180, 216 (+ caveat in 005, 199, 204…).
-- Oggi `armorig`/`enviorig` sono trattati come capacità singola della spedizione
-  (`_gear_has("Armorig")`), ma il regolamento li applica **per personaggio**.
-- **Idea:** modellare enviorig/armorig come oggetti assegnabili ai singoli personaggi
-  (es. `crew[k]["armorig"]`, `crew[k]["enviorig"]`), con UI di assegnazione. Poi
-  rendere precise le clausole «se il personaggio colpito indossa…» / «se tutti…».
+### A. enviorig/armorig per-personaggio — **FATTO (2026-06-15)** ✅
+Paragrafi 035, 147, 166, 180, 216 → 🟢 (043 resta 🟡, vedi sotto); fix anche in
+005, 008, 197, 224 e nel globo ¶030.
+- **Modello scelto (fedele e a basso rischio):** lo stato dei rig è **derivato
+  dall'atmosfera** (regola 5.2), uniforme per personaggio: enviorig in atmosfera
+  `None`/`Poison`, armorig in `Corrosive`. Niente nuovo stato serializzato né UI.
+- **Helper (fonte di verità)** in `GameState`: `char_wears_enviorig(k)`,
+  `char_wears_armorig(k)`, `char_has_rig(k)`, `all_exploring_chars_have_rig()`,
+  `all_exploring_chars_wear_armorig()`, `_random_unprotected_char()`. Sostituiti i
+  `_gear_has("Armorig")` delle clausole di **protezione** con i check per-personaggio
+  (lasciato `_gear_has` dove l'armorig è *strumento/arma*: ¶199, combat).
+- Fix collaterale: `effective_char_stat` ora applica i modificatori enviorig anche
+  in atmosfera `None` (prima solo `Poison`).
+- **Residuo (¶043):** la clausola «in combattimento valgono solo i Valori di
+  armorig/specibot/turbolaser» (restrizione delle fonti di combattimento) non è
+  ancora modellata — richiede un hook in `best_combat`. ¶043 resta 🟡 per questo.
 
 ### B. intro-creatura (effetti sorpresa) (8)
 Paragrafi: 031, 057, 075, 142, 149, 151, 153, 179.
