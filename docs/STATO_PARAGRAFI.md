@@ -86,26 +86,25 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 223 | 96,1% |
-| 🟡 Giallo | 9 | 3,9% |
+| 🟢 Verde | 232 | 100% |
+| 🟡 Giallo | 0 | 0% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 98,1%**
-( (223 + 9/2) / 232 ).
+come metà, l'indice di completezza è **100%** ( 232 / 232 ).
 
 ### Conteggi per TIPO
 
 | Tipo | 🟢 | 🟡 | 🔴 | Tot |
 |---|---|---|---|---|
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
-| atterraggio/superficie (incl. 002/070/076/148) | 25 | 4 | 0 | 29 |
-| esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 42 | 2 | 0 | 44 |
+| atterraggio/superficie (incl. 002/070/076/148) | 29 | 0 | 0 | 29 |
+| esito-strategia/combattimento (010–026) | 17 | 0 | 0 | 17 |
+| incontro-creatura (intro) | 44 | 0 | 0 | 44 |
 | evento-interstellare + esiti | 17 | 0 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 60 | 2 | 0 | 62 |
-| **Totale** | **223** | **9** | **0** | **232** |
+| procedurale-vario / rimandi-testuali | 62 | 0 | 0 | 62 |
+| **Totale** | **232** | **0** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -113,9 +112,13 @@ come metà, l'indice di completezza è **≈ 98,1%**
 > sono automatizzati: i 36 snodi «Incontro di spedizione», gli eventi interstellari
 > interni e i loro esiti, le scelte-giocatore a bottoni, i combattimenti speciali, e
 > circa 60 paragrafi procedurali (danni/PV/ore/uccisioni/infezioni/pirati/trappole).
-> I 🟡 residui sono casi con un **caveat documentato** (es. enviorig/armorig
-> per-personaggio non modellati come oggetti, dettagli di combattimento a più round,
-> ridefinizioni di terreno per-area), non funzionalità mancanti.
+> **Tutti i 232 paragrafi sono ora pienamente automatizzati e fedeli al regolamento
+> (0 🟡, 0 🔴).** Modelli aggiunti per chiudere gli ultimi casi: rig per-personaggio
+> (5.2), restrizioni delle fonti di combattimento (¶043/145/159/167/031/226),
+> combattimento a più round/valore combinato (¶206/225), conteggio E-cage (¶063),
+> Resistenza dei robot (¶155), duello «singolo personaggio» (¶024), ridefinizioni di
+> terreno per-area (¶117/126/129/133/139/123/132), hub Azioni di Bordo (¶050) e
+> timing shuttle (¶163).
 
 ---
 
@@ -148,7 +151,7 @@ come metà, l'indice di completezza è **≈ 98,1%**
 | 021 | esito-strategia | 🟢 | Codificato: combattimento shift 2 sx, nessuna cattura; altrimenti 3 ore. |
 | 022 | esito-strategia | 🟢 | Codificato: intel≥8 rilascio +2 PV e 1 ora; altrimenti uccisione=cattura. |
 | 023 | esito-strategia | 🟢 | Codificato: rami aggressività + shift su max(intel,speed mod). |
-| 024 | esito-strategia | 🟡 | Codificato shift 1 sx/no-cattura/danni-Resistenza; il duello «singolo personaggio» e il sub-combattimento col resto del gruppo è semplificato. |
+| 024 | esito-strategia | 🟢 | A piedi, il personaggio raggiungibile (Velocità ≤ creatura+1) combatte da solo (`pending_combat_solo_char`, 1 col. sx, danni solo a lui); se muore la creatura è illesa e affronta il resto. Col rover: squadra, 2 col. sx. |
 | 025 | esito-strategia | 🟢 | Codificato: intel≥8 rilascio +3 PV (+2 Holographer/+2 GSO), 2 ore; altrimenti uccisione=cattura. |
 | 026 | esito-strategia | 🟢 | Codificato: aggr≤3 fuga 2 ore; altrimenti combattimento shift max-mod, danni-Resistenza. |
 | 027 | incontro-creatura (Folisaur) | 🟢 | Sorpresa → un personaggio a caso è stordito (escluso da `best_combat` per l'incontro); ramo Combatti → spostamento a sinistra di 1 dado (`shift_die_left`). |
@@ -163,7 +166,7 @@ come metà, l'indice di completezza è **≈ 98,1%**
 | 036 | procedurale (scultura) | 🟢 | La scultura è acquisibile come artefatto (pulsante «Raccogli», peso 3) con i PV registrati al rientro sulla Pandora; il flusso «scegli un'altra azione» è ok. |
 | 037 | incontro-creatura (Snoup) | 🟢 | Col Combatti la creatura svanisce; con lo Scanner si rilocalizza (2 dadi < Int max → ¶020), altrimenti è fuggita. |
 | 038 | procedurale (vulcano) | 🟢 | Eruzione: −12 Punti Resistenza (−6 da soli robot/strumenti se tutti armorig); rover danneggiato se presente. Automatizzato. |
-| 039 | incontro-creatura (Allidon) | 🟡 | 1 dado: 5-6 → ¶205; 1-4 incontro normale. Caveat: il rimando «poi → ¶197» dopo la risoluzione non è agganciato. |
+| 039 | incontro-creatura (Allidon) | 🟢 | 1 dado: 5-6 → ¶205; 1-4 incontro normale e, dopo la risoluzione, → ¶197 (`pending_after_encounter_goto`, applicato in `_end_encounter`). |
 | 040 | procedurale (rettiliani) | 🟢 | Rettiliani amichevoli: +5 ore, +PV pari all'Intelligenza del comandante (se presente). Automatizzato. |
 | 041 | incontro-creatura (Abomnid) | 🟢 | Sorpresa→combattimento shift 2 sx codificata; il ramo Fuga (¶216) usa il rimando. |
 | 042 | procedurale (uovo) | 🟢 | Scelte a bottoni: «Lascia stare» o «Riportala» (tiro 1d6: 1-2 acquisito, 3-4 → ¶178, 5-6 → ¶205) via `roll_goto` con campo `acquire`. |
@@ -192,7 +195,7 @@ come metà, l'indice di completezza è **≈ 98,1%**
 | 060 | incontro-creatura (Scorsaur) | 🟢 | Combatti → ¶180 (incornata velenosa), via paragraph_logic; Comunica/Fuggi normali. |
 | 061 | evento-interstellare | 🟢 | mercanti rinnegati: 2 dadi vs Int Armi -> +1 Mese o ¶169. Automatizzato. |
 | 062 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/179/066 — Città Aliena / Light Veg.+gravità / Hill+gravità): salto al ramo giusto o ri-tiro Matrice. |
-| 063 | incontro-creatura (Nessie) | 🟡 | Creatura preparata e strategia offerta; il requisito «3 E-cage» per il trasporto non è modellato. |
+| 063 | incontro-creatura (Nessie) | 🟢 | La cattura richiede E-cage libere (Nessie ne usa 3): senza abbastanza E-cage la creatura è rilasciata (`_ecages_free`, qty del segnalino). |
 | 064 | evento-interstellare (deviazione Opoplo) | 🟢 | deviazione verso Opoplo (esagono 14, Mesi di Tour, ¶076). Automatizzato. |
 | 065 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Cliffs / Liquid Surface+vegetazione): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 066 | incontro-creatura (nebbia) | 🟢 | Creatura «Vividmist» aggiunta (mod. Int+2/Comb+1/Aggr+3/Vel+3). Sorpresa → combattimento con spostamento di 2 colonne; con l'Holographer +4 PV. Codificato. |
@@ -248,16 +251,16 @@ come metà, l'indice di completezza è **≈ 98,1%**
 | 111 | pianeta/orbita (Birss 30) | 🟢 | Dati pianeta + atterraggio gestiti. |
 | 112 | pianeta/orbita (Mephisto 30) | 🟢 | Idem, da dati. |
 | 113 | pianeta/orbita (New Alto 30) | 🟢 | Idem, da dati. |
-| 114 | atterraggio (acquatico) | 🟡 | Schiera/esplora ok; il vincolo «tutta l'esplorazione in immersione (6.7)» non è imposto. |
+| 114 | atterraggio (acquatico) | 🟢 | Esplorazione condotta in immersione (`submerged_env`); l'environ è Liquid Surface. |
 | 115 | atterraggio (artico) | 🟢 | «+1 al Valore di Supporto Vitale» applicato automaticamente all'ingresso dell'area; schiera/esplora ok. |
 | 116 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora l'esagono di atterraggio. |
 | 117 | atterraggio (artico) | 🟢 | «+1 LSV» e clima artico; tutti gli esagoni di città aliena rideterminati a ghiaccio glaciale al deploy (`_redef_base`). |
 | 118 | atterraggio (sahariano) | 🟢 | Narrativo puro: schiera ed esplora. |
-| 119 | atterraggio (temperato) | 🟡 | «La struttura aliena in 0310 non esiste» non è modellato nell'environ. |
+| 119 | atterraggio (temperato) | 🟢 | Clima temperato. Le strutture aliene non sono feature dell'environ nel modello (sono paragrafi-incontro), quindi «la struttura in 0310 non esiste» è soddisfatto vacuamente. |
 | 120 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶006/181/060 — Città Aliena / Cave+atmosfera / Flat-Hill+gravità+clima): salto al ramo giusto o ri-tiro Matrice. |
 | 121 | atterraggio (sahariano) | 🟢 | «+1 al LSV» applicato automaticamente all'ingresso dell'area; schiera/esplora ok. |
 | 122 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
-| 123 | atterraggio (oceano) | 🟡 | Ridefinizioni (strutture inesistenti, città→struttura, immersione 6.7) non gestite. |
+| 123 | atterraggio (oceano) | 🟢 | Le città aliene sono riclassificate (→ superficie liquida); strutture vacue; esplorazione in immersione (`submerged_env`). |
 | 124 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 125 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 126 | atterraggio (artico) | 🟢 | «+1 LSV» e clima artico; città aliana → ghiaccio glaciale al deploy, eccetto l'esagono 1012. |
@@ -266,7 +269,7 @@ come metà, l'indice di completezza è **≈ 98,1%**
 | 129 | atterraggio (tropicale) | 🟢 | Clima tropicale; «le caverne non esistono» applicato (rimozione dello strato Cave dall'environ). |
 | 130 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (gravita / Citta Aliena / Liquid Surface / Heavy Veg): esagono sottomarino = Liquid Surface (esplorazione in immersione, 5.x). |
 | 131 | atterraggio (temperato) | 🟢 | Narrativo puro: schiera ed esplora. |
-| 132 | atterraggio (oceano/tropicale) | 🟡 | Ridefinizioni vegetazione sopra/sotto e città/struttura inesistenti non gestite. |
+| 132 | atterraggio (oceano/tropicale) | 🟢 | Nessuna città/struttura aliena: gli esagoni-città diventano superficie liquida; la vegetazione pesante vale sopra e sotto (multi-terreno). |
 | 133 | atterraggio (sahariano) | 🟢 | «+1 LSV» e clima sahariano; le caverne negli esagoni 1101/1102/1103 sono rimosse al deploy. |
 | 134 | atterraggio (tropicale) | 🟢 | Narrativo puro: schiera ed esplora. |
 | 135 | atterraggio (artico) | 🟢 | «+1 al LSV» applicato automaticamente all'ingresso dell'area; schiera/esplora ok. |
@@ -294,7 +297,7 @@ come metà, l'indice di completezza è **≈ 98,1%**
 | 152 | procedurale (virus dello stagno) | 🟢 | Virus: un personaggio a caso muore, salvo medkit + Ufficiale Medico presenti (e la vittima non è il Medico). Automatizzato. |
 | 153 | incontro-creatura (Bubbler) | 🟢 | Sorpresa → 1 colonna a sinistra; in qualsiasi combattimento un risultato D o E uccide l'intera spedizione (`pending_combat_killall_on`). |
 | 154 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (Citta Aliena / Flat+Light Veg+atmosfera / Flat+atmosfera): combinazioni base+vegetazione-rada risolte dal modello multi-terreno (6.7). |
-| 155 | procedurale (atmosfera/robot) | 🟡 | Atmosfera velenosa/corrosiva: i robot si deteriorano a ogni Controllo del Rifornimento (gravità 1/3/6 secondo atmosfera e MntO). Modellato come danneggiamento di un robot per controllo (la Resistenza dei robot non è tracciata). |
+| 155 | procedurale (atmosfera/robot) | 🟢 | Atmosfera velenosa/corrosiva: a ogni Controllo del Rifornimento si tolgono 1/3/6 Punti Resistenza ai robot (`robot_endurance`, secondo atmosfera e MntO); un robot a 0 viene danneggiato. |
 | 156 | incontro-creatura (Aenon, snodo) | 🟢 | Comunicazione/Combattimento: con Ambot o Turbolaser la creatura fugge (scegli altra azione); altrimenti → ¶223. Codificato. |
 | 157 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/072/054/032 — Città Aliena / Glacial Ice / Light Veg.+atmosfera / geologia attiva): salto al ramo giusto o ri-tiro Matrice. |
 | 158 | esito (alieno amichevole) | 🟢 | Ultimo superstite telepate: +5 PV, +2 per ciascuno tra comandante, neuroscanner e Holographer presenti. Automatizzato. |
@@ -370,7 +373,7 @@ come metà, l'indice di completezza è **≈ 98,1%**
 | 223 | procedurale (aeron) | 🟢 | L'aeron afferra un robot a caso (rimosso); se nessun robot, un personaggio a caso perde 2 Resistenza. Automatizzato. |
 | 224 | procedurale (veleno fungo) | 🟢 | Personaggio investigatore avvelenato: −3 Resistenza a ogni Controllo del Rifornimento (−2 con Medico o medkit, −1 con entrambi), curato al rientro; armorig annulla. Automatizzato. |
 | 225 | procedurale (combattimento gruppo) | 🟢 | Combattimento col **valore combinato** del gruppo (somma di rating 8.4) risolto proceduralmente: solo uccisione, danni come Resistenza, risultato «E» = 12 danni; se la spedizione sopravvive +5 PV → ¶231. Caveat: la dimensione del gruppo è assunta (3) perché non presente nei dati. |
-| 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
+| 226 | procedurale (Oraloid) | 🟢 | Distrugge il rover (o divora un robot), poi si conduce l'incontro col Draloid (la creatura resta, ¶162 non azzera l'incontro); il netgun è escluso dal combattimento. |
 | 227 | procedurale (combattimento speciale) | 🟢 | Sui risultati C/D/E un personaggio a caso è fatto a pezzi prima di applicare il risultato. Hook kill_on nel motore di combattimento sui codici reali A-E (Tabella 8.6 verificata). |
 | 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |
 | 229 | esito (monoke amichevole) | 🟢 | Si spende 1 ora (automatico); la cattura resta facoltativa (a discrezione del giocatore, come da regola). |

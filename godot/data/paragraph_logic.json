@@ -381,9 +381,9 @@
    "cond": [],
    "act": {
     "type": "combat",
-    "shift": 1,
     "no_capture": true,
-    "resistance_only": true
+    "resistance_only": true,
+    "solo_speed_match": true
    }
   }
  ],

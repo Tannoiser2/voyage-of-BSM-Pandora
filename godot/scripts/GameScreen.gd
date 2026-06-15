@@ -900,7 +900,8 @@ func _update_action_buttons(phase: String) -> void:
 	var on_surface := GameState.expedition_pos > 0
 	var orbit_decision := GameState.is_orbit_decision() and not creature_active
 	# Incontro iniziale (paragrafo della creatura) → si dichiara la strategia (8.2)
-	var initial_creature := creature_active and GameData.creature_for_paragraph(current_para_num) == GameState.current_creature
+	# ¶226: paragrafo d'esito che offre comunque la strategia d'incontro (la creatura resta).
+	var initial_creature := creature_active and (GameData.creature_for_paragraph(current_para_num) == GameState.current_creature or current_para_num == 226)
 	# Paragrafo-esito che richiede combattimento (8.5)
 	var para_low := GameData.get_paragraph_text(current_para_num).to_lower()
 	var combat_outcome := creature_active and not initial_creature and ("combattiment" in para_low)
@@ -1893,8 +1894,9 @@ func _on_paragraph_request(para_num: int) -> void:
 	if title_lbl: title_lbl.text = "Paragrafo %03d" % para_num
 
 	# Questo paragrafo è l'incontro di una creatura attualmente in corso?
+	# ¶226 mantiene la creatura (Draloid/Oraloid) e offre la strategia.
 	var creature := GameData.creature_for_paragraph(para_num)
-	var is_creature_here := creature != "" and creature == GameState.current_creature
+	var is_creature_here := (creature != "" and creature == GameState.current_creature) or (para_num == 226 and not GameState.current_creature.is_empty())
 
 	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
 	if para_display:

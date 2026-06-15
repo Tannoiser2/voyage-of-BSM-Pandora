@@ -49,6 +49,7 @@ signal die_rolled(value: int, purpose: String)
 # Crew — ogni personaggio ha un Valore di Resistenza (Endurance) di 5 (regola 2.5).
 # I Punti Danno riducono la Resistenza; a 0 il personaggio è ucciso (8.8).
 const MAX_ENDURANCE := 5
+const ROBOT_MAX_ENDURANCE := 6  # Resistenza dei robot per il deterioramento atmosferico (¶155)
 var crew: Dictionary = {
 	"CO":   {"name": "Comandante",            "alive": true, "endurance": 5, "intelligence": 0},
 	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 5, "intelligence": 0},
@@ -115,10 +116,12 @@ var landing_hex: int = 0
 var pond_supply_used: bool = false    # 6.5: stagno usato in un Controllo del Rifornimento
 var _landing_fx_applied: Array = []   # paragrafi-area i cui effetti numerici (LSV) sono già applicati
 var infected_chars: Array = []        # {key, amt}: personaggi che perdono Resistenza a ogni Controllo del Rifornimento (¶197/¶209/¶224)
-var robot_decay: int = 0              # ¶155: i robot perdono Resistenza (qui: un robot danneggiato) a ogni Controllo del Rifornimento
+var robot_decay: int = 0              # ¶155: Punti Resistenza tolti ai robot (1/3/6) a ogni Controllo del Rifornimento
+var robot_endurance: Dictionary = {}  # ¶155: Resistenza residua per robot (chiave -> punti); a 0 il robot è danneggiato
 var hostile_race: bool = false        # ¶231: rischio d'imboscata a ogni Controllo del Rifornimento
 var cannot_leave_until_explored: Array = []  # ¶076: reali da esplorare prima di poter lasciare l'area
 var shuttle_devour_pending: bool = false     # ¶163: shuttle in pericolo; risolto al prossimo Controllo del Rifornimento
+var submerged_env: bool = false              # ¶114/123: esplorazione condotta in immersione (6.7)
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
@@ -263,11 +266,11 @@ func save_game(silent := false) -> bool:
 		"stunned_chars": stunned_chars,
 		"pending_combat_only_sources": pending_combat_only_sources,
 		"pending_combat_exclude_sources": pending_combat_exclude_sources,
-		"pending_combat_speed_filter": pending_combat_speed_filter,
+		"pending_combat_speed_filter": pending_combat_speed_filter, "pending_resistance_only": pending_resistance_only, "pending_combat_solo_char": pending_combat_solo_char,
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
-		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "hostile_race": hostile_race, "cannot_leave_until_explored": cannot_leave_until_explored, "shuttle_devour_pending": shuttle_devour_pending, "current_environ_id": current_environ_id,
+		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "robot_endurance": robot_endurance, "hostile_race": hostile_race, "cannot_leave_until_explored": cannot_leave_until_explored, "shuttle_devour_pending": shuttle_devour_pending, "submerged_env": submerged_env, "current_environ_id": current_environ_id,
 		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -361,6 +364,8 @@ func load_game() -> bool:
 	pending_combat_only_sources = d.get("pending_combat_only_sources", [])
 	pending_combat_exclude_sources = d.get("pending_combat_exclude_sources", [])
 	pending_combat_speed_filter = bool(d.get("pending_combat_speed_filter", false))
+	pending_resistance_only = bool(d.get("pending_resistance_only", false))
+	pending_combat_solo_char = str(d.get("pending_combat_solo_char", ""))
 	surprise_active = bool(d.get("surprise_active", false))
 	chosen_strategy = str(d.get("chosen_strategy", ""))
 	encounter_outcome_text = str(d.get("encounter_outcome_text", ""))
@@ -374,8 +379,10 @@ func load_game() -> bool:
 	pond_supply_used = bool(d.get("pond_supply_used", false))
 	cannot_leave_until_explored = d.get("cannot_leave_until_explored", [])
 	shuttle_devour_pending = bool(d.get("shuttle_devour_pending", false))
+	submerged_env = bool(d.get("submerged_env", false))
 	infected_chars = d.get("infected_chars", [])
 	robot_decay = int(d.get("robot_decay", 0))
+	robot_endurance = d.get("robot_endurance", {})
 	hostile_race = bool(d.get("hostile_race", false))
 	current_environ_id = int(d.get("current_environ_id", 0))
 	hasty_path_terrains = d.get("hasty_path_terrains", [])
@@ -1183,6 +1190,12 @@ func launch_expedition(die_result: int) -> void:
 # Miglior valore di combattimento tra personaggi, robot e armi imbarcate (8.0).
 # Le armi (Netgun/Stunbomb/Turbolaser) sostituiscono i valori del personaggio (2.5).
 func best_combat(mode: String) -> int:
+	# ¶024: se un solo personaggio conduce il combattimento, conta solo il suo Valore.
+	if pending_combat_solo_char != "" and crew.get(pending_combat_solo_char, {}).get("alive", false):
+		var su := GameData.get_character(pending_combat_solo_char)
+		var sv: int = int(su.get("capture", 0)) if mode == "capture" else int(su.get("kill", 0))
+		sv += int(crew.get(pending_combat_solo_char, {}).get("rating_delta", 0))
+		return maxi(0, sv)
 	var best := 0
 	# Velocità calcolata della creatura, per il filtro di ¶145 (solo unità più veloci).
 	var cspeed := creature_attr("speed") if (pending_combat_speed_filter and not current_creature.is_empty()) else -999
@@ -1680,9 +1693,13 @@ var stunned_chars: Array = []              # personaggi storditi, non utilizzabi
 var pending_combat_only_sources: Array = []   # se non vuoto, SOLO queste fonti (gear/bot) contano in combattimento (¶043)
 var pending_combat_exclude_sources: Array = [] # fonti escluse dal combattimento (¶159 turbolaser, ¶167 netgun/stunbomb)
 var pending_combat_speed_filter: bool = false  # solo unità più veloci della creatura possono combattere (¶145)
+var pending_resistance_only: bool = false      # i Punti Danno vanno presi come Resistenza dei personaggi (no scudo robot)
+var pending_combat_solo_char: String = ""      # ¶024: un solo personaggio conduce il combattimento; i danni colpiscono lui
 var encounter_outcome_text: String = ""    # esito risolto dal sistema, per la UI
 # Paragrafo di destinazione impostato da un ramo «goto» (rimando narrativo).
 var pending_goto: int = 0
+# Paragrafo da mostrare DOPO la risoluzione dell'incontro corrente (¶039 → ¶197).
+var pending_after_encounter_goto: int = 0
 # Sorpresa (8.1) determinata all'inizio dell'incontro e leggibile dai rami dei paragrafi.
 var surprise_active: bool = false
 # Strategia d'incontro dichiarata dal giocatore (8.2): "communicate"|"capture_kill"|"flee".
@@ -1856,6 +1873,9 @@ func _apply_act(act: Dictionary) -> void:
 			pending_combat_shift = _compute_shift(act)
 			pending_no_capture = bool(act.get("no_capture", false))
 			pending_kill_as_capture = bool(act.get("kill_as_capture", false))
+			pending_resistance_only = bool(act.get("resistance_only", false))
+			if bool(act.get("solo_speed_match", false)):
+				_setup_solo_combat_024()
 			var parts: Array = []
 			if pending_combat_shift > 0: parts.append("sposta %d col. a sinistra (sfavore)" % pending_combat_shift)
 			elif pending_combat_shift < 0: parts.append("sposta %d col. a destra (favore)" % (-pending_combat_shift))
@@ -2164,6 +2184,8 @@ func _apply_paragraph_effect(para: int) -> int:
 			else:
 				add_log("¶226: l'Oraloid divora un robot.")
 				_damage_random_robot()
+			# In combattimento il netgun non ha Valore contro questa creatura.
+			pending_combat_exclude_sources = ["Netgun"]
 		28:
 			if _gear_has("Neuroscan"):
 				gain_vp(4, "¶028 alieni invisibili rilevati (neuroscanner)")
@@ -2564,16 +2586,15 @@ func _apply_paragraph_effect(para: int) -> int:
 func _apply_creature_intro(para: int) -> void:
 	match para:
 		162:
-			# Draloid: se colta di sorpresa → ¶226. Se non sorpresa e l'Ufficiale al
-			# rilevamento terrestre (GSO) è assente, 2 dadi vs Int max spedizione: ≥ → ¶226.
+			# Draloid: se colta di sorpresa → ¶226 (la creatura resta in incontro). Se non
+			# sorpresa e l'Ufficiale al rilevamento terrestre (GSO) è assente, 2 dadi vs Int
+			# max spedizione: >= → ¶226.
 			if surprise_active:
-				_clear_encounter_state()
 				pending_goto = 226
 			elif not ("GSO" in expedition_units):
 				var roll := randi_range(1, 6) + randi_range(1, 6)
 				if roll >= _expedition_max_intel():
-					add_log("¶162: 2 dadi %d ≥ Int max spedizione → ¶226." % roll)
-					_clear_encounter_state()
+					add_log("¶162: 2 dadi %d >= Int max spedizione → ¶226." % roll)
 					pending_goto = 226
 		170:
 			# Monoke: se colta di sorpresa, il membro col Valore di Velocità più basso
@@ -2702,11 +2723,15 @@ func _apply_creature_intro(para: int) -> void:
 			pending_combat_speed_filter = true
 			add_log("¶145: solo le unità più veloci della creatura possono iniziare il combattimento.")
 		39:
-			# Anfibio di palude (Allidon): 1 dado, 5-6 → ¶205; 1-4 incontro normale.
+			# Anfibio di palude (Allidon): 1 dado, 5-6 → ¶205; 1-4 incontro normale ma
+			# DOPO la risoluzione si va al ¶197 (parassita).
 			if randi_range(1, 6) >= 5:
 				add_log("¶039: la bestia reagisce male → ¶205.")
 				_clear_encounter_state()
 				pending_goto = 205
+			else:
+				pending_after_encounter_goto = 197
+				add_log("¶039: dopo la risoluzione dell'incontro si andrà al ¶197.")
 
 # Risolve una scelta-paragrafo cliccata dal giocatore (override paragraph_choices.json):
 # goto diretto, tiro→goto, condizione speciale, oppure «lascia stare».
@@ -2840,6 +2865,9 @@ func _begin_creature(name: String) -> void:
 	pending_combat_only_sources = []
 	pending_combat_exclude_sources = []
 	pending_combat_speed_filter = false
+	pending_resistance_only = false
+	pending_combat_solo_char = ""
+	pending_after_encounter_goto = 0
 	encounter_outcome_text = ""
 	chosen_strategy = ""
 	creature_rating = GameData.roll_creature_combat_rating(name)
@@ -3053,12 +3081,23 @@ func resolve_supply_check(die: int) -> void:
 			add_log("Infezione: %s perde %d Punto/i Resistenza (%d/%d)." % [crew[ik].get("name", ik), iamt, crew[ik]["endurance"], MAX_ENDURANCE])
 			if int(crew[ik]["endurance"]) <= 0:
 				_kill_character(ik)
-	# ¶155: l'atmosfera distruttiva danneggia un robot a ogni Controllo del Rifornimento.
+	# ¶155: l'atmosfera distruttiva toglie 1/3/6 Punti Resistenza ai robot a ogni
+	# Controllo del Rifornimento; un robot a 0 viene danneggiato.
 	if robot_decay > 0:
-		var rbots := _functioning_bots()
-		if not rbots.is_empty():
-			damaged_gear.append(rbots[0])
-			add_log("Atmosfera distruttiva (¶155): %s si deteriora ed è danneggiato." % GameData.get_unit(rbots[0]).get("name", rbots[0]))
+		var remaining155 := robot_decay
+		for b in _functioning_bots():
+			if remaining155 <= 0:
+				break
+			var e155 := int(robot_endurance.get(b, ROBOT_MAX_ENDURANCE))
+			var take155 := mini(e155, remaining155)
+			e155 -= take155
+			remaining155 -= take155
+			robot_endurance[b] = e155
+			if e155 <= 0:
+				damaged_gear.append(b)
+				add_log("Atmosfera distruttiva (¶155): %s esaurisce la Resistenza ed è danneggiato." % GameData.get_unit(b).get("name", b))
+			else:
+				add_log("Atmosfera distruttiva (¶155): %s perde %d Resistenza (%d/%d)." % [GameData.get_unit(b).get("name", b), take155, e155, ROBOT_MAX_ENDURANCE])
 	# ¶231: la razza ostile può imboscare la spedizione a ogni Controllo del Rifornimento.
 	if hostile_race:
 		var dr := randi_range(1, 6)
@@ -3165,6 +3204,7 @@ func generate_environ_at(landing_real: String, redef_para: int = 0) -> void:
 	hostile_race = false
 	cannot_leave_until_explored = []
 	shuttle_devour_pending = false
+	submerged_env = false
 	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
 	if place.is_empty():
 		# Fallback: environ deterministico per sistema, atterraggio al centro.
@@ -3221,6 +3261,24 @@ func _apply_landing_terrain_redef(para: int) -> void:
 		76:
 			cannot_leave_until_explored = ["0715", "1016"]
 			add_log("¶076: la spedizione non può lasciare l'area finché 0715 o 1016 non è esplorato (struttura sotterranea).")
+		114:
+			# Oceano: tutta l'esplorazione è condotta in immersione (6.7). L'environ è
+			# già Liquid Surface; impostiamo il flag relativo.
+			submerged_env = true
+			add_log("¶114: tutta l'esplorazione è condotta in immersione (6.7).")
+		123:
+			# Oceano: gli esagoni di città aliena (0204/0304) diventano strutture (non
+			# più città); le strutture aliene non sono feature dell'environ nel modello,
+			# quindi «non esistono» è soddisfatto. Esplorazione in immersione.
+			_redef_base("Alien City", "Liquid Surface", [])
+			submerged_env = true
+			add_log("¶123: città aliene riclassificate; esplorazione in immersione (6.7).")
+		132:
+			# Oceano tropicale: nessun esagono di città aliena o struttura esiste; le città
+			# diventano superficie liquida. La vegetazione pesante vale sopra e sotto la
+			# superficie (già modellata come terreno).
+			_redef_base("Alien City", "Liquid Surface", [])
+			add_log("¶132: nessuna città aliena o struttura; gli esagoni-città valgono superficie liquida.")
 
 # Sostituisce il terreno BASE `from` con `to` (eccetto gli esagoni reali elencati).
 func _redef_base(from: String, to: String, except_reals: Array) -> void:
@@ -3751,9 +3809,29 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 	# uccisione che cattura falliscono (fugge).
 	var escapes: bool = (result == "E") or (result == "D" and as_capture)
 
+	var solo_key := pending_combat_solo_char
 	if dmg > 0:
-		_apply_damage(dmg)
-		add_log("Risultato %s: %d Punto/i Danno alla spedizione." % [result, dmg])
+		if solo_key != "" and crew.get(solo_key, {}).get("alive", false):
+			# ¶024: i Punti Danno colpiscono il solo personaggio che combatte.
+			add_log("Risultato %s: %d Punto/i Danno a %s (duello)." % [result, dmg, crew[solo_key].get("name", solo_key)])
+			_damage_character(solo_key, dmg)
+		elif pending_resistance_only:
+			# Tutti i Punti Danno presi come Resistenza dei personaggi (no scudo robot).
+			_apply_damage_to_chars(dmg)
+			add_log("Risultato %s: %d Punto/i Danno come Resistenza." % [result, dmg])
+		else:
+			_apply_damage(dmg)
+			add_log("Risultato %s: %d Punto/i Danno alla spedizione." % [result, dmg])
+	# ¶024: se il duellante muore, la creatura è illesa e affronta il resto della
+	# spedizione (combattimento senza spostamenti, niente cattura).
+	if solo_key != "" and not crew.get(solo_key, {}).get("alive", true):
+		pending_combat_solo_char = ""
+		pending_combat_shift = 0
+		pending_resistance_only = false
+		add_log("%s cade nel duello: la creatura è illesa e affronta il resto della spedizione (conduci di nuovo il combattimento)." % crew.get(solo_key, {}).get("name", solo_key))
+		combat_resolved.emit(result, detail)
+		state_updated.emit()
+		return
 	if escapes:
 		add_log("%s sfugge al combattimento e fugge." % current_creature)
 		_end_encounter()
@@ -3776,11 +3854,59 @@ func _combat_damage(result: String, as_capture: bool) -> int:
 		"E": return 12 if as_capture else 8
 	return 0
 
+# ¶024: imposta il duello «singolo personaggio». A piedi, il personaggio che la
+# creatura può raggiungere (Velocità <= Velocità creatura +1) combatte da solo con
+# spostamento di 1 colonna a sinistra. Col rover (o se nessuno è raggiungibile a
+# piedi) combatte la squadra con spostamento di 2 colonne a sinistra.
+func _setup_solo_combat_024() -> void:
+	var cspeed := creature_attr("speed")
+	if not _gear_has("Rover"):
+		var who := ""
+		var worst := 99
+		for k in expedition_units:
+			if crew.has(k) and crew[k].get("alive", false):
+				var sp := effective_char_stat(k, "speed")
+				if sp <= cspeed + 1 and sp < worst:
+					worst = sp
+					who = k
+		if who != "":
+			pending_combat_solo_char = who
+			pending_combat_shift = 1
+			add_log("¶024: %s deve affrontare la creatura da solo (1 colonna a sinistra)." % crew[who].get("name", who))
+			return
+	# Rover o nessun personaggio raggiungibile a piedi: combattimento di squadra.
+	pending_combat_shift = 2 if _gear_has("Rover") else 1
+	add_log("¶024: combattimento di squadra (spostamento di %d colonne a sinistra)." % pending_combat_shift)
+
 func _capture_creature(name: String) -> void:
+	# 8.7: una creatura catturata va in una E-cage vuota; senza E-cage libere
+	# (alcune creature ne richiedono 2 o 3) viene rilasciata subito.
+	var needed := int(GameData.get_creature(name).get("ecages", 1))
+	if _ecages_free() < needed:
+		_record_creature_attributes(name)
+		add_log("%s è sopraffatta ma servono %d E-cage libere (ne hai %d): viene rilasciata." % [name, needed, _ecages_free()])
+		_end_encounter()
+		return
 	captured_creatures.append(name)
 	_record_creature_attributes(name)
-	add_log("%s catturata viva! (riportala alla Pandora per i PV)" % name)
+	add_log("%s catturata viva in %d E-cage! (riportala alla Pandora per i PV)" % [name, needed])
 	_end_encounter()
+
+# Capacità totale di E-cage (numero di celle) se la spedizione le porta (qty dal segnalino).
+func _ecage_capacity() -> int:
+	if "Ecage" in expedition_gear and not ("Ecage" in damaged_gear):
+		return int(GameData.get_unit("Ecage").get("qty", 0))
+	return 0
+
+# E-cage occupate dalle creature già catturate (ciascuna usa il proprio numero di celle).
+func _ecages_in_use() -> int:
+	var used := 0
+	for cn in captured_creatures:
+		used += int(GameData.get_creature(str(cn)).get("ecages", 1))
+	return used
+
+func _ecages_free() -> int:
+	return _ecage_capacity() - _ecages_in_use()
 
 func _kill_creature(name: String) -> void:
 	# Morso velenoso (¶005): la creatura morde un personaggio prima di morire.
@@ -3959,6 +4085,11 @@ func _end_encounter() -> void:
 	pending_kill_as_capture = false
 	encounter_ended.emit()
 	set_phase(Phase.EXPEDITION)
+	# ¶039: un rimando differito si applica DOPO la risoluzione dell'incontro.
+	if pending_after_encounter_goto > 0:
+		var g := pending_after_encounter_goto
+		pending_after_encounter_goto = 0
+		call_deferred("show_paragraph", g)
 
 func flee_encounter() -> void:
 	if current_creature.is_empty():

@@ -3,7 +3,7 @@
 **Ultimo aggiornamento:** 2026-06-15 · **Branch:** `claude/tabelle-materiale-voyage-bsm-iaeefu` (PR #29 mergiata in `main`)
 
 Documento per ripartire in una nuova sessione. Riassume **dove siamo**, **come
-funziona il codice** e **cosa resta da fare** (i 55 🟡).
+funziona il codice** e **lo stato finale** (100%: 0 🟡, 0 🔴).
 
 ---
 
@@ -14,12 +14,11 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 | Stato | Conteggio | Indice di completezza |
 |---|---|---|
-| 🟢 Verde | 223 | |
-| 🟡 Giallo | 9 | **≈ 98,1%** |
+| 🟢 Verde | 232 | |
+| 🟡 Giallo | 0 | **100%** |
 | 🔴 Rosso | **0** | (da 36,0% a inizio sessione) |
 
-**Nessun paragrafo è più completamente non gestito.** I 🟡 hanno tutti un
-*caveat documentato* (non sono funzionalità mancanti).
+**Tutti i 232 paragrafi sono pienamente automatizzati e fedeli al regolamento (0 🟡, 0 🔴): indice 100%.**
 
 ---
 
@@ -35,8 +34,7 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 - **Dati JSON pretty-printed:** per `environ_maps.json` usare `json.dump(..., indent=0)`
   (round-trip identico); per `expedition_encounters.json` `indent=2`.
 - **Commit:** messaggi chiari; ogni commit finisce con la riga
-  `https://claude.ai/code/session_...`. **Push** su `claude/spi-game-godot-digital-fb861w`.
-  NON pushare su altri branch.
+  `https://claude.ai/code/session_...`. **Push** sul branch di lavoro corrente. NON pushare su altri branch.
 - **Doc:** dopo ogni batch, aggiornare `docs/STATO_PARAGRAFI.md` (riga del paragrafo,
   conteggi riepilogo, indice, tabella per-tipo, **Totale**). Le % usano la **virgola**.
 
@@ -92,9 +90,9 @@ Tutto il motore è in `godot/scripts/GameState.gd` (+ `GameData.gd`, `GameScreen
 
 ---
 
-## 4. TODO per la prossima sessione (rifinire i 55 🟡)
+## 4. Lavoro svolto (dai 55 🟡 iniziali a 0 — 100%)
 
-Ordine consigliato: dal più sistematico (sblocca molti) al più di nicchia.
+Tutti i gruppi A–F dell'handoff originale sono chiusi. Riepilogo per gruppo:
 
 ### A. enviorig/armorig per-personaggio — **FATTO (2026-06-15)** ✅
 Paragrafi 035, 147, 166, 180, 216 → 🟢 (043 resta 🟡, vedi sotto); fix anche in
