@@ -86,13 +86,13 @@ Questo documento confronta, paragrafo per paragrafo, il testo del regolamento
 
 | Stato | Conteggio | % |
 |---|---|---|
-| 🟢 Verde | 192 | 82,8% |
-| 🟡 Giallo | 40 | 17,2% |
+| 🟢 Verde | 201 | 86,6% |
+| 🟡 Giallo | 31 | 13,4% |
 | 🔴 Rosso | 0 | 0,0% |
 
 **Percentuale di completamento (headline):** considerando i 🟢 come pieni e i 🟡
-come metà, l'indice di completezza è **≈ 91,4%**
-( (192 + 40/2) / 232 ).
+come metà, l'indice di completezza è **≈ 93,3%**
+( (201 + 31/2) / 232 ).
 
 ### Conteggi per TIPO
 
@@ -101,11 +101,11 @@ come metà, l'indice di completezza è **≈ 91,4%**
 | pianeta/orbita (085–113, escl. 100/110) | 27 | 0 | 0 | 27 |
 | atterraggio/superficie (incl. 002/070/076/148) | 25 | 4 | 0 | 29 |
 | esito-strategia/combattimento (010–026) | 16 | 1 | 0 | 17 |
-| incontro-creatura (intro) | 22 | 22 | 0 | 44 |
+| incontro-creatura (intro) | 28 | 16 | 0 | 44 |
 | evento-interstellare + esiti | 16 | 1 | 0 | 17 |
 | snodo «Incontro di spedizione» | 36 | 0 | 0 | 36 |
-| procedurale-vario / rimandi-testuali | 50 | 12 | 0 | 62 |
-| **Totale** | **192** | **40** | **0** | **232** |
+| procedurale-vario / rimandi-testuali | 53 | 9 | 0 | 62 |
+| **Totale** | **201** | **31** | **0** | **232** |
 
 > Lettura: **nessun paragrafo è più completamente non gestito** (0 🔴). Il cuore
 > sistemico (orbita→pianeta→atterraggio→esplorazione con tiro Matrice 6.4, incontro
@@ -157,7 +157,7 @@ come metà, l'indice di completezza è **≈ 91,4%**
 | 030 | procedurale (globo) | 🟢 | Pulsante «Esamina» (resolver `intel_check`, investigatore = Intelligenza più alta): con E-cage il globo è acquisito (PV al rientro); senza E-cage si ripiega sull'esito acido (−3 Resistenza all'investigatore, annullati dall'armorig); esito peggiore = morte dell'investigatore (con armorig: −3 Resistenza). Caveat: l'enviorig non è modellato, quindi il suo danneggiamento è inerte. |
 | 031 | incontro-creatura (Spiker) | 🟡 | Creatura preparata; l'uccisione automatica da sorpresa e il divieto netgun/stunbomb non sono modellati. |
 | 032 | procedurale (sisma) | 🟢 | Scossa sismica: 2 dadi di Punti Danno (1 dado se tutti con armorig). Automatizzato. |
-| 033 | incontro-creatura (Florist) | 🟡 | Creatura preparata; il divieto di «Comunica» non è imposto dalla UI. |
+| 033 | incontro-creatura (Florist) | 🟢 | Creatura preparata; la strategia «Comunica» è disabilitata nella UI (comunicazione non ammessa). |
 | 034 | scelta (delegazione aliena) | 🟢 | Bottoni di scelta: Comunica → ¶195, Combatti → ¶199, Fuggi → ¶204. UI a scelte. |
 | 035 | incontro-creatura (Curder) | 🟢 | Comunica/Combatti: l'incontro si risolve normalmente solo se **tutti** i personaggi indossano un enviorig o un armorig (rig per-personaggio derivato dall'atmosfera, 5.2); altrimenti → ¶209. |
 | 036 | procedurale (scultura) | 🟢 | La scultura è acquisibile come artefatto (pulsante «Raccogli», peso 3) con i PV registrati al rientro sulla Pandora; il flusso «scegli un'altra azione» è ok. |
@@ -169,7 +169,7 @@ come metà, l'indice di completezza è **≈ 91,4%**
 | 042 | procedurale (uovo) | 🟡 | L'uovo è acquisibile come artefatto (PV al rientro); il tiro 1d6 al momento del trasporto (1-2 ok / 3-4 → ¶178 / 5-6 → ¶205) non è ancora gestito. |
 | 043 | incontro-creatura (Crusher) | 🟡 | Un robot a caso è polverizzato all'intro, poi incontro normale. Caveat: la restrizione dei valori di combattimento (solo armorig/specibot/turbolaser) non è modellata. |
 | 044 | evento-interstellare | 🟢 | sforzo FTL: 2 dadi vs Int Manutenzione -> Mesi di Tour. Automatizzato. |
-| 045 | incontro-creatura (Armeetle) | 🟡 | Creatura preparata; inefficacia di stunbomb/reconbot/specibot e fuga «2 ore» non gestite. |
+| 045 | incontro-creatura (Armeetle) | 🟢 | Comunica/Combatti → la creatura sparisce nel tunnel (esito `leave`, +2 ore). Caveat residuo: inefficacia di stunbomb/reconbot/specibot non modellata. |
 | 046 | evento-interstellare | 🟢 | brillamenti stellari: +1 Mese di Tour. Automatizzato. |
 | 047 | evento-interstellare | 🟢 | avaria Processore Fuji: 9 - Int(Scienze/Manut). Automatizzato. |
 | 048 | incontro-creatura (Ornifly) | 🟢 | Comunica o Combatti → la creatura sfreccia via (esito `leave`, nessun combattimento); Fuggi normale. |
@@ -180,7 +180,7 @@ come metà, l'indice di completezza è **≈ 91,4%**
 
 | ¶ | Tipo | Stato | Nota |
 |---|---|---|---|
-| 051 | incontro-creatura (Paraboid) | 🟡 | Creatura preparata; «qualsiasi strategia → la creatura se ne va» non forzato come esito automatico. |
+| 051 | incontro-creatura (Paraboid) | 🟢 | Qualsiasi strategia → la creatura si allontana (esito `leave`), via paragraph_logic. |
 | 052 | evento-interstellare | 🟢 | una creatura catturata a bordo (a caso) muore, con perdita dei suoi PV. Automatizzato. |
 | 053 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶008/004/031/153 — Cliffs / Città Aliena / Flat+clima sahariano / gravità+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 054 | incontro-creatura (Aracat) | 🟢 | Intro «felino»: sorpresa+strategia gestite dal motore; nessun effetto extra oltre lo shift standard di sorpresa. |
@@ -189,7 +189,7 @@ come metà, l'indice di completezza è **≈ 91,4%**
 | 057 | incontro-creatura (Eleboid) | 🟡 | La creatura d'energia folgora e danneggia tutti i robot all'intro, poi incontro normale. Caveat: il danno è applicato all'intro anziché solo su Comunica/Combatti. |
 | 058 | evento-interstellare (procedurale) | 🟢 | follia dell'Ufficiale Scienze: Resistenza persa dagli altri + 2 dadi -> dirama a 067/073/144 (effetti applicati). Automatizzato. |
 | 059 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶028/039/147 — Città Aliena / Pond o Marsh / Cave+idrografia): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
-| 060 | incontro-creatura (Scorsaur) | 🟡 | Creatura preparata; ramo «Combatti → ¶180» (incornata velenosa) non automatizzato. |
+| 060 | incontro-creatura (Scorsaur) | 🟢 | Combatti → ¶180 (incornata velenosa), via paragraph_logic; Comunica/Fuggi normali. |
 | 061 | evento-interstellare | 🟢 | mercanti rinnegati: 2 dadi vs Int Armi -> +1 Mese o ¶169. Automatizzato. |
 | 062 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶030/179/066 — Città Aliena / Light Veg.+gravità / Hill+gravità): salto al ramo giusto o ri-tiro Matrice. |
 | 063 | incontro-creatura (Nessie) | 🟡 | Creatura preparata e strategia offerta; il requisito «3 E-cage» per il trasporto non è modellato. |
@@ -210,8 +210,8 @@ come metà, l'indice di completezza è **≈ 91,4%**
 | 078 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶009/009/005 — Città Aliena / Flat+clima tropicale / Marsh-Pond-River+clima): segnaposto convertiti in terreni reali (modello multi-terreno 6.7). |
 | 079 | incontro-creatura (Sholf) | 🟢 | Intro «orso»: sola scelta strategia, nessun effetto extra; gestito dal motore. |
 | 080 | evento-interstellare (procedurale) | 🟢 | evoluzione di una creatura a bordo -> diramazione 081-084. Automatizzato. |
-| 081 | esito (game over) | 🟡 | Testo «il gioco è finito» mostrato; il motore non chiude la partita automaticamente da qui. |
-| 082 | esito (game over) | 🟡 | Come ¶081: fine partita non innescata automaticamente. |
+| 081 | esito (game over) | 🟢 | La creatura prende la Pandora: equipaggio morto e fase GAME_OVER impostata automaticamente. |
+| 082 | esito (game over) | 🟢 | Come ¶081: la Pandora è distrutta, equipaggio morto e fase GAME_OVER automatica. |
 | 083 | evento-interstellare (esito) | 🟢 | la creatura e un terzo delle creature a bordo (a caso) sono distrutte, con perdita PV. Automatizzato. |
 | 084 | evento-interstellare (esito) | 🟢 | 2 dadi vs Valore della creatura -> distruzione senza danni oppure uccisioni d'equipaggio. Automatizzato. |
 | 085 | pianeta/orbita (Korkran) | 🟢 | Dati pianeta + tiro atterraggio→esagono→paragrafo gestiti dal motore. |
@@ -315,7 +315,7 @@ come metà, l'indice di completezza è **≈ 91,4%**
 | 173 | scelta (fungo) | 🟢 | Bottoni: Investiga (con SO → ¶219; altrimenti 2 dadi vs Int max → ¶219/¶224) o Lascia stare. UI a scelte. |
 | 174 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶161/048/167 — Città Aliena / veg.+clima tropicale / Flat senza veg.): il motore salta al ramo giusto o ri-tira la Matrice. |
 | 175 | procedurale (arma, WO) | 🟢 | Pulsante «Esamina» (resolver `intel_check`): 2 dadi vs Intelligenza più alta → arma trasportabile dopo 1d6 ore / oggetto banale lasciato / esplosione con 2d6 Punti Danno. |
-| 176 | incontro (rete vivente, senza pedina) | 🟡 | Sostanzialmente narrativo «scegli azione»; il +3 PV Holographer non viene assegnato. |
+| 176 | incontro (rete vivente, senza pedina) | 🟢 | Non catturabile/innocua; con l'Holographer si guadagnano 3 PV (automatico). |
 | 177 | snodo «Incontro di spedizione» | 🟢 | Condizioni ora interamente valutate (¶042/007/149 — Città Aliena / Mountain+gravità / veg.+clima tropicale): salto al ramo giusto o ri-tiro Matrice. |
 | 178 | procedurale (uovo si schiude) | 🟢 | 1 dado automatico: 1-2 → ¶142, 3-4 → ¶159, 5-6 → ¶162. Instradamento a dado. |
 | 179 | incontro-creatura (Glosper) | 🟡 | Creatura preparata; uccisione da sorpresa e ramo Combatti→¶227 non gestiti. |
@@ -364,7 +364,7 @@ come metà, l'indice di completezza è **≈ 91,4%**
 | 217 | procedurale (Glassman ostile) | 🟢 | Distrugge un personaggio e un robot a caso, poi combattimento di sola uccisione con la Valutazione del Glassman rideterminata col modificatore +3 (8.4), non più approssimata come spostamento. |
 | 218 | procedurale (combattimento Glosper) | 🟢 | Combattimento di uccisione: col turbolaser i risultati B/C/D contano come A (turbolaser distrutto); senza, spostamento di 2 colonne a favore. Hook remap nel motore sui codici reali A-E (Tabella 8.6 verificata). |
 | 219 | esito (fungo intelligente) | 🟢 | +3 col neuroscanner, +2 con Holographer; 1 dado di ore spese. Automatizzato. |
-| 220 | incontro-creatura (Glassman fugge) | 🟡 | La logica «fuga su velocità o combatti» è simile a quella codificata altrove, ma per ¶220 non è in `paragraph_logic`: solo testo. |
+| 220 | incontro-creatura (Glassman fugge) | 🟢 | Se la Velocità del Glassman ≥ Velocità massima della squadra fugge, altrimenti si combatte (paragraph_logic, Valori calcolati). |
 | 221 | procedurale (campo psionico) | 🟢 | Campo psionico: 1 dado di ore di incoscienza; Intelligenza di ogni personaggio ridotta permanentemente a 6 (se superiore). Automatizzato. |
 | 222 | esito (gruppo creature) | 🟢 | Valore di Aggressività (tiro): ≤4 → +4 PV e ¶231; 5-8 → +PV (Int comandante o 4, +1 neuroscan, +1 Holographer); ≥9 → ¶225. Automatizzato. |
 | 223 | procedurale (aeron) | 🟢 | L'aeron afferra un robot a caso (rimosso); se nessun robot, un personaggio a caso perde 2 Resistenza. Automatizzato. |
@@ -373,7 +373,7 @@ come metà, l'indice di completezza è **≈ 91,4%**
 | 226 | procedurale (Oraloid) | 🟡 | Effetto applicato: distrugge il rover (o divora un robot). Resta da modellare l'incontro-creatura Oraloid (scelta strategia, netgun senza valore). |
 | 227 | procedurale (combattimento speciale) | 🟢 | Sui risultati C/D/E un personaggio a caso è fatto a pezzi prima di applicare il risultato. Hook kill_on nel motore di combattimento sui codici reali A-E (Tabella 8.6 verificata). |
 | 228 | procedurale (trappola crollo) | 🟢 | 2 dadi vs Velocità per ogni unità: chi fallisce (robot) è distrutto, (personaggio) perde la differenza in Resistenza; rover distrutto; +5 PV se sopravvive qualcuno. Automatizzato. |
-| 229 | esito (monoke amichevole) | 🟡 | Cattura facoltativa e 1 ora: il flusso «scegli azione» è ok ma la cattura/ora non sono automatizzate. |
+| 229 | esito (monoke amichevole) | 🟢 | Si spende 1 ora (automatico); la cattura resta facoltativa (a discrezione del giocatore, come da regola). |
 | 230 | procedurale (radrod) | 🟢 | Studio: 2 dadi (−2 con SO) vs Int max: < → +3 PV e cattura (1 ora); ≥ → neuroscanner+creatura distrutti, un personaggio −2 Resistenza e svenuto (2 dadi di ore). Automatizzato. |
 | 231 | procedurale (razza ostile) | 🟡 | Razza locale ostile: a ogni Controllo del Rifornimento, 1 dado (1-2 → spedizione imboscata e distrutta). Resta non agganciato il trigger «ingresso in esagono struttura/città». |
 | 232 | snodo-di-flusso (fine viaggio) | 🟢 | Attracco e calcolo PV finali: il motore mostra ¶232 a fine tour e produce il riepilogo PV (9.0/9.2). Fedele. |

@@ -2434,6 +2434,20 @@ func _apply_paragraph_effect(para: int) -> int:
 			# (sopravvivenza +5 PV) e si prosegue al ¶231.
 			gain_vp(5, "¶225 sopravvissuti al combattimento di gruppo")
 			redirect = 231
+		81, 82:
+			# Esiti terminali (¶080 evoluzione): la creatura prende/distrugge la Pandora.
+			# Tutti i personaggi muoiono e la partita è conclusa.
+			for k in crew.keys():
+				crew[k]["alive"] = false
+			add_log("¶%03d: la Pandora è perduta con tutto l'equipaggio. Il gioco è finito." % para)
+			set_phase(Phase.GAME_OVER)
+		176:
+			# Rete vivente: non catturabile e innocua; con l'Holographer si guadagnano 3 PV.
+			if _gear_has("Holographer"):
+				gain_vp(3, "¶176 rete vivente documentata con l'Holographer")
+		229:
+			# Monoke amichevole: si lascia catturare (facoltativo) e si spende 1 ora.
+			add_expedition_hours(1)
 		_:
 			applied = false
 	if applied:

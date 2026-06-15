@@ -909,5 +909,106 @@
     "type": "leave"
    }
   }
+ ],
+ "051": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "leave"
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "leave"
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "flee"
+    ]
+   ],
+   "act": {
+    "type": "leave"
+   }
+  }
+ ],
+ "060": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "goto",
+    "para": 180
+   }
+  }
+ ],
+ "220": [
+  {
+   "cond": [
+    [
+     "speed",
+     ">=",
+     "max_spd"
+    ]
+   ],
+   "act": {
+    "type": "leave"
+   }
+  },
+  {
+   "cond": [],
+   "act": {
+    "type": "combat"
+   }
+  }
+ ],
+ "045": [
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "communicate"
+    ]
+   ],
+   "act": {
+    "type": "leave",
+    "hours": 2
+   }
+  },
+  {
+   "cond": [
+    [
+     "strategy",
+     "==",
+     "capture_kill"
+    ]
+   ],
+   "act": {
+    "type": "leave",
+    "hours": 2
+   }
+  }
  ]
 }

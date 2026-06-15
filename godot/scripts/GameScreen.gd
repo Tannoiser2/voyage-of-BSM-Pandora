@@ -915,8 +915,10 @@ func _update_action_buttons(phase: String) -> void:
 	var here_explored: bool = GameState.environ_grid.get(GameState.expedition_pos, {}).get("explored", true)
 	var here_unexplored: bool = on_surface and not here_explored
 	if btn_explore: btn_explore.visible = (phase == "expedition") and not creature_active and here_unexplored
-	# Strategia d'incontro (8.2) sul paragrafo iniziale della creatura
-	if btn_comm: btn_comm.visible = initial_creature
+	# Strategia d'incontro (8.2) sul paragrafo iniziale della creatura.
+	# ¶033: la comunicazione non può essere scelta.
+	var comm_forbidden := current_para_num in [33]
+	if btn_comm: btn_comm.visible = initial_creature and not comm_forbidden
 	if btn_strat: btn_strat.visible = initial_creature
 	# Risoluzione del combattimento (8.5) sui paragrafi-esito di combattimento
 	if btn_kill:
