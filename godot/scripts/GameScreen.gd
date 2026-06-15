@@ -233,6 +233,24 @@ func _build_ui() -> void:
 	_disp_add_bucket.call(disp_row, "Shuttle", 2)
 	_disp_add_bucket.call(disp_row, "A piedi", 1)
 	_disp_add_bucket.call(disp_row, "Rover", 1)
+	# Riga informativa: fase corrente + capacità di superficie + scelta del mezzo (5.7/5.8).
+	var info_row := HBoxContainer.new()
+	info_row.name = "DispInfoRow"
+	info_row.add_theme_constant_override("separation", 10)
+	disp_sec["vbox"].add_child(info_row)
+	var phase_lbl := Label.new()
+	phase_lbl.name = "DispPhase"
+	phase_lbl.add_theme_font_size_override("font_size", 12)
+	phase_lbl.add_theme_color_override("font_color", UITheme.MUTED)
+	info_row.add_child(phase_lbl)
+	var info_spacer := Control.new()
+	info_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info_row.add_child(info_spacer)
+	var veh_btn := Button.new()
+	veh_btn.name = "DispVehicleBtn"
+	veh_btn.add_theme_font_size_override("font_size", 12)
+	veh_btn.pressed.connect(_on_toggle_vehicle)
+	info_row.add_child(veh_btn)
 	# Controlli di preparazione (rifornimenti + lancio), visibili solo in orbita.
 	var prep_ctrl := HBoxContainer.new()
 	prep_ctrl.name = "DispPrepControls"
@@ -804,12 +822,20 @@ func _refresh_environ_buttons() -> void:
 		var bw := 0
 		btn.text = ""
 		if is_pos:
+			# Segnalino squadra: Rover (R) o a piedi (P) a seconda del mezzo scelto (5.7).
 			fill = Color(0.2, 0.8, 1.0, 0.35)
 			border = Color(0.3, 0.9, 1.0, 1.0)
 			bw = 4
-			btn.text = "◉"
+			btn.text = "R" if GameState.expedition_on_rover() else "P"
 			btn.add_theme_color_override("font_color", Color(1, 1, 1))
-			btn.add_theme_font_size_override("font_size", 22)
+			btn.add_theme_font_size_override("font_size", 20)
+		elif hex_id == GameState.landing_hex and GameState.landing_hex > 0:
+			# Lo shuttle resta posato sull'esagono di atterraggio (5.6).
+			border = Color(1.0, 0.7, 0.2, 0.9)
+			bw = 3
+			btn.text = "S"
+			btn.add_theme_color_override("font_color", Color(1.0, 0.8, 0.45))
+			btn.add_theme_font_size_override("font_size", 18)
 		elif reachable:
 			fill = Color(1.0, 1.0, 1.0, 0.16)
 			border = Color(1.0, 0.95, 0.5, 0.9)
@@ -1275,20 +1301,29 @@ func _refresh_disposition() -> void:
 		return
 	var orbit := GameState.is_orbit_decision()
 	var landed := GameState.expedition_pos > 0
-	var rover := ("Rover" in GameState.expedition_gear) and not ("Rover" in GameState.damaged_gear)
+	var on_rover := GameState.expedition_on_rover()
 	var buckets := {"Pandora": [], "Shuttle": [], "A piedi": [], "Rover": []}
 	for k in GameData.get_character_keys():
 		if not GameState.crew.get(k, {}).get("alive", true):
 			continue
-		buckets[_unit_bucket(k in GameState.expedition_units, landed, rover)].append(k)
+		buckets[_unit_bucket(k in GameState.expedition_units, landed, on_rover)].append(k)
 	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
-		buckets[_unit_bucket(k in GameState.expedition_gear, landed, rover)].append(k)
+		buckets[_unit_bucket(k in GameState.expedition_gear, landed, on_rover)].append(k)
 	for bucket in buckets:
 		var box := find_child("Disp_%s" % bucket, true, false) as Control
 		if box:
 			box.set_meta("keys", buckets[bucket])
 			box.set_meta("clickable", orbit)
 			_relayout_disp_box(box)
+	# 5.7: la spedizione è O nel Rover O a piedi → mostra un solo box di superficie.
+	for surf in ["Rover", "A piedi"]:
+		var sbox := find_child("Disp_%s" % surf, true, false) as Control
+		if sbox:
+			var col := sbox.get_parent().get_parent() as Control
+			if col:
+				col.visible = (surf == "Rover") if on_rover else (surf == "A piedi")
+	# Riga informativa: fase + capacità di superficie + scelta del mezzo.
+	_refresh_disp_info(orbit, landed, on_rover)
 	var prep_ctrl := find_child("DispPrepControls", true, false) as Control
 	if prep_ctrl:
 		prep_ctrl.visible = orbit
@@ -1308,6 +1343,31 @@ func _refresh_disposition() -> void:
 			ll.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if over else UITheme.GREEN)
 		var launch := find_child("DispLaunch", true, false) as Button
 		if launch: launch.disabled = not GameState.prep_valid()
+
+# Riga informativa sotto i box: fase corrente, capacità di superficie (5.8) e
+# pulsante per scegliere il mezzo (Rover/piedi, 5.7).
+func _refresh_disp_info(orbit: bool, landed: bool, on_rover: bool) -> void:
+	var phase_lbl := find_child("DispPhase", true, false) as Label
+	if phase_lbl:
+		var txt := ""
+		if orbit:
+			txt = "Fase: preparazione in orbita"
+		elif GameState.expedition_pos > 0:
+			# Capacità di superficie (5.8): Rover per gravità o somma dei Porti a piedi.
+			var cap := GameState.surface_carry_capacity()
+			var mezzo := "Rover" if on_rover else "a piedi"
+			txt = "Fase: spedizione su %s (%s) · Capacità di Porto %d" % [GameState.current_planet, mezzo, cap]
+		elif GameState.expedition_units.size() > 0:
+			txt = "Fase: shuttle in volo verso la superficie"
+		phase_lbl.text = txt
+	var veh_btn := find_child("DispVehicleBtn", true, false) as Button
+	if veh_btn:
+		veh_btn.visible = GameState.rover_available()
+		veh_btn.text = "Muovi a piedi" if on_rover else "Usa il Rover"
+
+func _on_toggle_vehicle() -> void:
+	GameState.toggle_vehicle()
+	_refresh_disposition()
 
 # Dispone le pedine di un bucket in righe per categoria (equipaggio /
 # equipaggiamento / robot). Pedine di dimensione fissa e uguale ovunque,

@@ -13,8 +13,8 @@ prototipo Godot.
 
 | Stato | Conteggio |
 |---|---|
-| 🟢 Verde | 43 |
-| 🟡 Giallo | 9 |
+| 🟢 Verde | 46 |
+| 🟡 Giallo | 6 |
 | 🔴 Rosso | 0 |
 
 Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
@@ -24,9 +24,11 @@ Coperti in questa tornata: **Resistenza 5 (2.5)**, **Valore Intelligenza (3.3)**
 **snodi "Incontro di spedizione" (6.5)**, **effetti eventi interstellari (4.2)**,
 **artefatti (2.4/2.6/9.1)**, **scoring PV completo (guadagni 9.1 e perdite 9.2:
 equipaggiamento danneggiato via registro persistente, Crew Log, mesi oltre Tour)**,
-**condizione di vittoria (9.3)** e **danni → Resistenza/Porto (8.8/8.9)**.
+**condizione di vittoria (9.3)**, **danni → Resistenza/Porto (8.8/8.9)** e
+**Capacità di Porto per gravità + Rover/piedi con segnalini shuttle/squadra (5.6/5.7/5.8)**.
 Migliorie residue (🟡): arricchimento dati environ (clima + terreni mancanti per
-attivare le condizioni 6.5 oggi inerti) e dettagli di rover/porto individuale (5.6–5.8).
+attivare le condizioni 6.5 oggi inerti), modificatori di rifornimento del terreno (6.6)
+e dettagli minori (2.2 carte, 3.5 selezione casuale, 4.4/4.6 entry box).
 
 ---
 
@@ -74,9 +76,9 @@ attivare le condizioni 6.5 oggi inerti) e dettagli di rover/porto individuale (5
 | 5.3 | Punti Rifornimento sullo shuttle (0–20, peso 1) | 🟢 | `planned_supply` con limite. |
 | 5.4 | Esagono di atterraggio (tiro di dado) | 🟢 | `land_on_planet`, `landing_hex`. |
 | 5.5 | Paragrafo che descrive l'environ | 🟢 | Mostrato all'atterraggio. |
-| 5.6 | Scelta unità a bordo vs in spedizione | 🟡 | Distinzione presente ma parziale (Rover/On Foot). |
-| 5.7 | Spedizione in Rover o a piedi | 🟡 | Modellazione parziale del rover. |
-| 5.8 | Carta Capacità di Porto | 🟡 | Limite di peso (capacità shuttle per gravità) sì; il Valore di Porto del singolo personaggio è mostrato come efficace (modificatori d'atmosfera, 5.2) ma non vincola ancora un carico individuale. |
+| 5.6 | Scelta unità a bordo vs in spedizione | 🟢 | Selezione squadra/equipaggiamento in preparazione; pannello **Disposizione** mostra sempre dove sta ogni unità (Pandora · Shuttle · superficie). Sull'environ lo **shuttle resta sul landing hex** (segnalino «S») mentre la squadra si sposta col proprio segnalino (5.6). |
+| 5.7 | Spedizione in Rover o a piedi | 🟢 | La squadra è **o** nel Rover **o** a piedi (un solo box di superficie mostrato); pulsante per scegliere il mezzo (`toggle_vehicle`), segnalino squadra «R»/«P» sulla mappa; il Rover è vietato in gravità opprimente (`rover_available`). |
+| 5.8 | Carta Capacità di Porto | 🟢 | Capacità per gravità: **shuttle** (`shuttle_capacity_for`), **rover** (`rover_capacity_for`: 50/40/30/20/—) e **Valore di Porto di personaggi/bot/strumenti** scalato dalla gravità (`port_for_gravity`: ×2/+2/=/−2/½) in `effective_char_stat`, oltre a −1 atmosfera sottile (5.2) e −1 per Resistenza persa (8.8). Capacità di superficie mostrata (rover per gravità o somma dei Porti a piedi). *(Non si forza l'assegnazione individuale «chi porta cosa»: scelta di progetto, limiti applicati come totali.)* |
 
 ## [6.0] Movimento ed Esplorazione della Spedizione
 | Caso | Regola | Stato | Nota |

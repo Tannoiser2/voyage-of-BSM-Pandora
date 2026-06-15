@@ -100,6 +100,26 @@ func get_unit(key: String) -> Dictionary:
 func shuttle_capacity_for(gravity: String) -> int:
 	return int(units.get("shuttle_capacity", {}).get(gravity, 80))
 
+# Capacità di Porto del Rover per gravità (5.8). 0 = il rover non è utilizzabile
+# (gravità opprimente, nota 2 della Carta Capacità di Porto).
+func rover_capacity_for(gravity: String) -> int:
+	return int(units.get("rover_capacity", {}).get(gravity, 30))
+
+# Modificatore di gravità al Valore di Porto di personaggi/bot/strumenti (5.8):
+# Quasi assenza peso ×2 · Leggera +2 · Tipo Terra = P · Pesante −2 · Opprimente ½P.
+func port_for_gravity(base: int, gravity: String) -> int:
+	match gravity:
+		"Near weightless":
+			return base * 2
+		"Light":
+			return base + 2
+		"Heavy":
+			return base - 2
+		"Oppressive":
+			return int(floor(base / 2.0))
+		_:
+			return base   # "Earth like" e default: P invariato
+
 func gravity_it(gravity: String) -> String:
 	return units.get("gravity_it", {}).get(gravity, gravity)
 

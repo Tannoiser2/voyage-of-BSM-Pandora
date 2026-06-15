@@ -1,33 +1,223 @@
 {
   "characters": {
-    "CO":   {"name": "Comandante",            "capture": 3, "kill": 3, "weight": 5, "port": 5, "speed": 8, "img": "Char_CO"},
-    "Nav":  {"name": "Navigatore",            "capture": 3, "kill": 2, "weight": 6, "port": 6, "speed": 7, "img": "Char_Nav"},
-    "SO":   {"name": "Uff. di Sicurezza",     "capture": 4, "kill": 2, "weight": 6, "port": 5, "speed": 6, "img": "Char_SO"},
-    "GSO":  {"name": "Uff. Scienze",          "capture": 3, "kill": 2, "weight": 7, "port": 6, "speed": 6, "img": "Char_GSO"},
-    "MedO": {"name": "Uff. Medico",           "capture": 3, "kill": 2, "weight": 6, "port": 5, "speed": 6, "img": "Char_MedO"},
-    "MntO": {"name": "Uff. Manutenzione",     "capture": 3, "kill": 2, "weight": 6, "port": 6, "speed": 9, "img": "Char_MntO"},
-    "WO":   {"name": "Uff. Armi",             "capture": 4, "kill": 3, "weight": 7, "port": 7, "speed": 8, "img": "Char_WO"}
+    "CO": {
+      "name": "Comandante",
+      "capture": 3,
+      "kill": 3,
+      "weight": 5,
+      "port": 5,
+      "speed": 8,
+      "img": "Char_CO"
+    },
+    "Nav": {
+      "name": "Navigatore",
+      "capture": 3,
+      "kill": 2,
+      "weight": 6,
+      "port": 6,
+      "speed": 7,
+      "img": "Char_Nav"
+    },
+    "SO": {
+      "name": "Uff. di Sicurezza",
+      "capture": 4,
+      "kill": 2,
+      "weight": 6,
+      "port": 5,
+      "speed": 6,
+      "img": "Char_SO"
+    },
+    "GSO": {
+      "name": "Uff. Scienze",
+      "capture": 3,
+      "kill": 2,
+      "weight": 7,
+      "port": 6,
+      "speed": 6,
+      "img": "Char_GSO"
+    },
+    "MedO": {
+      "name": "Uff. Medico",
+      "capture": 3,
+      "kill": 2,
+      "weight": 6,
+      "port": 5,
+      "speed": 6,
+      "img": "Char_MedO"
+    },
+    "MntO": {
+      "name": "Uff. Manutenzione",
+      "capture": 3,
+      "kill": 2,
+      "weight": 6,
+      "port": 6,
+      "speed": 9,
+      "img": "Char_MntO"
+    },
+    "WO": {
+      "name": "Uff. Armi",
+      "capture": 4,
+      "kill": 3,
+      "weight": 7,
+      "port": 7,
+      "speed": 8,
+      "img": "Char_WO"
+    }
   },
   "bots": {
-    "Ambot":    {"name": "Ambot",    "capture": 1, "kill": 2, "weight": 9, "port": 9, "speed": 3, "img": "Bots_Ambot",    "desc": "Robot ambasciatore"},
-    "Reconbot": {"name": "Reconbot", "capture": 4, "kill": 4, "weight": 9, "port": 3, "speed": 5, "img": "Bots_Aeconbot", "desc": "Robot da ricognizione"},
-    "Imrebot":  {"name": "Imrebot",  "capture": 2, "kill": 3, "weight": 9, "port": 3, "speed": 4, "img": "Bots_Imrebot",  "desc": "Robot da carico"},
-    "Specibot": {"name": "Specibot", "capture": 7, "kill": 6, "weight": 9, "port": 3, "speed": 7, "img": "Bots_Specibot", "desc": "Robot specializzato"}
+    "Ambot": {
+      "name": "Ambot",
+      "capture": 1,
+      "kill": 2,
+      "weight": 9,
+      "port": 9,
+      "speed": 3,
+      "img": "Bots_Ambot",
+      "desc": "Robot ambasciatore"
+    },
+    "Reconbot": {
+      "name": "Reconbot",
+      "capture": 4,
+      "kill": 4,
+      "weight": 9,
+      "port": 3,
+      "speed": 5,
+      "img": "Bots_Aeconbot",
+      "desc": "Robot da ricognizione"
+    },
+    "Imrebot": {
+      "name": "Imrebot",
+      "capture": 2,
+      "kill": 3,
+      "weight": 9,
+      "port": 3,
+      "speed": 4,
+      "img": "Bots_Imrebot",
+      "desc": "Robot da carico"
+    },
+    "Specibot": {
+      "name": "Specibot",
+      "capture": 7,
+      "kill": 6,
+      "weight": 9,
+      "port": 3,
+      "speed": 7,
+      "img": "Bots_Specibot",
+      "desc": "Robot specializzato"
+    }
   },
   "tools": {
-    "Netgun":      {"name": "Lanciareti",   "capture": 5, "kill": 2, "weight": 2, "combat": true,  "img": "Tools_Netgun",      "desc": "Arma da cattura"},
-    "Stunbomb":    {"name": "Bomba stordente","capture": 6, "kill": 4, "weight": 1, "combat": true, "qty": 2, "oneshot": true, "img": "Tools_Stunbomb (x2)", "desc": "Arma monouso (x2)"},
-    "Turbolaser":  {"name": "Turbolaser",   "capture": 4, "kill": 8, "weight": 2, "combat": true,  "img": "Tools_Turbolaser",  "desc": "Arma da uccisione"},
-    "Climbkit":    {"name": "Kit arrampicata","capture": 0,"kill": 0, "weight": 2, "img": "Tools_Climbkit",    "desc": "Riduce le ore in montagna e dirupi"},
-    "Medkit":      {"name": "Medkit",       "capture": 0, "kill": 0, "weight": 2, "img": "Tools_Medkit",      "desc": "Cura i personaggi feriti"},
-    "Botkit":      {"name": "Botkit",       "capture": 0, "kill": 0, "weight": 3, "img": "Tools_Botkit",      "desc": "Ripara i robot danneggiati"},
-    "Toolkit":     {"name": "Toolkit",      "capture": 0, "kill": 0, "weight": 2, "img": "Tools_Toolkit",     "desc": "Ripara gli strumenti danneggiati"},
-    "Scanner":     {"name": "Scanner",      "capture": 0, "kill": 0, "weight": 2, "img": "Tools_Scanner",     "desc": "Riduce gli attacchi a sorpresa"},
-    "Neuroscan":   {"name": "Neuroscan",    "capture": 0, "kill": 0, "weight": 2, "img": "Tools_Neuroscan",   "desc": "Per le forme di vita intelligenti"},
-    "Holographer": {"name": "Holographer",  "capture": 0, "kill": 0, "weight": 2, "img": "Tools_Holographer", "desc": "Crea ologrammi delle creature catturate"},
-    "Ecage":       {"name": "E-cage",       "capture": 0, "kill": 0, "weight": 1, "qty": 5, "img": "Tools_E-cage (x5)", "desc": "Contiene una creatura viva catturata"},
-    "Armorig":     {"name": "Armorig",      "capture": 4, "kill": 4, "weight": 9, "combat": true, "img": "Tools_Armorig (x4)", "desc": "Protezione per atmosfera corrosiva"},
-    "Rover":       {"name": "Rover",        "capture": 0, "kill": 0, "weight": 20, "img": "Tools_Rover",      "desc": "Veicolo da trasporto della spedizione"}
+    "Netgun": {
+      "name": "Lanciareti",
+      "capture": 5,
+      "kill": 2,
+      "weight": 2,
+      "combat": true,
+      "img": "Tools_Netgun",
+      "desc": "Arma da cattura"
+    },
+    "Stunbomb": {
+      "name": "Bomba stordente",
+      "capture": 6,
+      "kill": 4,
+      "weight": 1,
+      "combat": true,
+      "qty": 2,
+      "oneshot": true,
+      "img": "Tools_Stunbomb (x2)",
+      "desc": "Arma monouso (x2)"
+    },
+    "Turbolaser": {
+      "name": "Turbolaser",
+      "capture": 4,
+      "kill": 8,
+      "weight": 2,
+      "combat": true,
+      "img": "Tools_Turbolaser",
+      "desc": "Arma da uccisione"
+    },
+    "Climbkit": {
+      "name": "Kit arrampicata",
+      "capture": 0,
+      "kill": 0,
+      "weight": 2,
+      "img": "Tools_Climbkit",
+      "desc": "Riduce le ore in montagna e dirupi"
+    },
+    "Medkit": {
+      "name": "Medkit",
+      "capture": 0,
+      "kill": 0,
+      "weight": 2,
+      "img": "Tools_Medkit",
+      "desc": "Cura i personaggi feriti"
+    },
+    "Botkit": {
+      "name": "Botkit",
+      "capture": 0,
+      "kill": 0,
+      "weight": 3,
+      "img": "Tools_Botkit",
+      "desc": "Ripara i robot danneggiati"
+    },
+    "Toolkit": {
+      "name": "Toolkit",
+      "capture": 0,
+      "kill": 0,
+      "weight": 2,
+      "img": "Tools_Toolkit",
+      "desc": "Ripara gli strumenti danneggiati"
+    },
+    "Scanner": {
+      "name": "Scanner",
+      "capture": 0,
+      "kill": 0,
+      "weight": 2,
+      "img": "Tools_Scanner",
+      "desc": "Riduce gli attacchi a sorpresa"
+    },
+    "Neuroscan": {
+      "name": "Neuroscan",
+      "capture": 0,
+      "kill": 0,
+      "weight": 2,
+      "img": "Tools_Neuroscan",
+      "desc": "Per le forme di vita intelligenti"
+    },
+    "Holographer": {
+      "name": "Holographer",
+      "capture": 0,
+      "kill": 0,
+      "weight": 2,
+      "img": "Tools_Holographer",
+      "desc": "Crea ologrammi delle creature catturate"
+    },
+    "Ecage": {
+      "name": "E-cage",
+      "capture": 0,
+      "kill": 0,
+      "weight": 1,
+      "qty": 5,
+      "img": "Tools_E-cage (x5)",
+      "desc": "Contiene una creatura viva catturata"
+    },
+    "Armorig": {
+      "name": "Armorig",
+      "capture": 4,
+      "kill": 4,
+      "weight": 9,
+      "combat": true,
+      "img": "Tools_Armorig (x4)",
+      "desc": "Protezione per atmosfera corrosiva"
+    },
+    "Rover": {
+      "name": "Rover",
+      "capture": 0,
+      "kill": 0,
+      "weight": 20,
+      "img": "Tools_Rover",
+      "desc": "Veicolo da trasporto della spedizione"
+    }
   },
   "shuttle_capacity": {
     "Near weightless": 120,
@@ -57,5 +247,12 @@
     "Corrosive": "Atmosfera corrosiva: ogni personaggio deve indossare un armorig.",
     "None": "Nessuna atmosfera: ogni personaggio deve indossare un enviorig."
   },
-  "max_supply": 20
+  "max_supply": 20,
+  "rover_capacity": {
+    "Near weightless": 50,
+    "Light": 40,
+    "Earth like": 30,
+    "Heavy": 20,
+    "Oppressive": 0
+  }
 }
