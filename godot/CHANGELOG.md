@@ -2,6 +2,23 @@
 
 Adattamento digitale in Godot del libro-gioco SPI *Voyage of the BSM Pandora* (1981).
 
+## v0.9.2 — 2026-06-15
+
+### Esplorazione e incontri
+- **Più varietà negli incontri (6.5):** quando le condizioni di uno snodo non
+  combaciano si **ri-tira la Matrice di Esplorazione** (varietà reale) invece di
+  convergere su pochi paragrafi.
+- **Logica di scelta visibile:** il box di testo centrale mostra ora «Come ci sei
+  arrivato» (mossa, tiri della Matrice, instradamento snodo, Controllo del
+  Rifornimento), non solo il registro.
+- **Presidio dello shuttle (5.6):** sulla superficie un'unità può restare a guardia
+  dello shuttle (clic sulla pedina); così l'esagono è «occupato» ed eventi come il
+  **¶163** (insetti mangia-metallo) non si innescano di continuo.
+
+### Interfaccia
+- **Pedine della Disposizione più grandi e uniformi**, con dimensione calcolata
+  perché **entrino tutte** in ogni box (niente scroll, niente tagli).
+
 ## v0.9.1 — 2026-06-15
 
 ### Regole di sistema completate

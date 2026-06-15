@@ -1,8 +1,5 @@
 extends Control
 
-# Dimensione fissa delle pedine nel pannello Disposizione (tutte uguali).
-const DISP_TILE := Vector2(46, 46)
-
 var left_panel: Panel
 var center_panel: Panel
 var right_panel: Panel
@@ -218,7 +215,8 @@ func _build_ui() -> void:
 		box.clip_contents = true
 		box.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		box.resized.connect(_relayout_disp_box.bind(box))
+		# Al ridimensionamento ricalcola la dimensione globale e ridispone tutto.
+		box.resized.connect(_relayout_all_disp)
 		cv.add_child(box)
 		parent.add_child(col)
 	# Pandora ospita tutta la nave (3 categorie su più righe): più alta.
@@ -1306,15 +1304,17 @@ func _refresh_disposition() -> void:
 	for k in GameData.get_character_keys():
 		if not GameState.crew.get(k, {}).get("alive", true):
 			continue
-		buckets[_unit_bucket(k in GameState.expedition_units, landed, on_rover)].append(k)
+		buckets[_disp_bucket_for(k, k in GameState.expedition_units, landed, on_rover)].append(k)
 	for k in GameData.get_bot_keys() + GameData.get_tool_keys():
-		buckets[_unit_bucket(k in GameState.expedition_gear, landed, on_rover)].append(k)
+		buckets[_disp_bucket_for(k, k in GameState.expedition_gear, landed, on_rover)].append(k)
+	# In orbita i click spostano Pandora↔Shuttle (preparazione); sulla superficie
+	# spostano una unità tra «con la squadra» e «resta sullo shuttle» (5.6).
+	var clickable := orbit or landed
 	for bucket in buckets:
 		var box := find_child("Disp_%s" % bucket, true, false) as Control
 		if box:
 			box.set_meta("keys", buckets[bucket])
-			box.set_meta("clickable", orbit)
-			_relayout_disp_box(box)
+			box.set_meta("clickable", clickable)
 	# 5.7: la spedizione è O nel Rover O a piedi → mostra un solo box di superficie.
 	for surf in ["Rover", "A piedi"]:
 		var sbox := find_child("Disp_%s" % surf, true, false) as Control
@@ -1322,6 +1322,8 @@ func _refresh_disposition() -> void:
 			var col := sbox.get_parent().get_parent() as Control
 			if col:
 				col.visible = (surf == "Rover") if on_rover else (surf == "A piedi")
+	# Ridispone tutte le pedine con dimensione uniforme che entra in ogni box.
+	_relayout_all_disp()
 	# Riga informativa: fase + capacità di superficie + scelta del mezzo.
 	_refresh_disp_info(orbit, landed, on_rover)
 	var prep_ctrl := find_child("DispPrepControls", true, false) as Control
@@ -1351,12 +1353,14 @@ func _refresh_disp_info(orbit: bool, landed: bool, on_rover: bool) -> void:
 	if phase_lbl:
 		var txt := ""
 		if orbit:
-			txt = "Fase: preparazione in orbita"
+			txt = "Fase: preparazione in orbita · clic su una pedina per spostarla Pandora↔Shuttle"
 		elif GameState.expedition_pos > 0:
 			# Capacità di superficie (5.8): Rover per gravità o somma dei Porti a piedi.
 			var cap := GameState.surface_carry_capacity()
 			var mezzo := "Rover" if on_rover else "a piedi"
-			txt = "Fase: spedizione su %s (%s) · Capacità di Porto %d" % [GameState.current_planet, mezzo, cap]
+			var guard := GameState.shuttle_party.size()
+			var guard_txt := ("%d a guardia dello shuttle" % guard) if guard > 0 else "shuttle non presidiato"
+			txt = "Fase: spedizione su %s (%s) · Porto %d · %s · clic su una pedina per lasciarla allo shuttle" % [GameState.current_planet, mezzo, cap, guard_txt]
 		elif GameState.expedition_units.size() > 0:
 			txt = "Fase: shuttle in volo verso la superficie"
 		phase_lbl.text = txt
@@ -1369,19 +1373,10 @@ func _on_toggle_vehicle() -> void:
 	GameState.toggle_vehicle()
 	_refresh_disposition()
 
-# Dispone le pedine di un bucket in righe per categoria (equipaggio /
-# equipaggiamento / robot). Pedine di dimensione fissa e uguale ovunque,
-# con a-capo automatico (HFlowContainer): niente scroll, niente sovrapposizioni.
-func _relayout_disp_box(box: Control) -> void:
-	for c in box.get_children():
-		c.queue_free()
-	var keys: Array = box.get_meta("keys", [])
-	var clickable: bool = box.get_meta("clickable", false)
-	if keys.is_empty():
-		return
+# Suddivide le chiavi di un box nei tre gruppi (equipaggio, equipaggiamento, robot).
+func _disp_groups(keys: Array) -> Array:
 	var char_keys := GameData.get_character_keys()
 	var bot_keys := GameData.get_bot_keys()
-	# Tre gruppi nell'ordine richiesto: equipaggio, equipaggiamento, robot.
 	var groups := [[], [], []]
 	for k in keys:
 		if char_keys.has(k):
@@ -1390,22 +1385,84 @@ func _relayout_disp_box(box: Control) -> void:
 			groups[2].append(k)
 		else:
 			groups[1].append(k)
-	var vb := VBoxContainer.new()
-	vb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	vb.add_theme_constant_override("separation", 4)
-	box.add_child(vb)
+	return groups
+
+# Numero di righe necessarie per un box dati i gruppi e le colonne disponibili
+# (ogni gruppo va a capo, così si vedono le tre categorie su righe distinte).
+func _disp_rows_needed(groups: Array, cols: int) -> int:
+	var rows := 0
 	for g in groups:
+		if g.size() > 0:
+			rows += int(ceil(float(g.size()) / float(cols)))
+	return rows
+
+# Dimensione GLOBALE delle pedine: la più grande in [MIN,MAX] per cui TUTTI i box
+# visibili riescono a contenere le proprie pedine senza scroll né tagli.
+func _disp_global_tile_size() -> float:
+	var gap := 4.0
+	var best := 60.0
+	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
+		var box := find_child("Disp_%s" % bucket, true, false) as Control
+		if box == null or not box.is_visible_in_tree():
+			continue
+		var keys: Array = box.get_meta("keys", [])
+		if keys.is_empty():
+			continue
+		var w := box.size.x
+		var h := box.size.y
+		if w < 10.0 or h < 10.0:
+			continue
+		var groups := _disp_groups(keys)
+		var fit := 36.0
+		for ti in range(60, 35, -2):
+			var t := float(ti)
+			var cols := maxi(1, int((w + gap) / (t + gap)))
+			var need_h := _disp_rows_needed(groups, cols) * (t + gap)
+			if need_h <= h:
+				fit = t
+				break
+		best = minf(best, fit)
+	return clampf(best, 36.0, 60.0)
+
+# Ridispone TUTTI i box con la stessa dimensione di pedina (uniforme e che entra).
+func _relayout_all_disp() -> void:
+	var ts := _disp_global_tile_size()
+	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
+		var box := find_child("Disp_%s" % bucket, true, false) as Control
+		if box:
+			_layout_disp_box(box, ts)
+
+# Dispone le pedine di un box in righe per categoria (equipaggio / equipaggiamento /
+# robot), a griglia con posizionamento manuale: pedine uguali, niente scroll.
+func _layout_disp_box(box: Control, ts: float) -> void:
+	for c in box.get_children():
+		c.queue_free()
+	var keys: Array = box.get_meta("keys", [])
+	var clickable: bool = box.get_meta("clickable", false)
+	if keys.is_empty():
+		return
+	var w := box.size.x
+	if w < 10.0:
+		return
+	var gap := 4.0
+	var cols := maxi(1, int((w + gap) / (ts + gap)))
+	var y := 0.0
+	for g in _disp_groups(keys):
 		if g.is_empty():
 			continue
-		var flow := HFlowContainer.new()
-		flow.add_theme_constant_override("h_separation", 4)
-		flow.add_theme_constant_override("v_separation", 4)
-		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		vb.add_child(flow)
+		var col := 0
 		for k in g:
 			var t := _make_disp_tile(str(k), clickable)
-			t.custom_minimum_size = DISP_TILE
-			flow.add_child(t)
+			t.position = Vector2(col * (ts + gap), y)
+			t.size = Vector2(ts, ts)
+			t.custom_minimum_size = Vector2(ts, ts)
+			box.add_child(t)
+			col += 1
+			if col >= cols:
+				col = 0
+				y += ts + gap
+		if col > 0:
+			y += ts + gap   # chiude la riga parziale prima del gruppo successivo
 
 # Bucket di un'unità: Pandora (a bordo) / Shuttle (in spedizione non sbarcata) /
 # A piedi o Rover (in spedizione, sbarcata, secondo l'uso del rover).
@@ -1415,6 +1472,13 @@ func _unit_bucket(deployed: bool, landed: bool, rover: bool) -> String:
 	if not landed:
 		return "Shuttle"
 	return "Rover" if rover else "A piedi"
+
+# Come _unit_bucket, ma sulla superficie le unità rimaste a presidiare lo shuttle
+# (5.6) finiscono nel box «Shuttle» invece che in Rover/A piedi.
+func _disp_bucket_for(key: String, deployed: bool, landed: bool, rover: bool) -> String:
+	if deployed and landed and GameState.unit_stays_at_shuttle(key):
+		return "Shuttle"
+	return _unit_bucket(deployed, landed, rover)
 
 func _make_disp_tile(key: String, clickable: bool) -> Control:
 	var u := GameData.get_unit(key)
@@ -1435,13 +1499,17 @@ func _make_disp_tile(key: String, clickable: bool) -> Control:
 	return base
 
 func _disp_toggle(key: String) -> void:
-	if not GameState.is_orbit_decision():
-		return
-	if GameData.get_character_keys().has(key):
-		GameState.toggle_expedition_unit(key)
-	else:
-		GameState.toggle_gear_unit(key)
-	_refresh_disposition()
+	if GameState.is_orbit_decision():
+		# In orbita: preparazione, sposta l'unità Pandora↔Shuttle.
+		if GameData.get_character_keys().has(key):
+			GameState.toggle_expedition_unit(key)
+		else:
+			GameState.toggle_gear_unit(key)
+		_refresh_disposition()
+	elif GameState.expedition_pos > 0:
+		# Sulla superficie: l'unità resta sullo shuttle o torna con la squadra (5.6).
+		GameState.toggle_shuttle_stay(key)
+		_refresh_disposition()
 
 func _make_prep_tile(key: String, in_team: bool) -> Button:
 	var u := GameData.get_unit(key)
@@ -2164,6 +2232,11 @@ func _on_paragraph_request(para_num: int) -> void:
 			var img_path := GameData.get_event_image_path(para_num)
 			if not img_path.is_empty():
 				bb += "[center][img=360]" + img_path + "[/img][/center]\n\n"
+		# «Come ci sei arrivato»: tiri della Matrice di Esplorazione, instradamento
+		# degli snodi 6.5 e controlli di rifornimento, così la logica di scelta del
+		# paragrafo è chiara (non solo nel log). Mostrato per esplorazione/creatura/evento.
+		if GameState.expedition_pos > 0 and GameState.encounter_trail != "":
+			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Come ci sei arrivato (logica di scelta):[/color]\n[color=#bcd6ee]%s[/color]  [/bgcolor]\n\n" % GameState.encounter_trail.strip_edges()
 		# In orbita i rimandi del paragrafo (opzioni d'atterraggio) non sono cliccabili:
 		# l'atterraggio si determina col tiro alla preparazione (5.4).
 		if GameState.is_orbit_decision():

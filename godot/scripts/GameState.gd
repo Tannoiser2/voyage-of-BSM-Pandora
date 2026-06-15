@@ -51,6 +51,7 @@ signal die_rolled(value: int, purpose: String)
 # I Punti Danno riducono la Resistenza; a 0 il personaggio è ucciso (8.8).
 const MAX_ENDURANCE := 5
 const ROBOT_MAX_ENDURANCE := 6  # Resistenza dei robot per il deterioramento atmosferico (¶155)
+const MAX_EXP_REROLL := 10      # ri-tiri massimi della Matrice di Esplorazione (6.5) per evitare loop
 var crew: Dictionary = {
 	"CO":   {"name": "Comandante",            "alive": true, "endurance": 5, "intelligence": 0},
 	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 5, "intelligence": 0},
@@ -82,6 +83,10 @@ var gear_damaged_log: Array = []
 var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
 # 5.7: la squadra si muove a piedi anche se ha il Rover (scelta del mezzo).
 var prefer_foot: bool = false
+# 5.6: unità che restano sullo shuttle (esagono di atterraggio) invece di muoversi
+# con la squadra in esplorazione. Finché almeno una unità presidia lo shuttle,
+# l'esagono dello shuttle è «occupato» (rilevante per ¶163).
+var shuttle_party: Array = []
 
 # Traccia Tempo e Rifornimento (6.8 / 7.0): la posizione avanza con le ore di
 # spedizione spese; quando raggiunge/supera lo «spazio di controllo» della gravità
@@ -130,6 +135,10 @@ var cannot_leave_until_explored: Array = []  # ¶076: reali da esplorare prima d
 var shuttle_devour_pending: bool = false     # ¶163: shuttle in pericolo; risolto al prossimo Controllo del Rifornimento
 var submerged_env: bool = false              # ¶114/123: esplorazione condotta in immersione (6.7)
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
+# Traccia leggibile di «come si è arrivati a questo paragrafo» (mossa, Matrice di
+# Esplorazione, instradamento snodo 6.5, controllo rifornimento): mostrata nel box
+# di testo centrale così che la logica di scelta sia chiara, non solo nel registro.
+var encounter_trail: String = ""
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
 # affrettato» degli snodi «Incontro di spedizione» (6.5).
@@ -259,7 +268,7 @@ func save_game(silent := false) -> bool:
 		"shuttle_capacity": shuttle_capacity, "expedition_units": expedition_units,
 		"expedition_gear": expedition_gear, "damaged_gear": damaged_gear,
 		"gear_damaged_log": gear_damaged_log,
-		"prefer_foot": prefer_foot,
+		"prefer_foot": prefer_foot, "shuttle_party": shuttle_party,
 		"planned_supply": planned_supply,
 		"supply_track_pos": supply_track_pos, "pending_supply_checks": pending_supply_checks,
 		"current_creature": current_creature, "creature_rating": creature_rating,
@@ -349,6 +358,7 @@ func load_game() -> bool:
 	damaged_gear = d.get("damaged_gear", [])
 	gear_damaged_log = d.get("gear_damaged_log", [])
 	prefer_foot = bool(d.get("prefer_foot", false))
+	shuttle_party = d.get("shuttle_party", [])
 	planned_supply = int(d.get("planned_supply", 6))
 	supply_track_pos = int(d.get("supply_track_pos", 0))
 	pending_supply_checks = int(d.get("pending_supply_checks", 0))
@@ -426,6 +436,10 @@ func phase_name(p: Phase) -> String:
 func add_log(msg: String) -> void:
 	log_entries.append(msg)
 	message_posted.emit(msg)
+
+# Aggiunge una riga alla traccia «come ci sei arrivato» (mostrata nel testo centrale).
+func _trail(msg: String) -> void:
+	encounter_trail += ("• " + msg + "\n")
 
 func months_remaining() -> int:
 	return tour_length - tour_months_used
@@ -1501,31 +1515,26 @@ func _route_expedition_encounter(snodo: int, rules: Array) -> void:
 		if _exp_cond_holds(r.get("cond", {})):
 			var dest := int(r.get("goto", 0))
 			add_log("Incontro di spedizione ¶%03d (6.5) → condizione soddisfatta → ¶%03d." % [snodo, dest])
+			_trail("Snodo d'incontro ¶%03d (6.5): condizione adatta all'esagono → ¶%03d." % [snodo, dest])
 			show_paragraph(dest)
 			return
-	# 2) Nessuna condizione dello snodo combacia con la situazione (terreno/atmosfera/
-	#    clima). La Matrice di Esplorazione è globale (non per-terreno): si cerca tra
-	#    TUTTI gli snodi una condizione adatta all'esagono attuale e si auto-risolve,
-	#    così il giocatore non deve mai scegliere a mano.
-	var matches: Array = []
-	for key in GameData.expedition_encounters:
-		if str(key).begins_with("_"):
-			continue
-		for r2 in GameData.expedition_encounters[key]:
-			if _exp_cond_holds(r2.get("cond", {})):
-				matches.append(int(r2.get("goto", 0)))
-				break  # un solo ramo (il primo vero) per snodo
-	if not matches.is_empty():
-		var dest2: int = matches[randi_range(0, matches.size() - 1)]
-		add_log("Incontro di spedizione ¶%03d (6.5): nessuna sua condizione vera; instradato a un incontro adatto all'esagono → ¶%03d." % [snodo, dest2])
-		show_paragraph(dest2)
+	# 2) Nessuna condizione dello snodo combacia con la situazione: si RI-TIRA la
+	#    Matrice di Esplorazione per ottenere un nuovo snodo (varietà reale, niente
+	#    convergenza su pochi paragrafi), con guardia anti-ricorsione.
+	if _expedition_reroll_depth < MAX_EXP_REROLL:
+		_expedition_reroll_depth += 1
+		var d1 := randi_range(1, 6)
+		var d2 := randi_range(1, 6)
+		var snodo2 := GameData.get_exploration_2d6(d1, d2)
+		add_log("Incontro di spedizione ¶%03d (6.5): nessuna condizione adatta; ri-tiro Matrice %d/%d → ¶%03d." % [snodo, d1, d2, snodo2])
+		_trail("Snodo ¶%03d: nessuna condizione adatta all'esagono → ri-tiro Matrice (dadi %d/%d) → ¶%03d." % [snodo, d1, d2, snodo2])
+		show_paragraph(snodo2)
 		return
-	# 3) Caso estremo: nessuno snodo ha una condizione adatta all'esagono. Si usa il
-	#    ramo di default dello snodo tirato (l'ultima condizione, di norma la più comune),
-	#    auto-risolto: niente scelte manuali.
+	# 3) Esauriti i ri-tiri: si usa il ramo di default dello snodo tirato (l'ultima
+	#    condizione, di norma la più comune), auto-risolto: niente scelte manuali.
 	var fallback := int(rules[rules.size() - 1].get("goto", 0)) if not rules.is_empty() else 0
 	if fallback > 0:
-		add_log("Incontro di spedizione ¶%03d (6.5): nessun incontro adatto; ramo di default → ¶%03d." % [snodo, fallback])
+		add_log("Incontro di spedizione ¶%03d (6.5): ramo di default → ¶%03d." % [snodo, fallback])
 		show_paragraph(fallback)
 	else:
 		_show_snodo_text(snodo)
@@ -1582,7 +1591,30 @@ func _lava_in_area() -> bool:
 # Vero se lo shuttle (fermo sull'esagono di atterraggio) NON è occupato da un
 # personaggio funzionante, cioè la spedizione si è spostata altrove (6.5).
 func _shuttle_hex_unoccupied() -> bool:
+	# Lo shuttle è presidiato se la squadra è sull'esagono di atterraggio oppure se
+	# almeno una unità è rimasta a guardia dello shuttle (5.6).
+	if not shuttle_party.is_empty():
+		return false
 	return expedition_pos > 0 and expedition_pos != landing_hex
+
+# 5.6: una unità è rimasta a presidiare lo shuttle (non si muove con la squadra)?
+func unit_stays_at_shuttle(key: String) -> bool:
+	return key in shuttle_party
+
+# Alterna una unità tra «in spedizione con la squadra» e «resta sullo shuttle» (5.6).
+# Valido solo sulla superficie e per unità effettivamente schierate.
+func toggle_shuttle_stay(key: String) -> void:
+	if expedition_pos <= 0:
+		return
+	if not (key in expedition_units or key in expedition_gear):
+		return
+	if key in shuttle_party:
+		shuttle_party.erase(key)
+		add_log("%s raggiunge la squadra in esplorazione." % GameData.get_unit(key).get("name", key))
+	else:
+		shuttle_party.append(key)
+		add_log("%s resta a presidiare lo shuttle (5.6)." % GameData.get_unit(key).get("name", key))
+	state_updated.emit()
 
 func _unexplored_alien_city_in_area() -> bool:
 	for hid in environ_grid:
@@ -3174,6 +3206,7 @@ func resolve_supply_check(die: int) -> void:
 	var total := calc1 + calc2
 	add_log("Controllo Rifornimento (7.2): dado %d · Utenti %d → %d · (LSV %d + terreno %d = %d) → %d · totale %d." % [
 		die, users, calc1, lsv, terr_supply, summ, calc2, total])
+	_trail("Controllo del Rifornimento (7.2): dado %d → spesi %d Punti Rifornimento (scorte %d)." % [die, total, expedition_supply])
 	_expend_supply(total)
 	# Infezioni in corso (¶197/¶209): ogni personaggio infetto perde 1 Resistenza a
 	# ogni Controllo del Rifornimento, finché non rientra sulla Pandora.
@@ -3273,6 +3306,8 @@ func reset_expedition_state() -> void:
 	creature_rating = 0
 	captured_creatures = []
 	damage_points = 0
+	encounter_trail = ""
+	shuttle_party = []    # 5.6: nessuno resta sullo shuttle all'inizio di una spedizione
 	prefer_foot = false   # 5.7: ogni spedizione riparte con la scelta del mezzo di default
 	_archive_damaged_gear()   # 9.2: conserva i danni ai fini dello scoring finale
 	damaged_gear = []
@@ -3437,6 +3472,7 @@ func explore_current_hex() -> void:
 		return
 	# Esplorazione dell'esagono occupato: nuova azione, niente percorso affrettato (6.5).
 	hasty_path_terrains = []
+	encounter_trail = ""   # nuova azione: ricomincia la traccia «come ci sei arrivato»
 	explore_environ_hex(expedition_pos, cell.get("terrain", "Open"))
 
 # Versione legacy (atterraggio al centro) mantenuta per compatibilità.
@@ -3603,12 +3639,14 @@ func move_expedition(hex_id: int) -> void:
 		return
 	# Un movimento normale azzera la traccia del movimento affrettato (nuova azione, 6.5).
 	hasty_path_terrains = []
+	encounter_trail = ""   # nuova azione: ricomincia la traccia «come ci sei arrivato»
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
 	var real_id: String = cell.get("real", str(hex_id))
 	# Entrare in un esagono costa le ore del terreno (Carta 6.6), modificate dall'equipaggiamento
 	var enter_cost := enter_cost_for(terrain)
 	expedition_pos = hex_id
+	_trail("La spedizione entra in %s (esagono %s), %d ore col mezzo %s." % [_terrain_it(terrain), real_id, enter_cost, ("Rover" if expedition_on_rover() else "a piedi")])
 	add_expedition_hours(enter_cost)
 	add_log("La spedizione entra in %s (esagono %s) — %d ore%s." % [
 		_terrain_it(terrain), real_id, enter_cost, _gear_cost_note(terrain)])
@@ -3645,6 +3683,7 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 	var d2 := randi_range(1, 6)
 	var para_num := GameData.get_exploration_2d6(d1, d2)
 	add_log("Esplorazione (%s) — Matrice di Esplorazione dadi %d/%d → Paragrafo %03d" % [_terrain_it(terrain), d1, d2, para_num])
+	_trail("Esplori %s: Matrice di Esplorazione (dadi %d/%d) → ¶%03d." % [_terrain_it(terrain), d1, d2, para_num])
 	show_paragraph(para_num)
 
 func _terrain_it(terrain: String) -> String:
