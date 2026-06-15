@@ -1,5 +1,8 @@
 extends Control
 
+# Dimensione fissa delle pedine nel pannello Disposizione (tutte uguali).
+const DISP_TILE := Vector2(46, 46)
+
 var left_panel: Panel
 var center_panel: Panel
 var right_panel: Panel
@@ -188,7 +191,7 @@ func _build_ui() -> void:
 	# Pedine grandi e sovrapposte a ventaglio (niente scroll), il nome è sulla pedina.
 	var disp_sec := UITheme.section("Disposizione · dove sta ogni unità")
 	disp_sec["panel"].name = "DispositionSection"
-	disp_sec["panel"].custom_minimum_size = Vector2(0, 300)
+	disp_sec["panel"].custom_minimum_size = Vector2(0, 420)
 	disp_sec["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
 	center_vbox.add_child(disp_sec["panel"])
 	var disp_vbox := VBoxContainer.new()
@@ -218,12 +221,14 @@ func _build_ui() -> void:
 		box.resized.connect(_relayout_disp_box.bind(box))
 		cv.add_child(box)
 		parent.add_child(col)
+	# Pandora ospita tutta la nave (3 categorie su più righe): più alta.
 	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
+	(disp_vbox.get_child(disp_vbox.get_child_count() - 1) as Control).size_flags_stretch_ratio = 1.5
 	# Riga inferiore: Shuttle (più grande) + A piedi + Rover
 	var disp_row := HBoxContainer.new()
 	disp_row.add_theme_constant_override("separation", 6)
 	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	disp_row.size_flags_stretch_ratio = 1.6
+	disp_row.size_flags_stretch_ratio = 1.0
 	disp_vbox.add_child(disp_row)
 	_disp_add_bucket.call(disp_row, "Shuttle", 2)
 	_disp_add_bucket.call(disp_row, "A piedi", 1)
@@ -1304,31 +1309,43 @@ func _refresh_disposition() -> void:
 		var launch := find_child("DispLaunch", true, false) as Button
 		if launch: launch.disabled = not GameState.prep_valid()
 
-# Dispone le pedine di un bucket a ventaglio (sovrapposte), grandi e senza scroll.
+# Dispone le pedine di un bucket in righe per categoria (equipaggio /
+# equipaggiamento / robot). Pedine di dimensione fissa e uguale ovunque,
+# con a-capo automatico (HFlowContainer): niente scroll, niente sovrapposizioni.
 func _relayout_disp_box(box: Control) -> void:
 	for c in box.get_children():
 		c.queue_free()
 	var keys: Array = box.get_meta("keys", [])
 	var clickable: bool = box.get_meta("clickable", false)
-	var n := keys.size()
-	if n == 0:
+	if keys.is_empty():
 		return
-	var bw := box.size.x
-	var bh := box.size.y
-	if bw <= 1.0 or bh <= 1.0:
-		return  # layout non ancora valido: il segnale resized richiamerà la funzione
-	var tw := clampf(bh * 0.82, 44.0, 78.0)   # larghezza pedina ≈ altezza box
-	var th := minf(bh, tw * 1.3)
-	# Passo orizzontale: pieno se entrano, altrimenti sovrapposte per stare nella larghezza.
-	var step := tw + 4.0
-	if n > 1:
-		step = clampf((bw - tw) / float(n - 1), 10.0, tw + 4.0)
-	for i in n:
-		var t := _make_disp_tile(str(keys[i]), clickable)
-		t.position = Vector2(i * step, (bh - th) * 0.5)
-		t.size = Vector2(tw, th)
-		t.z_index = i
-		box.add_child(t)
+	var char_keys := GameData.get_character_keys()
+	var bot_keys := GameData.get_bot_keys()
+	# Tre gruppi nell'ordine richiesto: equipaggio, equipaggiamento, robot.
+	var groups := [[], [], []]
+	for k in keys:
+		if char_keys.has(k):
+			groups[0].append(k)
+		elif bot_keys.has(k):
+			groups[2].append(k)
+		else:
+			groups[1].append(k)
+	var vb := VBoxContainer.new()
+	vb.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	vb.add_theme_constant_override("separation", 4)
+	box.add_child(vb)
+	for g in groups:
+		if g.is_empty():
+			continue
+		var flow := HFlowContainer.new()
+		flow.add_theme_constant_override("h_separation", 4)
+		flow.add_theme_constant_override("v_separation", 4)
+		flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vb.add_child(flow)
+		for k in g:
+			var t := _make_disp_tile(str(k), clickable)
+			t.custom_minimum_size = DISP_TILE
+			flow.add_child(t)
 
 # Bucket di un'unità: Pandora (a bordo) / Shuttle (in spedizione non sbarcata) /
 # A piedi o Rover (in spedizione, sbarcata, secondo l'uso del rover).
