@@ -30,6 +30,7 @@ var expedition_hours: int = 0
 var shuttle_supply: int = 6
 var expedition_supply: int = 0
 var victory_points: int = 0
+var final_result: String = ""   # "" in corso · "win"/"lose" a fine Tour (9.3)
 
 # Position
 var pandora_hex: int = 46
@@ -74,7 +75,13 @@ var shuttle_capacity: int = 80             # capacità di porto dello shuttle (C
 var expedition_units: Array = []           # chiavi dei personaggi scelti per la spedizione
 var expedition_gear: Array = []            # chiavi di robot/strumenti imbarcati (5.2)
 var damaged_gear: Array = []               # chiavi di robot/strumenti danneggiati (6.9)
+# Registro persistente dell'equipaggiamento danneggiato/distrutto ai fini dello
+# scoring di fine gioco (9.2): a differenza di `damaged_gear` (per-spedizione, può
+# azzerarsi al cambio pianeta) qui le voci restano finché non vengono riparate al ¶050.
+var gear_damaged_log: Array = []
 var planned_supply: int = 6                # Punti Rifornimento da caricare (0-20, regola 5.3)
+# 5.7: la squadra si muove a piedi anche se ha il Rover (scelta del mezzo).
+var prefer_foot: bool = false
 
 # Traccia Tempo e Rifornimento (6.8 / 7.0): la posizione avanza con le ore di
 # spedizione spese; quando raggiunge/supera lo «spazio di controllo» della gravità
@@ -143,6 +150,7 @@ func start_new_game(p_tour_length: int) -> void:
 	shuttle_supply = 6
 	expedition_supply = 0
 	victory_points = 0
+	final_result = ""
 	pandora_hex = 46
 	current_system = "Sol"
 	current_planet = ""
@@ -156,6 +164,7 @@ func start_new_game(p_tour_length: int) -> void:
 	expedition_units = []
 	expedition_gear = []
 	damaged_gear = []
+	gear_damaged_log = []
 	planned_supply = 6
 	planet_attrs = {}
 	planet_gravity = "Earth like"
@@ -236,7 +245,7 @@ func save_game(silent := false) -> bool:
 		"tour_length": tour_length, "tour_set": tour_set,
 		"tour_months_used": tour_months_used, "expedition_hours": expedition_hours,
 		"shuttle_supply": shuttle_supply, "expedition_supply": expedition_supply,
-		"victory_points": victory_points,
+		"victory_points": victory_points, "final_result": final_result,
 		"pandora_hex": pandora_hex, "current_system": current_system, "current_planet": current_planet,
 		"current_phase": int(current_phase), "current_paragraph": current_paragraph,
 		"awaiting_die_roll": awaiting_die_roll, "pending_die_purpose": pending_die_purpose,
@@ -249,6 +258,8 @@ func save_game(silent := false) -> bool:
 		"planet_attrs": planet_attrs, "planet_gravity": planet_gravity,
 		"shuttle_capacity": shuttle_capacity, "expedition_units": expedition_units,
 		"expedition_gear": expedition_gear, "damaged_gear": damaged_gear,
+		"gear_damaged_log": gear_damaged_log,
+		"prefer_foot": prefer_foot,
 		"planned_supply": planned_supply,
 		"supply_track_pos": supply_track_pos, "pending_supply_checks": pending_supply_checks,
 		"current_creature": current_creature, "creature_rating": creature_rating,
@@ -306,6 +317,7 @@ func load_game() -> bool:
 	shuttle_supply = int(d.get("shuttle_supply", 6))
 	expedition_supply = int(d.get("expedition_supply", 0))
 	victory_points = int(d.get("victory_points", 0))
+	final_result = str(d.get("final_result", ""))
 	pandora_hex = int(d.get("pandora_hex", 46))
 	current_system = str(d.get("current_system", "Sol"))
 	current_planet = str(d.get("current_planet", ""))
@@ -335,6 +347,8 @@ func load_game() -> bool:
 	expedition_units = d.get("expedition_units", [])
 	expedition_gear = d.get("expedition_gear", [])
 	damaged_gear = d.get("damaged_gear", [])
+	gear_damaged_log = d.get("gear_damaged_log", [])
+	prefer_foot = bool(d.get("prefer_foot", false))
 	planned_supply = int(d.get("planned_supply", 6))
 	supply_track_pos = int(d.get("supply_track_pos", 0))
 	pending_supply_checks = int(d.get("pending_supply_checks", 0))
@@ -1031,6 +1045,7 @@ func setup_orbit_planet() -> void:
 	shuttle_capacity = GameData.shuttle_capacity_for(planet_gravity)
 	expedition_units = default_team()
 	expedition_gear = []
+	_archive_damaged_gear()   # 9.2: conserva i danni ai fini dello scoring finale
 	damaged_gear = []
 	planned_supply = clampi(6, 0, max_planned_supply())
 	add_log("In orbita su %s — gravità %s, atmosfera %s, capacità shuttle %d." % [
@@ -1098,7 +1113,44 @@ func effective_char_stat(key: String, stat: String) -> int:
 				base += 4
 			elif stat == "port":
 				base -= 1
+	# 8.8/8.9: ogni Punto Resistenza perso riduce di 1 il Valore di Porto del
+	# personaggio (i Punti Danno «riducono il Valore di Porto»).
+	if stat == "port":
+		var lost_end := MAX_ENDURANCE - int(crew.get(key, {}).get("endurance", MAX_ENDURANCE))
+		if lost_end > 0:
+			base -= lost_end
+		# 5.8: la gravità del pianeta scala la capacità di Porto (×2/+2/=/−2/½).
+		base = GameData.port_for_gravity(base, planet_gravity)
+		base = maxi(base, 0)
 	return base
+
+# 5.7/5.8: il Rover è utilizzabile se è in spedizione, non danneggiato e la gravità
+# non è opprimente (nota 2 della Carta Capacità di Porto).
+func rover_available() -> bool:
+	return ("Rover" in expedition_gear) and not ("Rover" in damaged_gear) and planet_gravity != "Oppressive"
+
+# La squadra si muove col Rover se disponibile e non si è scelto di andare a piedi.
+func expedition_on_rover() -> bool:
+	return rover_available() and not prefer_foot
+
+# 5.7: alterna Rover ↔ a piedi (solo se il Rover è disponibile).
+func toggle_vehicle() -> void:
+	if not rover_available():
+		return
+	prefer_foot = not prefer_foot
+	add_log("La spedizione si muoverà %s." % ("a piedi" if prefer_foot else "col Rover"))
+	state_updated.emit()
+
+# Capacità di Porto della superficie (5.8): col Rover è la capacità del Rover per
+# gravità; a piedi è la somma dei Valori di Porto efficaci dei personaggi.
+func surface_carry_capacity() -> int:
+	if expedition_on_rover():
+		return GameData.rover_capacity_for(planet_gravity)
+	var total := 0
+	for k in expedition_units:
+		if GameData.get_character_keys().has(k) and crew.get(k, {}).get("alive", false):
+			total += effective_char_stat(k, "port")
+	return total
 
 # --- Stato dei rig di protezione per-personaggio (regola 5.2) -----------------
 # L'enviorig e l'armorig sono indossati per personaggio. La regola 5.2 li rende
@@ -2064,6 +2116,10 @@ func _onboard_actions() -> void:
 		if g in expedition_gear:
 			damaged_gear.erase(g)
 			repaired += 1
+	# Le Azioni di Bordo del ¶050 riparano tutto l'equipaggiamento riportato a bordo:
+	# azzera anche il registro persistente per lo scoring (9.2).
+	repaired += gear_damaged_log.size()
+	gear_damaged_log = []
 	if healed > 0 or repaired > 0:
 		add_log("¶050 Azioni di Bordo: %d personaggio/i curato/i, %d unità riparate." % [healed, repaired])
 	state_updated.emit()
@@ -2970,16 +3026,48 @@ func _end_tour() -> void:
 		return
 	add_log("Tour completato! Calcolo Punti Vittoria...")
 	# Regola 9.2: 1 PV perso per ogni Punto Resistenza perso dai personaggi sopravvissuti.
+	# (I Punti persi durante il gioco ma poi recuperati non contano: si guarda solo
+	# la differenza alla fine.)
 	var lost := 0
 	for k in crew:
 		if crew[k].get("alive", false):
 			lost += MAX_ENDURANCE - int(crew[k].get("endurance", MAX_ENDURANCE))
 	if lost > 0:
-		lose_vp(lost, "Ferite dei sopravvissuti a fine tour (%d Resistenza)" % lost)
+		lose_vp(lost, "Ferite dei sopravvissuti a fine tour (%d Resistenza, 9.2)" % lost)
+	# Regola 9.2: 1 PV per ogni robot/rover e per ogni tipo di strumento danneggiato
+	# o distrutto a fine gioco. Travaso prima l'eventuale danno della spedizione in corso.
+	_archive_damaged_gear()
+	var bot_keys := GameData.get_bot_keys()
+	var damaged_bots := 0
+	var damaged_tools := 0
+	for g in gear_damaged_log:
+		if g == "Rover" or bot_keys.has(g):
+			damaged_bots += 1
+		else:
+			damaged_tools += 1
+	if damaged_bots > 0:
+		lose_vp(damaged_bots, "Robot/rover danneggiati a fine gioco (%d, 9.2)" % damaged_bots)
+	if damaged_tools > 0:
+		lose_vp(damaged_tools, "Strumenti danneggiati a fine gioco (%d tipi, 9.2)" % damaged_tools)
+	# Regola 9.2: 5 PV per ogni riga del Pandora Crew Log (ogni personaggio perso).
+	var dead := 0
+	for k in crew:
+		if not crew[k].get("alive", true):
+			dead += 1
+	if dead > 0:
+		lose_vp(dead * 5, "Righe del Pandora Crew Log (%d personaggi persi, 9.2)" % dead)
 	# Regola 9.2: 5 PV persi per ogni mese oltre il Tour di Servizio scelto.
 	var over := tour_months_used - tour_length
 	if over > 0:
 		lose_vp(over * 5, "%d mese/i oltre il Tour (9.2)" % over)
+	# Regola 9.3: verdetto finale. Vittoria se i PV sono almeno il doppio dei mesi
+	# del Tour di Servizio scelto; altrimenti sconfitta.
+	var threshold := tour_length * 2
+	final_result = "win" if victory_points >= threshold else "lose"
+	if final_result == "win":
+		add_log("VERDETTO (9.3): %d PV ≥ soglia %d → VITTORIA. La Commissione di Rilevamento Galattico è soddisfatta." % [victory_points, threshold])
+	else:
+		add_log("VERDETTO (9.3): %d PV < soglia %d → SCONFITTA. Il viaggio non ha soddisfatto la Commissione." % [victory_points, threshold])
 	show_paragraph(232)
 	set_phase(Phase.GAME_OVER)
 
@@ -3173,11 +3261,20 @@ func use_expedition_supply(amount: int) -> bool:
 	add_log("Rifornimenti insufficienti!")
 	return false
 
+# 9.2: travasa l'equipaggiamento attualmente danneggiato nel registro persistente
+# usato per lo scoring finale (la riparazione al ¶050 lo svuota di nuovo).
+func _archive_damaged_gear() -> void:
+	for g in damaged_gear:
+		if not gear_damaged_log.has(g):
+			gear_damaged_log.append(g)
+
 func reset_expedition_state() -> void:
 	current_creature = ""
 	creature_rating = 0
 	captured_creatures = []
 	damage_points = 0
+	prefer_foot = false   # 5.7: ogni spedizione riparte con la scelta del mezzo di default
+	_archive_damaged_gear()   # 9.2: conserva i danni ai fini dello scoring finale
 	damaged_gear = []
 	environ_grid = {}
 	expedition_pos = 0
@@ -3624,6 +3721,7 @@ func repair_gear() -> void:
 	if key == "":
 		return
 	damaged_gear.erase(key)
+	gear_damaged_log.erase(key)   # riparato: non pesa più sullo scoring finale (9.2)
 	add_expedition_hours(1)
 	var kit := "Botkit" if _gear_is_bot(key) else "Toolkit"
 	add_log("%s ripara %s." % [kit, GameData.get_unit(key).get("name", key)])

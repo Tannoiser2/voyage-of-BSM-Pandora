@@ -13,8 +13,8 @@ prototipo Godot.
 
 | Stato | Conteggio |
 |---|---|
-| 🟢 Verde | 39 |
-| 🟡 Giallo | 13 |
+| 🟢 Verde | 46 |
+| 🟡 Giallo | 6 |
 | 🔴 Rosso | 0 |
 
 Nucleo "di sistema" (movimento interstellare → tabella pianeti → atterraggio →
@@ -22,11 +22,13 @@ matrice di esplorazione → incontro creatura → combattimento) **solido**.
 Coperti in questa tornata: **Resistenza 5 (2.5)**, **Valore Intelligenza (3.3)**,
 **Rifornimento (7.0/7.1/7.2/7.3)**, **equipaggiamento d'atmosfera (5.2)**,
 **snodi "Incontro di spedizione" (6.5)**, **effetti eventi interstellari (4.2)**,
-**artefatti (2.4/2.6/9.1)**, **scoring PV completo lato guadagni (9.1)** e
-**mesi oltre Tour (9.2)**. Migliorie residue (🟡/🔴): arricchimento dati
-environ (clima + terreni mancanti per attivare le condizioni 6.5 oggi inerti),
-perdite PV a fine gioco per equipaggiamento danneggiato/Crew Log (9.2, serve
-tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
+**artefatti (2.4/2.6/9.1)**, **scoring PV completo (guadagni 9.1 e perdite 9.2:
+equipaggiamento danneggiato via registro persistente, Crew Log, mesi oltre Tour)**,
+**condizione di vittoria (9.3)**, **danni → Resistenza/Porto (8.8/8.9)** e
+**Capacità di Porto per gravità + Rover/piedi con segnalini shuttle/squadra (5.6/5.7/5.8)**.
+Migliorie residue (🟡): arricchimento dati environ (clima + terreni mancanti per
+attivare le condizioni 6.5 oggi inerti), modificatori di rifornimento del terreno (6.6)
+e dettagli minori (2.2 carte, 3.5 selezione casuale, 4.4/4.6 entry box).
 
 ---
 
@@ -74,9 +76,9 @@ tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
 | 5.3 | Punti Rifornimento sullo shuttle (0–20, peso 1) | 🟢 | `planned_supply` con limite. |
 | 5.4 | Esagono di atterraggio (tiro di dado) | 🟢 | `land_on_planet`, `landing_hex`. |
 | 5.5 | Paragrafo che descrive l'environ | 🟢 | Mostrato all'atterraggio. |
-| 5.6 | Scelta unità a bordo vs in spedizione | 🟡 | Distinzione presente ma parziale (Rover/On Foot). |
-| 5.7 | Spedizione in Rover o a piedi | 🟡 | Modellazione parziale del rover. |
-| 5.8 | Carta Capacità di Porto | 🟡 | Limite di peso (capacità shuttle per gravità) sì; il Valore di Porto del singolo personaggio è mostrato come efficace (modificatori d'atmosfera, 5.2) ma non vincola ancora un carico individuale. |
+| 5.6 | Scelta unità a bordo vs in spedizione | 🟢 | Selezione squadra/equipaggiamento in preparazione; pannello **Disposizione** mostra sempre dove sta ogni unità (Pandora · Shuttle · superficie). Sull'environ lo **shuttle resta sul landing hex** (segnalino «S») mentre la squadra si sposta col proprio segnalino (5.6). |
+| 5.7 | Spedizione in Rover o a piedi | 🟢 | La squadra è **o** nel Rover **o** a piedi (un solo box di superficie mostrato); pulsante per scegliere il mezzo (`toggle_vehicle`), segnalino squadra «R»/«P» sulla mappa; il Rover è vietato in gravità opprimente (`rover_available`). |
+| 5.8 | Carta Capacità di Porto | 🟢 | Capacità per gravità: **shuttle** (`shuttle_capacity_for`), **rover** (`rover_capacity_for`: 50/40/30/20/—) e **Valore di Porto di personaggi/bot/strumenti** scalato dalla gravità (`port_for_gravity`: ×2/+2/=/−2/½) in `effective_char_stat`, oltre a −1 atmosfera sottile (5.2) e −1 per Resistenza persa (8.8). Capacità di superficie mostrata (rover per gravità o somma dei Porti a piedi). *(Non si forza l'assegnazione individuale «chi porta cosa»: scelta di progetto, limiti applicati come totali.)* |
 
 ## [6.0] Movimento ed Esplorazione della Spedizione
 | Caso | Regola | Stato | Nota |
@@ -108,15 +110,15 @@ tracker persistente), e dettagli di rover/porto individuale (5.6–5.8).
 | 8.5 | Sequenza di combattimento | 🟢 | Differenziale = Valore Combattimento spedizione − creatura; 1d6 = riga, colonna dal differenziale (+ spostamenti, segno verificato sulle carte). `best_combat` usa il miglior Valore singolo (la somma di gruppo è caso speciale, ¶225, gestito). |
 | 8.6 | Tabella Risultati di Combattimento | 🟢 | Tabella reale 6 righe (dado) × 9 colonne (differenziale) → A-E in `tables.json` (`combat_results.rows`); `GameData.combat_result(diff, die, shift)`. Verificata sulla Carta 8.6. |
 | 8.7 | Uccisa/catturata/fuga + Danni | 🟢 | Esiti per lettera distinti Uccidi/Cattura con Punti Danno reali (A=1; B=2/4; C=4/8; D=8 / cattura fallita; E=fuga 8/12), `_combat_damage`. Verificati sulla Carta 8.7. |
-| 8.8 | Danni → rimozione Punti Resistenza | 🟡 | Danni su Resistenza sì; assorbimento via Punti Rifornimento parziale. |
-| 8.9 | Valore di Porto ridotto / strumento danneggiato | 🟡 | `damaged_gear` sì; riduzione del Porto per perdita di Resistenza no. |
+| 8.8 | Danni → rimozione Punti Resistenza / riduzione Porto | 🟢 | Ogni Punto Danno toglie 1 Resistenza (robot-scudo 6.9, poi personaggi, morte a 0); inoltre **ogni Resistenza persa riduce di 1 il Valore di Porto** del personaggio in `effective_char_stat` (non sotto zero). L'ammanco di rifornimento (7.3) è pagato in Resistenza. |
+| 8.9 | Valore di Porto ridotto / strumento danneggiato | 🟢 | `damaged_gear` per la spedizione + **registro persistente** `gear_damaged_log` per lo scoring (9.2); **riduzione del Porto per perdita di Resistenza** in `effective_char_stat` (8.8). |
 
 ## [9.0] Condizioni di Vittoria
 | Caso | Regola | Stato | Nota |
 |---|---|:--:|---|
 | 9.1 | PV guadagnati (attributi creatura, cattura, artefatti, pianeta esplorato) | 🟢 | Tutti i canali: **1 PV per attributo creatura a zero** (`_record_creature_attributes` su uccisione/cattura/studio), cattura riportata viva, artefatti, **1 PV per pianeta esplorato** (`land_on_planet`), e PV da paragrafo. |
-| 9.2 | PV persi (personaggio −10, Resistenza −1, bot/rover, tipo strumento, mesi oltre Tour) | 🟡 | Personaggio −10, Resistenza sopravvissuti −1, **mesi oltre il Tour −5** fatti. Residuo: bot/rover/strumenti danneggiati a fine gioco (serve tracker persistente, oggi `damaged_gear` è per-spedizione) e righe Crew Log. |
-| 9.3 | Totale finale PV / condizione di vittoria | 🟡 | `_end_tour` calcola il totale; soglie vittoria/sconfitta da rifinire. |
+| 9.2 | PV persi (personaggio −10, Resistenza −1, bot/rover, tipo strumento, mesi oltre Tour) | 🟢 | Tutti i canali in `_end_tour`: personaggio ucciso −10 (in `_kill_character`), −1 per Resistenza persa dai sopravvissuti, **−1 per robot/rover danneggiato** e **−1 per tipo di strumento danneggiato** a fine gioco (registro persistente `gear_damaged_log`, svuotato dalla riparazione al ¶050), **−5 per riga del Crew Log** (ogni personaggio perso) e −5 per mese oltre il Tour. *(Resta fuori la sub-penalità ambigua «1 PV per Punto Rifornimento speso/non disponibile» della stessa riga: richiederebbe il tracciamento del rifornimento per-tipo.)* |
+| 9.3 | Totale finale PV / condizione di vittoria | 🟢 | `_end_tour` totalizza i PV e fissa il **verdetto** in `final_result` (`win`/`lose`): vittoria se i PV ≥ il doppio dei mesi del Tour scelto, altrimenti sconfitta; esito a log. |
 
 ---
 
