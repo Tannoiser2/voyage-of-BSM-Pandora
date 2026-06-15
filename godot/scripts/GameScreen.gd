@@ -373,89 +373,75 @@ func _build_ui() -> void:
 
 	# (Il Registro di Bordo è nel pannello destro, in basso.)
 
-	# RIGHT PANEL - Status + Dice
+	# RIGHT PANEL - Stato della Missione (a sezioni/card)
 	right_panel = Panel.new()
-	right_panel.custom_minimum_size = Vector2(330, 0)
+	right_panel.custom_minimum_size = Vector2(340, 0)
 	right_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hbox.add_child(right_panel)
 
+	var right_margin := MarginContainer.new()
+	right_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for m in ["left", "top", "right", "bottom"]:
+		right_margin.add_theme_constant_override("margin_" + m, 8)
+	right_panel.add_child(right_margin)
+
 	var right_vbox := VBoxContainer.new()
-	right_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	right_vbox.offset_left = 8; right_vbox.offset_top = 8
-	right_vbox.offset_right = -8; right_vbox.offset_bottom = -8
-	right_vbox.add_theme_constant_override("separation", 10)
-	right_panel.add_child(right_vbox)
+	right_vbox.add_theme_constant_override("separation", 8)
+	right_margin.add_child(right_vbox)
 
-	# Status section
-	var status_title := Label.new()
-	status_title.text = "Stato della Missione"
-	status_title.add_theme_font_size_override("font_size", 14)
-	status_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	right_vbox.add_child(status_title)
-
+	# --- Sezione: Stato della Missione ---
+	var sec_status := UITheme.section("Stato della Missione")
+	right_vbox.add_child(sec_status["panel"])
 	status_display = VBoxContainer.new()
 	status_display.name = "StatusDisplay"
-	right_vbox.add_child(status_display)
-
+	sec_status["vbox"].add_child(status_display)
 	_build_status_rows(status_display)
 
-	# Segnalini dell'equipaggio (token originali + Resistenza)
-	var crew_title := Label.new()
-	crew_title.text = "Equipaggio"
-	crew_title.add_theme_font_size_override("font_size", 13)
-	crew_title.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
-	right_vbox.add_child(crew_title)
-
+	# --- Sezione: Equipaggio (+ equipaggiamento in spedizione) ---
+	var sec_crew := UITheme.section("Equipaggio")
+	right_vbox.add_child(sec_crew["panel"])
 	var crew_grid := GridContainer.new()
 	crew_grid.name = "CrewCounters"
 	crew_grid.columns = 4
 	crew_grid.add_theme_constant_override("h_separation", 6)
 	crew_grid.add_theme_constant_override("v_separation", 6)
-	right_vbox.add_child(crew_grid)
+	sec_crew["vbox"].add_child(crew_grid)
 	_build_crew_counters(crew_grid)
 
-	# Segnalini di robot/strumenti imbarcati (compaiono in spedizione)
 	var gear_title := Label.new()
 	gear_title.name = "GearTitle"
-	gear_title.text = "Equipaggiamento"
-	gear_title.add_theme_font_size_override("font_size", 13)
-	gear_title.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	gear_title.text = "Equipaggiamento imbarcato"
+	gear_title.add_theme_font_size_override("font_size", 12)
+	gear_title.add_theme_color_override("font_color", UITheme.MUTED)
 	gear_title.visible = false
-	right_vbox.add_child(gear_title)
+	sec_crew["vbox"].add_child(gear_title)
 
 	var gear_grid := GridContainer.new()
 	gear_grid.name = "GearCounters"
 	gear_grid.columns = 4
 	gear_grid.add_theme_constant_override("h_separation", 6)
 	gear_grid.add_theme_constant_override("v_separation", 6)
-	right_vbox.add_child(gear_grid)
+	sec_crew["vbox"].add_child(gear_grid)
 
-	var sep2 := HSeparator.new()
-	right_vbox.add_child(sep2)
-
-	# Dice section
-	var dice_title := Label.new()
-	dice_title.text = "Dado (1d6)"
-	dice_title.add_theme_font_size_override("font_size", 14)
-	dice_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	right_vbox.add_child(dice_title)
-
+	# --- Sezione: Dado ---
+	var sec_dice := UITheme.section("Dado (1d6)")
+	right_vbox.add_child(sec_dice["panel"])
 	dice_panel = VBoxContainer.new()
 	dice_panel.name = "DicePanel"
-	right_vbox.add_child(dice_panel)
+	sec_dice["vbox"].add_child(dice_panel)
 
 	var dice_result_label := Label.new()
 	dice_result_label.name = "DiceResult"
 	dice_result_label.text = "—"
 	dice_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dice_result_label.add_theme_font_size_override("font_size", 48)
-	dice_result_label.add_theme_color_override("font_color", Color(1.0, 1.0, 0.4))
+	dice_result_label.add_theme_color_override("font_color", UITheme.AMBER)
 	dice_panel.add_child(dice_result_label)
 
 	var roll_btn := Button.new()
 	roll_btn.name = "RollBtn"
 	roll_btn.text = "TIRA DADO"
-	roll_btn.custom_minimum_size = Vector2(0, 50)
+	roll_btn.custom_minimum_size = Vector2(0, 46)
 	roll_btn.pressed.connect(_on_roll_dice)
 	dice_panel.add_child(roll_btn)
 
@@ -473,44 +459,35 @@ func _build_ui() -> void:
 	dice_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dice_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dice_hint.add_theme_font_size_override("font_size", 12)
-	dice_hint.add_theme_color_override("font_color", Color(0.8, 0.8, 0.6))
+	dice_hint.add_theme_color_override("font_color", UITheme.MUTED)
 	dice_panel.add_child(dice_hint)
 
-	var sep3 := HSeparator.new()
-	right_vbox.add_child(sep3)
-
-	# VP and tour info
-	var info_vbox := VBoxContainer.new()
-	right_vbox.add_child(info_vbox)
-
+	# --- Sezione: Punti Vittoria ---
+	var sec_vp := UITheme.section("Punti Vittoria")
+	right_vbox.add_child(sec_vp["panel"])
 	var vp_label := Label.new()
 	vp_label.name = "VPLabel"
 	vp_label.text = "Punti Vittoria: 0"
-	vp_label.add_theme_font_size_override("font_size", 16)
-	vp_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-	info_vbox.add_child(vp_label)
+	vp_label.add_theme_font_size_override("font_size", 20)
+	vp_label.add_theme_color_override("font_color", UITheme.GREEN)
+	sec_vp["vbox"].add_child(vp_label)
 
 	var tour_label2 := Label.new()
 	tour_label2.name = "TourLabel"
 	tour_label2.text = "Tour: —"
 	tour_label2.add_theme_font_size_override("font_size", 13)
-	tour_label2.add_theme_color_override("font_color", Color(0.8, 0.8, 1.0))
-	info_vbox.add_child(tour_label2)
+	tour_label2.add_theme_color_override("font_color", UITheme.MUTED)
+	sec_vp["vbox"].add_child(tour_label2)
 
-	var sep4 := HSeparator.new()
-	right_vbox.add_child(sep4)
-
-	# Registro di Bordo (in fondo allo stato, occupa lo spazio rimanente)
-	var log_title := Label.new()
-	log_title.text = "Registro di Bordo"
-	log_title.add_theme_font_size_override("font_size", 13)
-	log_title.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
-	right_vbox.add_child(log_title)
+	# --- Sezione: Registro di Bordo (occupa lo spazio rimanente) ---
+	var sec_log := UITheme.section("Registro di Bordo")
+	sec_log["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_vbox.add_child(sec_log["panel"])
 
 	var log_scroll := ScrollContainer.new()
 	log_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	log_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right_vbox.add_child(log_scroll)
+	sec_log["vbox"].add_child(log_scroll)
 
 	log_display = RichTextLabel.new()
 	log_display.name = "LogDisplay"
@@ -520,7 +497,7 @@ func _build_ui() -> void:
 	log_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	log_display.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	log_display.add_theme_font_size_override("normal_font_size", 12)
-	log_display.add_theme_color_override("default_color", Color(0.8, 0.9, 0.8))
+	log_display.add_theme_color_override("default_color", Color(0.82, 0.88, 0.82))
 	log_scroll.add_child(log_display)
 
 func _build_status_rows(parent: Control) -> void:
