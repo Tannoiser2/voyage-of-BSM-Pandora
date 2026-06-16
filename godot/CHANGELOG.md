@@ -2,6 +2,39 @@
 
 Adattamento digitale in Godot del libro-gioco SPI *Voyage of the BSM Pandora* (1981).
 
+## v0.10.0 — 2026-06-16
+
+### Diario «Cosa succede» — la finestra centrale è il cuore dell'azione
+- **Testo e logica uniti al centro.** La finestra principale ora mostra, oltre al
+  testo del paragrafo, **cosa succede** durante l'azione: controlli, esiti, danni e
+  conseguenze. Il **Registro di Bordo** a destra resta la memoria storica completa.
+- **Controlli espliciti.** Quando un paragrafo verifica la presenza di un
+  robot/strumento/personaggio o una condizione (atmosfera, rig), ora scrive
+  «Controllo — c'è X? ▸ Sì/No → conseguenza» invece di risolverlo in silenzio
+  (22 controlli espliciti aggiunti: ¶038, 166, 158, 028, 176, 197, 224, 209, 216,
+  218, 226, 043, 066, 162, 208, 187, 193, 037, 024, …).
+- **Formule collassabili.** La matematica del **Controllo del Rifornimento** (7.2)
+  e del **combattimento** (8.5: squadra vs creatura → differenziale, dado →
+  risultato A–E) è raccolta in una sezione «▶ formule e controlli» espandibile, che
+  non ingombra la narrazione.
+- **Controllo del Rifornimento chiaro.** Il diario spiega **quando** scatta (la
+  Traccia del Tempo ha raggiunto la soglia di ore data dalla gravità, 6.8) e
+  l'esito della spesa.
+- **Esteso a tutte le fasi.** Il diario copre ora anche **viaggio interstellare** e
+  **orbita** (arrivo nel sistema, controllo evento 4.0, eventi 4.2), non solo la
+  spedizione planetaria.
+
+### Interfaccia
+- **Stato della Missione** con **barre**: Traccia del Tempo (ore al prossimo
+  Controllo del Rifornimento) e Rifornimenti della spedizione.
+- **Disposizione** ribilanciata: box Shuttle / A piedi / Rover di **larghezza
+  uguale**; box di superficie più alti con etichetta **carico/Porto e rifornimenti**;
+  box Pandora dimensionato per contenere le **tre file** di pedine senza tagli.
+
+### Correzioni
+- **Tabelle di riferimento e changelog** ora inclusi nel build Web (GitHub Pages):
+  i file dati (`*.json`) e i documenti (`*.md`) vengono pacchettizzati nell'export.
+
 ## v0.9.2 — 2026-06-15
 
 ### Esplorazione e incontri

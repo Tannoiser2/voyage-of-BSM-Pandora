@@ -139,6 +139,12 @@ var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0
 # Esplorazione, instradamento snodo 6.5, controllo rifornimento): mostrata nel box
 # di testo centrale così che la logica di scelta sia chiara, non solo nel registro.
 var encounter_trail: String = ""
+# Formule e controlli dettagliati (matematica del rifornimento/combattimento): mostrati
+# al centro in una sezione COLLASSABILE, separati dalla narrazione visibile.
+var encounter_formulas: String = ""
+# Guardia interna: quando true, add_log NON rispecchia la riga nella narrazione centrale
+# (usata da _narrate_formula per indirizzare le formule alla sola sezione collassabile).
+var _suppress_trail_mirror: bool = false
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
 # affrettato» degli snodi «Incontro di spedizione» (6.5).
@@ -435,11 +441,49 @@ func phase_name(p: Phase) -> String:
 
 func add_log(msg: String) -> void:
 	log_entries.append(msg)
+	# La finestra principale è il cuore dell'azione: durante una fase giocata
+	# (interstellare/orbita/spedizione/paragrafo) ogni conseguenza registrata appare
+	# anche nel diario «Cosa succede» al centro. Le righe-formula sono escluse (vanno
+	# nella sezione collassabile).
+	if _narration_active() and not _suppress_trail_mirror:
+		_trail(msg)
 	message_posted.emit(msg)
 
-# Aggiunge una riga alla traccia «come ci sei arrivato» (mostrata nel testo centrale).
+# Vero nelle fasi in cui ha senso mostrare il diario «Cosa succede» (tutto tranne menu
+# e setup): include ora anche viaggio interstellare e orbita, non solo la spedizione.
+func _narration_active() -> bool:
+	return current_phase in [Phase.INTERSTELLAR, Phase.ORBIT, Phase.EXPEDITION, Phase.PARAGRAPH]
+
+# Azzera il diario d'azione (narrazione + formule) all'inizio di una nuova azione.
+func _reset_action_diary() -> void:
+	encounter_trail = ""
+	encounter_formulas = ""
+
+# Aggiunge una riga alla traccia «cosa succede» (mostrata nel testo centrale).
 func _trail(msg: String) -> void:
 	encounter_trail += ("• " + msg + "\n")
+
+# Narrazione esplicita: equivale ad add_log (che già rispecchia al centro durante una
+# spedizione). Resta come marcatore di intento «questa riga è narrazione d'azione».
+func _narrate(msg: String) -> void:
+	add_log(msg)
+
+# Dettaglio/formula: va nel Registro di Bordo (storico) e nella sezione COLLASSABILE
+# «Formule e controlli» al centro — non ingombra la narrazione principale.
+func _narrate_formula(msg: String) -> void:
+	encounter_formulas += ("• " + msg + "\n")
+	_suppress_trail_mirror = true   # evita il doppione nella narrazione visibile
+	add_log(msg)
+	_suppress_trail_mirror = false
+
+# Check esplicito (es.: «c'è un robot?»): scrive la domanda, l'esito Sì/No e la
+# conseguenza in un'unica riga, così la logica del paragrafo è leggibile invece di
+# eseguirsi in silenzio. Da usare ovunque un paragrafo verifichi una condizione.
+func _narrate_check(question: String, yes: bool, consequence := "") -> void:
+	var line := "Controllo — %s  ▸ %s" % [question, ("Sì" if yes else "No")]
+	if consequence != "":
+		line += " → " + consequence
+	_narrate(line)
 
 func months_remaining() -> int:
 	return tour_length - tour_months_used
@@ -454,6 +498,9 @@ func move_pandora_to(hex_id: int) -> void:
 	if not can_move_to(hex_id):
 		add_log("Non abbastanza mesi per raggiungere quel sistema.")
 		return
+	# Nuova azione interstellare: il diario «Cosa succede» riparte (salto → controllo
+	# evento 4.0 → eventuale evento 4.2 → orbita formano una sola sequenza leggibile).
+	_reset_action_diary()
 	var cost := GameData.get_hex_distance(pandora_hex, hex_id)
 	# Memorizza l'origine e la destinazione del salto interstellare attuale: servono
 	# ai paragrafi-evento (4.2) che ragionano sulla ROTTA percorsa (es. ¶064 e la
@@ -525,6 +572,8 @@ func resolve_interstellar_event(die: int) -> void:
 		show_paragraph(para)
 		# Applica gli effetti meccanici interni del paragrafo-evento (4.2).
 		_apply_interstellar_event_effect(para)
+		# Gli effetti sono applicati DOPO il render: aggiorna il diario centrale.
+		_refresh_paragraph_view()
 	else:
 		# Con la Tabella 4.2 corretta (2-12) ogni risultato ha un paragrafo;
 		# questo ramo è una salvaguardia: in assenza di voce si va in orbita.
@@ -975,6 +1024,14 @@ func resolve_event_die(die: int) -> void:
 		61: _resolve_061(die)
 		84: _resolve_084(die, creature_rating)
 		_:  pass
+	# Effetti dell'evento risolti dopo il render iniziale: aggiorna il diario centrale.
+	_refresh_paragraph_view()
+
+# Aggiorna la finestra centrale (diario «Cosa succede») quando gli effetti sono stati
+# applicati DOPO che il paragrafo era già stato mostrato (tipico degli eventi 4.2).
+func _refresh_paragraph_view() -> void:
+	if current_phase == Phase.PARAGRAPH and current_paragraph > 0:
+		paragraph_request.emit(current_paragraph)
 
 # Ingresso in orbita: prepara gli attributi del pianeta e mostra il paragrafo
 # che lo descrive (Tabella Pianeti, 5.0). Il giocatore decide se esplorare.
@@ -1433,10 +1490,16 @@ func resolve_procedure(para: int) -> void:
 # personaggio in armorig.
 func _resolve_burning_rays() -> void:
 	var rover := _gear_has("Rover")
+	_narrate_check("¶187 — è presente un rover?", rover, "Velocità delle unità portata almeno a 8 (più difficile essere colpiti)." if rover else "nessun aiuto del rover alla fuga dai raggi.")
 	var base_mod := 0
-	if _gear_has("Turbolaser"): base_mod -= 2
-	if _gear_has("Scanner"): base_mod -= 2
+	var turbo187 := _gear_has("Turbolaser")
+	_narrate_check("¶187 — è presente un turbolaser?", turbo187, "−2 al tiro dei raggi ustionanti." if turbo187 else "nessun bonus dal turbolaser.")
+	if turbo187: base_mod -= 2
+	var scanner187 := _gear_has("Scanner")
+	_narrate_check("¶187 — è presente uno scanner?", scanner187, "−2 al tiro dei raggi ustionanti." if scanner187 else "nessun bonus dallo scanner.")
+	if scanner187: base_mod -= 2
 	var armorig := _gear_has("Armorig")
+	_narrate_check("¶187 — la squadra dispone di un armorig?", armorig, "−2 al tiro per i personaggi (protezione)." if armorig else "nessuna protezione dall'armorig.")
 	var destroyed: Array = []
 	# Personaggi (si itera su una copia: la morte rimuove da expedition_units).
 	for k in expedition_units.duplicate():
@@ -1468,6 +1531,8 @@ func _resolve_burning_rays() -> void:
 # un pezzo (artefatto ¶193, peso 3) può essere riportato. Senza turbolaser, perdita
 # immediata di 10 Punti Resistenza e fuga obbligata (¶187).
 func _resolve_structure_fight() -> void:
+	var turbo193 := _gear_has("Turbolaser")
+	_narrate_check("¶193 — è presente un turbolaser?", turbo193, "si combatte la struttura con l'Intelligenza (solo uccisione); un pezzo è recuperabile." if turbo193 else "−10 Punti Resistenza e fuga obbligata (¶187).")
 	if _gear_has("Turbolaser"):
 		var col := highest_intelligence(expedition_units)
 		var die := randi_range(1, 6)
@@ -2186,14 +2251,20 @@ func _apply_paragraph_effect(para: int) -> int:
 			add_log("¶032: scossa sismica → %d Punti Danno." % d)
 			_apply_damage(d)
 		38:
-			var d2 := 6 if _gear_has("Armorig") else 12
+			var has_armorig38 := _gear_has("Armorig")
+			_narrate_check("¶038 — la squadra dispone di un armorig?", has_armorig38, "%d Punti Danno dall'eruzione vulcanica." % (6 if has_armorig38 else 12))
+			var d2 := 6 if has_armorig38 else 12
 			add_log("¶038: eruzione vulcanica → %d Punti Resistenza persi." % d2)
 			_apply_damage(d2)
-			if _gear_has("Rover") and not damaged_gear.has("Rover"):
+			var rover38 := _gear_has("Rover") and not damaged_gear.has("Rover")
+			_narrate_check("¶038 — è presente un rover integro?", rover38, "viene danneggiato dall'eruzione." if rover38 else "nessun rover da danneggiare.")
+			if rover38:
 				damaged_gear.append("Rover")
 				add_log("¶038: il rover viene danneggiato.")
 		166:
-			var nd := 1 if (("GSO" in expedition_units) or _gear_has("Reconbot")) else 2
+			var safe166 := ("GSO" in expedition_units) or _gear_has("Reconbot")
+			_narrate_check("¶166 — c'è l'Uff. Scienze (GSO) o un Reconbot a prevenire la caduta?", safe166, ("solo 1d6 Punti Danno." if safe166 else "2d6 Punti Danno (caduta più grave)."))
+			var nd := 1 if safe166 else 2
 			var d3 := 0
 			for _i in range(nd):
 				d3 += randi_range(1, 6)
@@ -2219,11 +2290,17 @@ func _apply_paragraph_effect(para: int) -> int:
 				gain_vp(vp40, "¶040 rettiliani amichevoli (Int Comandante)")
 		158:
 			var vp := 5
-			if "CO" in expedition_units:
+			var co158 := "CO" in expedition_units
+			_narrate_check("¶158 — è presente il Comandante (CO)?", co158, "+2 Punti Vittoria dal contatto col telepate." if co158 else "nessun bonus dal Comandante.")
+			if co158:
 				vp += 2
-			if _gear_has("Neuroscan"):
+			var neuro158 := _gear_has("Neuroscan")
+			_narrate_check("¶158 — è presente un neuroscanner?", neuro158, "+2 Punti Vittoria." if neuro158 else "nessun bonus dal neuroscanner.")
+			if neuro158:
 				vp += 2
-			if _gear_has("Holographer"):
+			var holo158 := _gear_has("Holographer")
+			_narrate_check("¶158 — è presente un holographer?", holo158, "+2 Punti Vittoria." if holo158 else "nessun bonus dall'holographer.")
+			if holo158:
 				vp += 2
 			gain_vp(vp, "¶158 ultimo superstite telepate")
 		8:
@@ -2280,6 +2357,8 @@ func _apply_paragraph_effect(para: int) -> int:
 			add_log("¶191: pirati in ritirata. %d personaggio/i ucciso/i; %d Mesi di Tour di riparazioni%s." % [killed, m191, lost_txt191])
 			_spend_tour_months(m191, "¶191 riparazioni Pandora")
 		226:
+			var rover226 := _gear_has("Rover")
+			_narrate_check("¶226 — è presente un rover?", rover226, "l'Oraloid fa a pezzi il rover (distrutto)." if rover226 else "niente rover: l'Oraloid divora un robot.")
 			if _gear_has("Rover"):
 				add_log("¶226: l'Oraloid fa a pezzi il rover (distrutto, non riparabile).")
 				expedition_gear.erase("Rover")
@@ -2291,6 +2370,8 @@ func _apply_paragraph_effect(para: int) -> int:
 			# In combattimento il netgun non ha Valore contro questa creatura.
 			pending_combat_exclude_sources = ["Netgun"]
 		28:
+			var neuro28 := _gear_has("Neuroscan")
+			_narrate_check("¶028 — è presente un neuroscanner?", neuro28, "+4 Punti Vittoria (alieni invisibili rilevati)." if neuro28 else "alieni non rilevati → ¶189.")
 			if _gear_has("Neuroscan"):
 				gain_vp(4, "¶028 alieni invisibili rilevati (neuroscanner)")
 			else:
@@ -2302,25 +2383,40 @@ func _apply_paragraph_effect(para: int) -> int:
 		210:
 			gain_vp(5, "¶210 teletrasporto degli alieni")
 		211:
+			var holo211 := _gear_has("Holographer")
+			_narrate_check("¶211 — è presente un holographer?", holo211, "+2 Punti Vittoria (oltre ai 4 base)." if holo211 else "solo i 4 Punti Vittoria base.")
 			gain_vp(4 + (2 if _gear_has("Holographer") else 0), "¶211 Garbrist telepate")
 		213:
 			var v213 := 0
+			var neuro213 := _gear_has("Neuroscan")
+			_narrate_check("¶213 — è presente un neuroscanner?", neuro213, "+4 Punti Vittoria." if neuro213 else "nessun bonus dal neuroscanner.")
 			if _gear_has("Neuroscan"):
 				v213 += 4
+			var holo213 := _gear_has("Holographer")
+			_narrate_check("¶213 — è presente un holographer?", holo213, "+2 Punti Vittoria." if holo213 else "nessun bonus dall'holographer.")
 			if _gear_has("Holographer"):
 				v213 += 2
+			var gso213 := "GSO" in expedition_units
+			_narrate_check("¶213 — è presente l'Uff. Scienze terrestri (GSO)?", gso213, "+2 Punti Vittoria." if gso213 else "nessun bonus dall'Uff. Scienze.")
 			if "GSO" in expedition_units:
 				v213 += 2
 			gain_vp(v213, "¶213 Glassman intelligente")
 		214:
 			var v214 := 0
+			var holo214 := _gear_has("Holographer")
+			_narrate_check("¶214 — è presente un holographer?", holo214, "+3 Punti Vittoria." if holo214 else "nessun bonus dall'holographer.")
 			if _gear_has("Holographer"):
 				v214 += 3
+			var neuro214 := _gear_has("Neuroscan")
+			_narrate_check("¶214 — è presente un neuroscanner?", neuro214, "+2 Punti Vittoria." if neuro214 else "nessun bonus dal neuroscanner.")
 			if _gear_has("Neuroscan"):
 				v214 += 2
 			gain_vp(v214, "¶214 la creatura svanisce")
 		197:
 			var vic197 := _random_alive_char()
+			if vic197 != "":
+				var arm197 := char_wears_armorig(vic197)
+				_narrate_check("¶197 — %s indossa un armorig?" % crew[vic197].get("name", vic197), arm197, "protetto dall'infezione del fungo." if arm197 else "infettato dal fungo parassita (perdita ricorrente di Resistenza).")
 			if vic197 != "" and not char_wears_armorig(vic197):
 				_infect(vic197, 1)
 				add_log("¶197: %s è ricoperto da un fungo parassita: perdita ricorrente di Resistenza fino al rientro." % crew[vic197].get("name", vic197))
@@ -2331,6 +2427,8 @@ func _apply_paragraph_effect(para: int) -> int:
 			if vic209 != "":
 				crew[vic209]["endurance"] = maxi(0, int(crew[vic209].get("endurance", 0)) - 2)
 				add_log("¶209: %s ha le convulsioni: −2 Resistenza (germe alieno)." % crew[vic209].get("name", vic209))
+				var med209 := "MedO" in expedition_units
+				_narrate_check("¶209 — è presente l'Ufficiale Medico (MedO)?", med209, "il germe alieno è contenuto (nessuna infezione)." if med209 else "nessun medico: il personaggio resta infettato.")
 				if not ("MedO" in expedition_units):
 					_infect(vic209, 1)
 				if int(crew[vic209]["endurance"]) <= 0:
@@ -2361,6 +2459,8 @@ func _apply_paragraph_effect(para: int) -> int:
 				taken += 1
 			add_log("¶189: gli alieni invisibili sottraggono %d oggetto/i (robot per primi)." % taken)
 		223:
+			# Check robot esplicito (prototipo): l'aeron preferisce un robot come preda.
+			# Se c'è un robot funzionante lo afferra; altrimenti colpisce un personaggio.
 			var bots223 := _functioning_bots()
 			if not bots223.is_empty():
 				var b: String = bots223[randi_range(0, bots223.size() - 1)]
@@ -2368,12 +2468,17 @@ func _apply_paragraph_effect(para: int) -> int:
 				expedition_units.erase(b)
 				if not damaged_gear.has(b):
 					damaged_gear.append(b)
-				add_log("¶223: l'aeron afferra %s e schizza via." % GameData.get_unit(b).get("name", b))
+				_narrate_check("¶223 — c'è un robot funzionante nella spedizione?", true,
+					"l'aeron afferra %s e schizza via (robot perso, considerato danneggiato)." % GameData.get_unit(b).get("name", b))
 			else:
 				var vc223 := _random_alive_char()
 				if vc223 != "":
 					crew[vc223]["endurance"] = maxi(0, int(crew[vc223].get("endurance", 0)) - 2)
-					add_log("¶223: l'aeron colpisce %s di striscio: −2 Resistenza." % crew[vc223].get("name", vc223))
+					_narrate_check("¶223 — c'è un robot funzionante nella spedizione?", false,
+						"nessun robot: l'aeron colpisce %s di striscio (−2 Resistenza)." % crew[vc223].get("name", vc223))
+				else:
+					_narrate_check("¶223 — c'è un robot funzionante nella spedizione?", false,
+						"nessun robot e nessun personaggio bersagliabile: l'aeron schizza via a vuoto.")
 		147:
 			# Vermi-tunnel (8.1): se colti di sorpresa, ogni personaggio che NON indossa
 			# un armorig perde 1d6 Resistenza (tiro per ciascuno); l'enviorig sottrae 1
@@ -2553,6 +2658,9 @@ func _apply_paragraph_effect(para: int) -> int:
 				redirect = 210
 		224:
 			var vic224 := _random_alive_char()
+			if vic224 != "":
+				var arm224 := char_wears_armorig(vic224)
+				_narrate_check("¶224 — %s indossa un armorig?" % crew[vic224].get("name", vic224), arm224, "protetto dal veleno corrosivo del fungo." if arm224 else "spruzzato dal veleno: perdita ricorrente di Resistenza.")
 			if vic224 != "" and not char_wears_armorig(vic224):
 				var amt224 := 3
 				var hasMed := "MedO" in expedition_units
@@ -2587,6 +2695,8 @@ func _apply_paragraph_effect(para: int) -> int:
 					dmgd += 1
 			add_log("¶215: il campo di forza mentale del Garbrist danneggia %d tra robot e strumenti; poi si conduce il combattimento." % dmgd)
 		216:
+			var protected216 := _gear_has("Rover") or all_exploring_chars_wear_armorig()
+			_narrate_check("¶216 — c'è un rover o tutti i personaggi indossano un armorig?", protected216, "si conduce il combattimento con l'Abomnid." if protected216 else "il più lento (senza armorig) viene fatto a pezzi e l'Abomnid fugge.")
 			if _gear_has("Rover") or all_exploring_chars_wear_armorig():
 				add_log("¶216: col rover o con tutti i personaggi in armorig, si conduce il combattimento con l'Abomnid.")
 			else:
@@ -2597,6 +2707,8 @@ func _apply_paragraph_effect(para: int) -> int:
 				_clear_encounter_state()
 				encounter_outcome_text = "L'Abomnid fugge: scegli un'azione di spedizione."
 		218:
+			var turbo218 := _gear_has("Turbolaser")
+			_narrate_check("¶218 — è presente un turbolaser?", turbo218, "i risultati B/C/D contano come A (turbolaser poi distrutto)." if turbo218 else "spostamento di 2 colonne a sinistra (sfavore).")
 			if _gear_has("Turbolaser"):
 				pending_combat_remap = {"B": "A", "C": "A", "D": "A"}
 				pending_combat_remap_destroy = "Turbolaser"
@@ -2650,6 +2762,8 @@ func _apply_paragraph_effect(para: int) -> int:
 			set_phase(Phase.GAME_OVER)
 		176:
 			# Rete vivente: non catturabile e innocua; con l'Holographer si guadagnano 3 PV.
+			var holo176 := _gear_has("Holographer")
+			_narrate_check("¶176 — è presente un holographer?", holo176, "+3 Punti Vittoria (rete vivente documentata)." if holo176 else "nessun Punto Vittoria senza holographer.")
 			if _gear_has("Holographer"):
 				gain_vp(3, "¶176 rete vivente documentata con l'Holographer")
 		229:
@@ -2696,10 +2810,13 @@ func _apply_creature_intro(para: int) -> void:
 			if surprise_active:
 				pending_goto = 226
 			elif not ("GSO" in expedition_units):
+				_narrate_check("¶162 — è presente l'Uff. Scienze terrestri (GSO)?", false, "senza GSO si tira 2 dadi vs Int max della spedizione: se ≥ → ¶226.")
 				var roll := randi_range(1, 6) + randi_range(1, 6)
 				if roll >= _expedition_max_intel():
 					add_log("¶162: 2 dadi %d >= Int max spedizione → ¶226." % roll)
 					pending_goto = 226
+			elif not surprise_active:
+				_narrate_check("¶162 — è presente l'Uff. Scienze terrestri (GSO)?", true, "la Draloid è identificata senza pericolo (nessun tiro).")
 		170:
 			# Monoke: se colta di sorpresa, il membro col Valore di Velocità più basso
 			# (robot o personaggio) viene immediatamente divorato.
@@ -2714,6 +2831,8 @@ func _apply_creature_intro(para: int) -> void:
 			if surprise_active:
 				pending_combat_shift = 2
 				add_log("¶066: sorpresa! Combattimento con spostamento di 2 colonne a sinistra (sfavore).")
+			var holo66 := _gear_has("Holographer")
+			_narrate_check("¶066 — è presente un holographer?", holo66, "+4 Punti Vittoria (nebbia carnivora documentata)." if holo66 else "nessun Punto Vittoria senza holographer.")
 			if _gear_has("Holographer"):
 				gain_vp(4, "¶066 nebbia documentata con l'Holographer")
 		72:
@@ -2788,6 +2907,8 @@ func _apply_creature_intro(para: int) -> void:
 		208:
 			# Forma larvale (Reeler): con l'Ufficiale Scienze si riporta in salvo (+2 PV);
 			# altrimenti 1 dado: 1-3 la larva muore, 4-6 si trasforma e si combatte.
+			var so208 := "SO" in expedition_units
+			_narrate_check("¶208 — è presente l'Ufficiale Scienze (SO)?", so208, "la forma larvale è riportata in salvo (+2 Punti Vittoria)." if so208 else "senza SO si tira 1 dado: 1-3 la larva muore, 4-6 si trasforma e si combatte.")
 			if "SO" in expedition_units:
 				gain_vp(2, "¶208 forma larvale riportata in salvo")
 				_clear_encounter_state()
@@ -2801,6 +2922,7 @@ func _apply_creature_intro(para: int) -> void:
 			# l'incontro si risolve normalmente. In combattimento valgono SOLO i Valori
 			# di armorig, specibot e turbolaser.
 			var bots43 := _functioning_bots()
+			_narrate_check("¶043 — c'è un robot funzionante nella spedizione?", not bots43.is_empty(), "un robot a caso viene polverizzato." if not bots43.is_empty() else "nessun robot da polverizzare.")
 			if not bots43.is_empty():
 				var b43: String = bots43[randi_range(0, bots43.size() - 1)]
 				expedition_gear.erase(b43)
@@ -3005,6 +3127,8 @@ func return_to_pandora() -> void:
 			add_log(msg076)
 			message_posted.emit(msg076)
 			return
+		# Rientro effettivo: nuova azione, il diario «Cosa succede» riparte pulito.
+		_reset_action_diary()
 		shuttle_supply += expedition_supply
 		expedition_supply = 0
 		# Le infezioni vengono curate dall'attrezzatura sofisticata della Pandora (6.9).
@@ -3144,6 +3268,11 @@ func _advance_supply_track(h: int) -> void:
 	# controllo e si azzera la posizione, conservando le ore residue (loop multiplo).
 	while supply_track_pos >= space:
 		supply_track_pos -= space
+		# Prototipo «cosa succede»: spiega PERCHÉ scatta ora (la Traccia del Tempo ha
+		# raggiunto lo spazio di controllo dato dalla gravità, 6.8), così il giocatore
+		# capisce quando il Controllo del Rifornimento viene fatto.
+		_narrate("Traccia del Tempo: raggiunte %d ore (soglia gravità «%s» = %d h) → si esegue un Controllo del Rifornimento (7.2)." % [
+			space, str(planet_attrs.get("gravity", planet_gravity)), space])
 		_request_supply_check()
 
 # Avvia un Controllo del Rifornimento (7.2): col dado automatico lo risolve subito,
@@ -3204,9 +3333,12 @@ func resolve_supply_check(die: int) -> void:
 	var summ := lsv + terr_supply
 	var calc2 := mini(int(summ / die), 4) if summ > 0 else 0
 	var total := calc1 + calc2
-	add_log("Controllo Rifornimento (7.2): dado %d · Utenti %d → %d · (LSV %d + terreno %d = %d) → %d · totale %d." % [
-		die, users, calc1, lsv, terr_supply, summ, calc2, total])
-	_trail("Controllo del Rifornimento (7.2): dado %d → spesi %d Punti Rifornimento (scorte %d)." % [die, total, expedition_supply])
+	# Narrazione visibile: l'esito del Controllo. La matematica completa va nella
+	# sezione collassabile «Formule e controlli» (Calcolo 1 = ⌊Utenti/dado⌋ max 4;
+	# Calcolo 2 = ⌊(LSV+terreno)/dado⌋ max 4).
+	_narrate("Controllo del Rifornimento (7.2): dado %d → %d Punti Rifornimento da spendere." % [die, total])
+	_narrate_formula("Rifornimento — Utenti %d→⌊%d/%d⌋=%d · (LSV %d + terreno %d = %d)→%d · totale %d." % [
+		users, users, die, calc1, lsv, terr_supply, summ, calc2, total])
 	_expend_supply(total)
 	# Infezioni in corso (¶197/¶209): ogni personaggio infetto perde 1 Resistenza a
 	# ogni Controllo del Rifornimento, finché non rientra sulla Pandora.
@@ -3277,13 +3409,13 @@ func _expend_supply(points: int) -> void:
 		return
 	if expedition_supply >= points:
 		expedition_supply -= points
-		add_log("Spesi %d Punti Rifornimento (rimasti %d)." % [points, expedition_supply])
+		_narrate("Spesi %d Punti Rifornimento (rimasti %d)." % [points, expedition_supply])
 	else:
 		var short := points - expedition_supply
 		if expedition_supply > 0:
-			add_log("Spesi %d Punti Rifornimento: rifornimenti esauriti." % expedition_supply)
+			_narrate("Spesi %d Punti Rifornimento: rifornimenti esauriti." % expedition_supply)
 		expedition_supply = 0
-		add_log("Rifornimenti insufficienti (7.3): %d Punti pagati in Resistenza." % short)
+		_narrate("Rifornimenti insufficienti (7.3): %d Punti pagati in Resistenza." % short)
 		_apply_damage(short)
 
 func use_expedition_supply(amount: int) -> bool:
@@ -3307,6 +3439,7 @@ func reset_expedition_state() -> void:
 	captured_creatures = []
 	damage_points = 0
 	encounter_trail = ""
+	encounter_formulas = ""
 	shuttle_party = []    # 5.6: nessuno resta sullo shuttle all'inizio di una spedizione
 	prefer_foot = false   # 5.7: ogni spedizione riparte con la scelta del mezzo di default
 	_archive_damaged_gear()   # 9.2: conserva i danni ai fini dello scoring finale
@@ -3472,7 +3605,8 @@ func explore_current_hex() -> void:
 		return
 	# Esplorazione dell'esagono occupato: nuova azione, niente percorso affrettato (6.5).
 	hasty_path_terrains = []
-	encounter_trail = ""   # nuova azione: ricomincia la traccia «come ci sei arrivato»
+	encounter_trail = ""   # nuova azione: ricomincia la narrazione «cosa succede»
+	encounter_formulas = ""
 	explore_environ_hex(expedition_pos, cell.get("terrain", "Open"))
 
 # Versione legacy (atterraggio al centro) mantenuta per compatibilità.
@@ -3639,7 +3773,8 @@ func move_expedition(hex_id: int) -> void:
 		return
 	# Un movimento normale azzera la traccia del movimento affrettato (nuova azione, 6.5).
 	hasty_path_terrains = []
-	encounter_trail = ""   # nuova azione: ricomincia la traccia «come ci sei arrivato»
+	encounter_trail = ""   # nuova azione: ricomincia la narrazione «cosa succede»
+	encounter_formulas = ""
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
 	var real_id: String = cell.get("real", str(hex_id))
@@ -3794,6 +3929,8 @@ func choose_encounter_strategy(strategy: String) -> void:
 	# rilocalizzare (2 dadi < Intelligenza massima → ¶020), altrimenti è fuggita.
 	if current_paragraph == 37 and strategy == "capture_kill":
 		var roll37 := randi_range(1, 6) + randi_range(1, 6)
+		var scanner37 := _gear_has("Scanner")
+		_narrate_check("¶037 — è presente uno scanner per rilocalizzare la creatura?", scanner37, "se i 2 dadi (%d) < Int max → ¶020." % roll37 if scanner37 else "senza scanner la creatura è fuggita.")
 		if _gear_has("Scanner") and roll37 < _expedition_max_intel():
 			add_log("¶037: lo Scanner rilocalizza la creatura (2 dadi %d < Int max) → ¶020." % roll37)
 			show_paragraph(20)
@@ -3889,10 +4026,16 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 		add_log("Risultato di combattimento %s rimappato a %s." % [result, newr])
 		result = newr
 	var shift_txt := (" [%+d col. sin.]" % pending_combat_shift) if pending_combat_shift != 0 else ""
-	var detail := "%s: val.%d vs creatura %d → diff %+d%s, dado %d → %s" % [
-		mode, player_combat, creature_rating, differential, shift_txt, die, result
+	var mode_lbl := "Cattura" if mode == "capture" else "Uccidi"
+	# Prototipo «cosa succede»: la formula di combattimento (8.5) — Valore di Combattimento
+	# della squadra vs Valore della creatura → differenziale, dado, eventuale spostamento
+	# di colonna → lettera-risultato — finisce sia nel log sia nel diario centrale.
+	var detail := "Combattimento (%s) — squadra %d vs creatura %d → differenziale %+d%s · dado %d → risultato %s" % [
+		mode_lbl, player_combat, creature_rating, differential, shift_txt, die, result
 	]
-	add_log(detail)
+	# Narrazione visibile: l'esito; la formula del differenziale va fra le formule collassabili.
+	_narrate("Combattimento (%s): risultato %s." % [mode_lbl, result])
+	_narrate_formula(detail)
 	# ¶206: combattimento in due round. Al PRIMO round i risultati sono riletti
 	# (non come da tabella); poi si ricalcola il differenziale e il SECONDO round usa
 	# i risultati normali. Il Valore di Combattimento della creatura può aumentare.
@@ -3971,10 +4114,10 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 		elif pending_resistance_only:
 			# Tutti i Punti Danno presi come Resistenza dei personaggi (no scudo robot).
 			_apply_damage_to_chars(dmg)
-			add_log("Risultato %s: %d Punto/i Danno come Resistenza." % [result, dmg])
+			_narrate("Risultato %s (8.7): %d Punto/i Danno presi come Resistenza." % [result, dmg])
 		else:
 			_apply_damage(dmg)
-			add_log("Risultato %s: %d Punto/i Danno alla spedizione." % [result, dmg])
+			_narrate("Risultato %s (8.7): %d Punto/i Danno alla spedizione." % [result, dmg])
 	# ¶024: se il duellante muore, la creatura è illesa e affronta il resto della
 	# spedizione (combattimento senza spostamenti, niente cattura).
 	if solo_key != "" and not crew.get(solo_key, {}).get("alive", true):
@@ -3986,7 +4129,7 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 		state_updated.emit()
 		return
 	if escapes:
-		add_log("%s sfugge al combattimento e fugge." % current_creature)
+		_narrate("Esito: %s sfugge al combattimento e fugge." % current_creature)
 		_end_encounter()
 	elif as_capture:
 		_capture_creature(current_creature)
@@ -4013,6 +4156,8 @@ func _combat_damage(result: String, as_capture: bool) -> int:
 # piedi) combatte la squadra con spostamento di 2 colonne a sinistra.
 func _setup_solo_combat_024() -> void:
 	var cspeed := creature_attr("speed")
+	var rover024 := _gear_has("Rover")
+	_narrate_check("¶024 — è presente un rover?", rover024, "combattimento di squadra (2 colonne a sinistra)." if rover024 else "il personaggio raggiungibile più lento combatte da solo (1 colonna a sinistra).")
 	if not _gear_has("Rover"):
 		var who := ""
 		var worst := 99
@@ -4037,12 +4182,12 @@ func _capture_creature(name: String) -> void:
 	var needed := int(GameData.get_creature(name).get("ecages", 1))
 	if _ecages_free() < needed:
 		_record_creature_attributes(name)
-		add_log("%s è sopraffatta ma servono %d E-cage libere (ne hai %d): viene rilasciata." % [name, needed, _ecages_free()])
+		_narrate("Esito: %s è sopraffatta ma servono %d E-cage libere (ne hai %d): viene rilasciata." % [name, needed, _ecages_free()])
 		_end_encounter()
 		return
 	captured_creatures.append(name)
 	_record_creature_attributes(name)
-	add_log("%s catturata viva in %d E-cage! (riportala alla Pandora per i PV)" % [name, needed])
+	_narrate("Esito: %s catturata viva in %d E-cage! (riportala alla Pandora per i PV)" % [name, needed])
 	_end_encounter()
 
 # Capacità totale di E-cage (numero di celle) se la spedizione le porta (qty dal segnalino).
@@ -4067,7 +4212,7 @@ func _kill_creature(name: String) -> void:
 	if cd.has("poison_bite"):
 		_apply_poison_bite(name, cd["poison_bite"])
 	_record_creature_attributes(name)
-	add_log("%s eliminata." % name)
+	_narrate("Esito: %s eliminata." % name)
 	_end_encounter()
 
 # Morso velenoso (¶005): solo un personaggio che NON indossa un enviorig né un
