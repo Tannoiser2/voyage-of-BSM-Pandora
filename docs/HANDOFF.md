@@ -1,6 +1,6 @@
 # Handoff — riprendere il lavoro (Voyage of the BSM Pandora)
 
-**Ultimo aggiornamento:** 2026-06-15 · **Branch:** `claude/tabelle-materiale-voyage-bsm-iaeefu` (PR #29 mergiata in `main`)
+**Ultimo aggiornamento:** 2026-06-16 · **Branch:** `claude/game-ui-logging-consolidation-k2qko3` (PR #36)
 
 Documento per ripartire in una nuova sessione. Riassume **dove siamo**, **come
 funziona il codice** e **lo stato finale** (100%: 0 🟡, 0 🔴).
@@ -43,6 +43,33 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 ## 3. Architettura: dove sta cosa (file e funzioni chiave)
 
 Tutto il motore è in `godot/scripts/GameState.gd` (+ `GameData.gd`, `GameScreen.gd`).
+
+### Diario «Cosa succede» — narrazione al centro (v0.10.0)
+La finestra centrale è il «cuore dell'azione»; il `log_display` a destra (Registro
+di Bordo) è la memoria storica. Due canali in `GameState`:
+- **`encounter_trail`** (narrazione visibile) e **`encounter_formulas`** (matematica,
+  sezione collassabile). Mostrati da `GameScreen._on_paragraph_request` nel box
+  «Cosa succede».
+- **Auto-mirror:** `add_log(msg)` rispecchia automaticamente la riga in
+  `encounter_trail` quando `_narration_active()` (fasi interstellare/orbita/
+  spedizione/paragrafo). Così TUTTE le conseguenze d'azione appaiono al centro senza
+  toccare le ~235 chiamate. Guardia `_suppress_trail_mirror` per le formule.
+- **Helper:** `_narrate(msg)` (= add_log, marcatore d'intento), `_narrate_formula(msg)`
+  (riga collassabile, esclusa dalla narrazione), `_narrate_check(question, yes, conseguenza)`
+  (controlli espliciti «c'è X? ▸ Sì/No → conseguenza»).
+- **Reset** del diario a ogni nuova azione: `_reset_action_diary()` in
+  `move_pandora_to` (salto), `return_to_pandora` (rientro), più i reset di spedizione
+  (`reset_expedition_state`, mossa/esplorazione).
+- **Eventi 4.2:** gli effetti girano DOPO il render del paragrafo →
+  `_refresh_paragraph_view()` in `resolve_interstellar_event`/`resolve_event_die`
+  aggiorna il centro (e `_on_paragraph_request` non rigioca il suono sul refresh dello
+  stesso paragrafo).
+
+### Export Web (GitHub Pages)
+`godot/export_presets.cfg` ha `include_filter="*.json,*.md"`: i dati (`data/*.json`) e
+i documenti (`CHANGELOG.md`) letti via `FileAccess` vanno inclusi esplicitamente, altrimenti
+nel build Web risultano vuoti (changelog/tabelle). Le immagini (charts/asset) sono risorse e
+si esportano da sole.
 
 ### Snodi «Incontro di spedizione» 6.5 (36/36 🟢)
 - Dati: `data/expedition_encounters.json` (regole `cond`/`goto`).

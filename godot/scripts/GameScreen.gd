@@ -2113,16 +2113,16 @@ func _build_charts_overlay() -> void:
 		b.pressed.connect(_show_chart.bind(c[0]))
 		flow.add_child(b)
 
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	v.add_child(scroll)
+	# Immagine della tabella: riempie l'area rimanente e scala mantenendo le proporzioni
+	# (centrata). NB: dentro uno ScrollContainer il TextureRect collassava a dimensione 0
+	# e l'immagine non si vedeva — qui lo si lascia espandere nel contenitore.
 	var tex := TextureRect.new()
 	tex.name = "ChartImage"
-	tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	tex.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(tex)
+	tex.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	v.add_child(tex)
 
 	_show_chart(CHARTS[0][0])
 
