@@ -321,7 +321,7 @@ func _build_ui() -> void:
 	paragraph_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	paragraph_display.text = "[i]Scegli la durata del tour e avvia una nuova partita.[/i]"
 	paragraph_display.add_theme_font_size_override("normal_font_size", 16)
-	paragraph_display.add_theme_constant_override("line_separation", 4)
+	paragraph_display.add_theme_constant_override("line_separation", 1)
 	paragraph_display.add_theme_color_override("default_color", Color(0.92, 0.92, 0.88))
 	paragraph_display.meta_clicked.connect(_on_meta_clicked)
 	scroll.add_child(paragraph_display)
@@ -340,12 +340,12 @@ func _build_ui() -> void:
 	choices_box.add_theme_constant_override("separation", 5)
 	para_vbox.add_child(choices_box)
 
-	# Action buttons row
-	var actions_hbox := HBoxContainer.new()
+	# Pulsanti d'azione: ora vivono nel pannello destro (sezione «Azioni»), non più in
+	# una barra sotto al testo. Creati qui, riparentati nel pannello destro più sotto.
+	var actions_hbox := HFlowContainer.new()
 	actions_hbox.name = "ActionsBox"
-	actions_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	actions_hbox.add_theme_constant_override("separation", 8)
-	center_vbox.add_child(actions_hbox)
+	actions_hbox.add_theme_constant_override("h_separation", 6)
+	actions_hbox.add_theme_constant_override("v_separation", 6)
 
 	var btn_land := Button.new()
 	btn_land.name = "BtnLand"
@@ -459,11 +459,6 @@ func _build_ui() -> void:
 	btn_repair.pressed.connect(_on_repair)
 	actions_hbox.add_child(btn_repair)
 
-	# Spaziatore per spingere Salva/Menu a destra
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	actions_hbox.add_child(spacer)
-
 	var btn_save := Button.new()
 	btn_save.name = "BtnSave"
 	btn_save.text = "💾 Salva"
@@ -508,56 +503,30 @@ func _build_ui() -> void:
 	sec_status["vbox"].add_child(status_display)
 	_build_status_rows(status_display)
 
-	# (L'equipaggio e l'equipaggiamento sono ora nel pannello "Disposizione" sotto il
-	# testo centrale; la colonna destra resta solo informativa.)
+	# Segnalini di stato: feriti (equipaggio con Resistenza ridotta) e danneggiati
+	# (equipaggiamento), più le creature catturate — riepilogo visivo nello Stato Missione.
+	var tokens_hdr := Label.new()
+	tokens_hdr.name = "TokensHeader"
+	tokens_hdr.text = "Feriti / Danneggiati"
+	tokens_hdr.add_theme_font_size_override("font_size", 12)
+	tokens_hdr.add_theme_color_override("font_color", UITheme.MUTED)
+	status_display.add_child(tokens_hdr)
+	var tokens_flow := HFlowContainer.new()
+	tokens_flow.name = "StatusTokens"
+	tokens_flow.add_theme_constant_override("h_separation", 4)
+	tokens_flow.add_theme_constant_override("v_separation", 4)
+	status_display.add_child(tokens_flow)
+	var captured_lbl := Label.new()
+	captured_lbl.name = "CapturedLabel"
+	captured_lbl.add_theme_font_size_override("font_size", 12)
+	captured_lbl.add_theme_color_override("font_color", Color(0.7, 1.0, 0.8))
+	captured_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status_display.add_child(captured_lbl)
 
-	# --- Sezione: Dado (compatta) ---
-	var sec_dice := UITheme.section("Dado")
-	right_vbox.add_child(sec_dice["panel"])
-	dice_panel = VBoxContainer.new()
-	dice_panel.name = "DicePanel"
-	dice_panel.add_theme_constant_override("separation", 4)
-	sec_dice["vbox"].add_child(dice_panel)
-
-	var dice_row := HBoxContainer.new()
-	dice_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	dice_row.add_theme_constant_override("separation", 10)
-	dice_panel.add_child(dice_row)
-
-	var dice_result_label := Label.new()
-	dice_result_label.name = "DiceResult"
-	dice_result_label.text = "—"
-	dice_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	dice_result_label.custom_minimum_size = Vector2(40, 0)
-	dice_result_label.add_theme_font_size_override("font_size", 26)
-	dice_result_label.add_theme_color_override("font_color", UITheme.AMBER)
-	dice_row.add_child(dice_result_label)
-
-	var roll_btn := Button.new()
-	roll_btn.name = "RollBtn"
-	roll_btn.text = "🎲 Tira"
-	roll_btn.custom_minimum_size = Vector2(0, 34)
-	roll_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	roll_btn.pressed.connect(_on_roll_dice)
-	dice_row.add_child(roll_btn)
-
-	var manual_chk := CheckButton.new()
-	manual_chk.name = "ManualDiceChk"
-	manual_chk.text = "Tiri manuali"
-	manual_chk.button_pressed = GameState.manual_dice
-	manual_chk.add_theme_font_size_override("font_size", 12)
-	manual_chk.tooltip_text = "Se attivo, tiri tu i dadi dove la regola lo prevede; altrimenti li tira il sistema."
-	manual_chk.toggled.connect(func(on): GameState.manual_dice = on)
-	dice_panel.add_child(manual_chk)
-
-	var dice_hint := Label.new()
-	dice_hint.name = "DiceHint"
-	dice_hint.text = ""
-	dice_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	dice_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	dice_hint.add_theme_font_size_override("font_size", 11)
-	dice_hint.add_theme_color_override("font_color", UITheme.MUTED)
-	dice_panel.add_child(dice_hint)
+	# --- Sezione: Azioni (pulsanti, spostati dalla barra inferiore) ---
+	var sec_actions := UITheme.section("Azioni")
+	right_vbox.add_child(sec_actions["panel"])
+	sec_actions["vbox"].add_child(actions_hbox)
 
 	# --- Sezione: Punti Vittoria ---
 	var sec_vp := UITheme.section("Punti Vittoria")
@@ -576,26 +545,13 @@ func _build_ui() -> void:
 	tour_label2.add_theme_color_override("font_color", UITheme.MUTED)
 	sec_vp["vbox"].add_child(tour_label2)
 
-	# --- Sezione: Registro di Bordo (occupa lo spazio rimanente) ---
-	var sec_log := UITheme.section("Registro di Bordo")
-	sec_log["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right_vbox.add_child(sec_log["panel"])
+	# (Il «Registro di Bordo» è stato rimosso: la narrazione vive nel diario «Cosa
+	# succede» al centro. log_display resta null e i suoi usi sono protetti da guardie.)
 
-	var log_scroll := ScrollContainer.new()
-	log_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	log_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sec_log["vbox"].add_child(log_scroll)
-
-	log_display = RichTextLabel.new()
-	log_display.name = "LogDisplay"
-	log_display.bbcode_enabled = true
-	log_display.fit_content = false
-	log_display.scroll_following = true
-	log_display.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	log_display.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	log_display.add_theme_font_size_override("normal_font_size", 12)
-	log_display.add_theme_color_override("default_color", Color(0.82, 0.88, 0.82))
-	log_scroll.add_child(log_display)
+	# Spaziatore in fondo: spinge le sezioni in alto.
+	var right_spacer := Control.new()
+	right_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	right_vbox.add_child(right_spacer)
 
 func _build_status_rows(parent: Control) -> void:
 	var rows := [
@@ -1211,7 +1167,55 @@ func _update_display() -> void:
 	_refresh_crew_counters()
 	_refresh_gear_counters()
 	_refresh_disposition()
+	_refresh_status_tokens()
 	_update_left_panel_mode()
+
+# Segnalini nello Stato della Missione: feriti (Resistenza < max), equipaggiamento
+# danneggiato e creature catturate. Riepilogo visivo che sostituisce il vecchio log.
+func _refresh_status_tokens() -> void:
+	var flow := find_child("StatusTokens", true, false) as HFlowContainer
+	if flow:
+		for c in flow.get_children():
+			c.queue_free()
+		# Feriti: personaggi vivi con Resistenza ridotta.
+		for k in GameData.get_character_keys():
+			var c: Dictionary = GameState.crew.get(k, {})
+			if c.get("alive", false) and int(c.get("endurance", GameState.MAX_ENDURANCE)) < GameState.MAX_ENDURANCE:
+				flow.add_child(_make_status_token(k, "%d/%d" % [int(c.get("endurance", 0)), GameState.MAX_ENDURANCE], Color(1, 0.55, 0.45)))
+		# Danneggiati: equipaggiamento/robot nel registro danni.
+		for g in GameState.damaged_gear:
+			flow.add_child(_make_status_token(str(g), "dann.", Color(1, 0.7, 0.35)))
+		var hdr := find_child("TokensHeader", true, false) as Label
+		if hdr:
+			hdr.visible = flow.get_child_count() > 0
+		flow.visible = flow.get_child_count() > 0
+	var cap := find_child("CapturedLabel", true, false) as Label
+	if cap:
+		if GameState.captured_creatures.size() > 0:
+			cap.text = "🪤 Catturate: " + ", ".join(GameState.captured_creatures)
+			cap.visible = true
+		else:
+			cap.visible = false
+
+# Piccola pedina di stato: immagine del segnalino + etichetta, con bordo colorato.
+func _make_status_token(key: String, tag: String, tint: Color) -> Control:
+	var box := VBoxContainer.new()
+	box.tooltip_text = "%s — %s" % [GameData.get_unit(key).get("name", key), tag]
+	var tex := TextureRect.new()
+	tex.custom_minimum_size = Vector2(34, 34)
+	tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var path := _unit_token_path(key)
+	if ResourceLoader.exists(path):
+		tex.texture = load(path)
+	box.add_child(tex)
+	var lbl := Label.new()
+	lbl.text = tag
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 9)
+	lbl.add_theme_color_override("font_color", tint)
+	box.add_child(lbl)
+	return box
 
 func _refresh_hex_buttons() -> void:
 	for col in range(1, 5):
@@ -2308,10 +2312,11 @@ func _combat_result_label(code: String, as_capture: bool) -> String:
 func _on_paragraph_request(para_num: int) -> void:
 	# Se è lo stesso paragrafo già mostrato è un semplice aggiornamento del diario
 	# (es. effetti di un evento interstellare applicati dopo il render): niente
-	# suono/lampeggio di «cambio pagina».
+	# suono/lampeggio di «cambio pagina». Su un nuovo paragrafo «Cosa succede» riparte chiuso.
 	if para_num != current_para_num:
 		_play("page")
 		_flash_paragraph()
+		_show_full_trail = false
 	current_para_num = para_num
 	var text := GameData.get_paragraph_text(para_num)
 
@@ -2342,18 +2347,22 @@ func _on_paragraph_request(para_num: int) -> void:
 		# combattimenti, MA anche eventi interstellari (4.2) e arrivo in orbita — tutta la
 		# logica/esiti dell'azione corrente, non solo nel log.
 		if GameState.encounter_trail != "" or GameState.encounter_formulas != "":
-			# Narrazione dell'azione: mostrata SEMPRE per intero (è il centro dell'azione).
+			# «Cosa succede» = feedback meccanico dell'azione, COLLASSABILE e chiuso di
+			# default (importa poco): un clic sull'intestazione lo apre/chiude.
 			var narr := GameState.encounter_trail.strip_edges()
-			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Cosa succede:[/color]\n[color=#d6e8c6]%s[/color]" % narr
-			# Formule e controlli: sezione COLLASSABILE (espandi/comprimi col link).
-			if GameState.encounter_formulas != "":
-				var formulas := GameState.encounter_formulas.strip_edges()
-				var n_formulas := formulas.split("\n").size()
-				if _show_full_trail:
-					bb += "\n[url=trail_expand][color=#ffd24d]▲ nascondi formule e controlli[/color][/url]\n[color=#9fb8d6]%s[/color]" % formulas
-				else:
-					bb += "\n[url=trail_expand][color=#ffd24d]▶ formule e controlli (%d)[/color][/url]" % n_formulas
-			bb += "  [/bgcolor]\n\n"
+			var formulas := GameState.encounter_formulas.strip_edges()
+			var n := 0
+			if narr != "": n += narr.split("\n").size()
+			if formulas != "": n += formulas.split("\n").size()
+			if _show_full_trail:
+				bb += "[bgcolor=#10243a]  [url=trail_expand][color=#7fc7ff]▼ Cosa succede[/color][/url]\n"
+				if narr != "":
+					bb += "[color=#d6e8c6]%s[/color]" % narr
+				if formulas != "":
+					bb += ("\n" if narr != "" else "") + "[color=#9fb8d6]%s[/color]" % formulas
+				bb += "  [/bgcolor]\n"
+			else:
+				bb += "[bgcolor=#10243a]  [url=trail_expand][color=#7fc7ff]▶ Cosa succede (%d)[/color][/url]  [/bgcolor]\n" % n
 		# In orbita i rimandi del paragrafo (opzioni d'atterraggio) non sono cliccabili:
 		# l'atterraggio si determina col tiro alla preparazione (5.4).
 		if GameState.is_orbit_decision():

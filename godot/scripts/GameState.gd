@@ -2310,19 +2310,21 @@ func _apply_paragraph_effect(para: int) -> int:
 		70:
 			var ni := character_intelligence("Nav") if crew.get("Nav", {}).get("alive", false) else 0
 			var r70 := randi_range(1, 6) + randi_range(1, 6)
+			_narrate_formula("¶070 — 2 dadi = %d vs Intelligenza navigatore %d." % [r70, ni])
 			if r70 <= ni - 2:
-				add_log("¶070: 2 dadi %d → atterraggio sicuro, nessun danno." % r70)
+				_narrate("Atterraggio sicuro: nessun danno.")
 			elif r70 <= ni + 1:
-				add_log("¶070: 2 dadi %d → atterraggio movimentato: un robot danneggiato." % r70)
+				_narrate("Atterraggio movimentato: un robot (a caso) viene danneggiato.")
 				_damage_random_robot()
 			else:
-				add_log("¶070: 2 dadi %d → schianto: 5 Punti Danno." % r70)
+				_narrate("Lo shuttle si schianta: 5 Punti Danno alla spedizione.")
 				_apply_damage(5)
 		148:
 			var hi := _highest_aboard_intel()
 			var r148 := randi_range(1, 6) + randi_range(1, 6)
 			var dmg148 := 5 if r148 < hi else 12
-			add_log("¶148: 2 dadi %d vs Int %d → schianto: %d Punti Danno." % [r148, hi, dmg148])
+			_narrate_formula("¶148 — 2 dadi = %d vs Intelligenza più alta a bordo %d." % [r148, hi])
+			_narrate("Lo shuttle si schianta: %d Punti Danno alla spedizione." % dmg148)
 			_apply_damage(dmg148)
 		183:
 			var die183 := randi_range(1, 6)
