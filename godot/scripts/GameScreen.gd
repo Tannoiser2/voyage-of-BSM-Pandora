@@ -189,8 +189,9 @@ func _build_ui() -> void:
 	# Senza titolo di sezione (lo spazio va ai box delle pedine).
 	var disp_sec := UITheme.section("")
 	disp_sec["panel"].name = "DispositionSection"
-	disp_sec["panel"].custom_minimum_size = Vector2(0, 460)
+	disp_sec["panel"].custom_minimum_size = Vector2(0, 360)
 	disp_sec["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
+	disp_sec["panel"].size_flags_stretch_ratio = 1.7   # più spazio verticale → pedine più grandi
 	center_vbox.add_child(disp_sec["panel"])
 	var disp_vbox := VBoxContainer.new()
 	disp_vbox.add_theme_constant_override("separation", 6)
@@ -228,18 +229,14 @@ func _build_ui() -> void:
 		info_lbl.visible = false   # mostrata solo per i box di superficie (vedi _refresh_disposition)
 		cv.add_child(info_lbl)
 		parent.add_child(col)
-	# Pandora ospita tutta la nave (3 categorie su più righe): più spazio in alto.
+	# Box impilati a tutta larghezza e di altezza uguale: Pandora, Shuttle e il box di
+	# superficie (Rover O A piedi). Le pedine hanno dimensione fissa (altezza box / 3),
+	# uguali in tutti i box, con le 3 file (equipaggio/strumenti/robot) che riempiono
+	# l'altezza. Niente più rimpicciolimento dinamico in base al numero di unità.
 	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
-	(disp_vbox.get_child(disp_vbox.get_child_count() - 1) as Control).size_flags_stretch_ratio = 1.5
-	# Riga inferiore: Shuttle + A piedi + Rover (larghezza uguale).
-	var disp_row := HBoxContainer.new()
-	disp_row.add_theme_constant_override("separation", 6)
-	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	disp_row.size_flags_stretch_ratio = 1.0
-	disp_vbox.add_child(disp_row)
-	_disp_add_bucket.call(disp_row, "Shuttle", 1)
-	_disp_add_bucket.call(disp_row, "A piedi", 1)
-	_disp_add_bucket.call(disp_row, "Rover", 1)
+	_disp_add_bucket.call(disp_vbox, "Shuttle", 1)
+	_disp_add_bucket.call(disp_vbox, "A piedi", 1)
+	_disp_add_bucket.call(disp_vbox, "Rover", 1)
 	# Riga informativa: fase corrente + capacità di superficie + scelta del mezzo (5.7/5.8).
 	var info_row := HBoxContainer.new()
 	info_row.name = "DispInfoRow"
@@ -258,41 +255,8 @@ func _build_ui() -> void:
 	veh_btn.add_theme_font_size_override("font_size", 12)
 	veh_btn.pressed.connect(_on_toggle_vehicle)
 	info_row.add_child(veh_btn)
-	# Controlli di preparazione (rifornimenti + lancio), visibili solo in orbita.
-	var prep_ctrl := HBoxContainer.new()
-	prep_ctrl.name = "DispPrepControls"
-	prep_ctrl.add_theme_constant_override("separation", 8)
-	prep_ctrl.visible = false
-	disp_sec["vbox"].add_child(prep_ctrl)
-	var disp_load := Label.new()
-	disp_load.name = "DispLoad"
-	disp_load.add_theme_font_size_override("font_size", 12)
-	prep_ctrl.add_child(disp_load)
-	var sup_lbl2 := Label.new()
-	sup_lbl2.text = "·  Rifornimenti:"
-	sup_lbl2.add_theme_font_size_override("font_size", 12)
-	prep_ctrl.add_child(sup_lbl2)
-	var sup_slider := HSlider.new()
-	sup_slider.name = "DispSupply"
-	sup_slider.min_value = 0
-	sup_slider.max_value = GameData.max_supply()
-	sup_slider.step = 1
-	sup_slider.custom_minimum_size = Vector2(150, 0)
-	sup_slider.value_changed.connect(_on_prep_supply_changed)
-	prep_ctrl.add_child(sup_slider)
-	var sup_val2 := Label.new()
-	sup_val2.name = "DispSupplyVal"
-	sup_val2.custom_minimum_size = Vector2(26, 0)
-	prep_ctrl.add_child(sup_val2)
-	var spacer2 := Control.new()
-	spacer2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	prep_ctrl.add_child(spacer2)
-	var launch2 := Button.new()
-	launch2.name = "DispLaunch"
-	launch2.text = "🚀 Lancia lo shuttle"
-	launch2.add_theme_color_override("font_color", UITheme.CYAN)
-	launch2.pressed.connect(_on_prep_launch)
-	prep_ctrl.add_child(launch2)
+	# (I controlli di preparazione — carico, rifornimenti, lancio — sono nel pannello
+	# destro, sezione «Azioni»: vedi _build_ui più sotto.)
 
 	var para_vbox := VBoxContainer.new()
 	para_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -326,10 +290,11 @@ func _build_ui() -> void:
 	var para_img := TextureRect.new()
 	para_img.name = "ParaImage"
 	para_img.custom_minimum_size = Vector2(300, 0)
-	# EXPAND_IGNORE_SIZE + fill verticale: il TextureRect riempie la colonna e l'immagine
-	# è scalata mantenendo le proporzioni (altrimenti FIT_WIDTH_PROPORTIONAL collassa a 0).
+	# L'immagine RIEMPIE tutto il box (KEEP_ASPECT_COVERED: copre l'area mantenendo le
+	# proporzioni, ritagliando l'eccesso) invece di lasciare bordi vuoti.
 	para_img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	para_img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	para_img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	para_img.clip_contents = true
 	para_img.size_flags_horizontal = Control.SIZE_FILL
 	para_img.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	img_col.add_child(para_img)
@@ -556,10 +521,47 @@ func _build_ui() -> void:
 	captured_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status_display.add_child(captured_lbl)
 
-	# --- Sezione: Azioni (pulsanti, spostati dalla barra inferiore) ---
+	# --- Sezione: Azioni (pulsanti + controlli di preparazione, tutti qui) ---
 	var sec_actions := UITheme.section("Azioni")
 	right_vbox.add_child(sec_actions["panel"])
 	sec_actions["vbox"].add_child(actions_hbox)
+	# Controlli di preparazione in orbita (carico, rifornimenti, lancio), impilati qui.
+	var prep_ctrl := VBoxContainer.new()
+	prep_ctrl.name = "DispPrepControls"
+	prep_ctrl.add_theme_constant_override("separation", 4)
+	prep_ctrl.visible = false
+	sec_actions["vbox"].add_child(prep_ctrl)
+	var disp_load := Label.new()
+	disp_load.name = "DispLoad"
+	disp_load.add_theme_font_size_override("font_size", 12)
+	disp_load.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	prep_ctrl.add_child(disp_load)
+	var sup_row := HBoxContainer.new()
+	sup_row.add_theme_constant_override("separation", 6)
+	prep_ctrl.add_child(sup_row)
+	var sup_lbl2 := Label.new()
+	sup_lbl2.text = "Rifornimenti:"
+	sup_lbl2.add_theme_font_size_override("font_size", 12)
+	sup_row.add_child(sup_lbl2)
+	var sup_slider := HSlider.new()
+	sup_slider.name = "DispSupply"
+	sup_slider.min_value = 0
+	sup_slider.max_value = GameData.max_supply()
+	sup_slider.step = 1
+	sup_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sup_slider.value_changed.connect(_on_prep_supply_changed)
+	sup_row.add_child(sup_slider)
+	var sup_val2 := Label.new()
+	sup_val2.name = "DispSupplyVal"
+	sup_val2.custom_minimum_size = Vector2(26, 0)
+	sup_row.add_child(sup_val2)
+	var launch2 := Button.new()
+	launch2.name = "DispLaunch"
+	launch2.text = "🚀 Lancia lo shuttle"
+	launch2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	launch2.add_theme_color_override("font_color", UITheme.CYAN)
+	launch2.pressed.connect(_on_prep_launch)
+	prep_ctrl.add_child(launch2)
 
 	# --- Sezione: Punti Vittoria ---
 	var sec_vp := UITheme.section("Punti Vittoria")
@@ -599,6 +601,16 @@ func _build_status_rows(parent: Control) -> void:
 		lbl.add_theme_font_size_override("font_size", 13)
 		lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
 		parent.add_child(lbl)
+
+	# Caratteristiche del pianeta (gravità/atmosfera/idro/geologia/clima/LSV).
+	var planet_stats := RichTextLabel.new()
+	planet_stats.name = "PlanetStats"
+	planet_stats.bbcode_enabled = true
+	planet_stats.fit_content = true
+	planet_stats.scroll_active = false
+	planet_stats.add_theme_font_size_override("normal_font_size", 12)
+	planet_stats.add_theme_color_override("default_color", Color(0.78, 0.86, 0.95))
+	parent.add_child(planet_stats)
 
 	# Traccia del Tempo (6.8): quante ore mancano al prossimo Controllo del Rifornimento
 	var time_lbl := Label.new()
@@ -1158,6 +1170,20 @@ func _update_display() -> void:
 	var lbl_planet := find_child("Planet", true, false) as Label
 	if lbl_planet: lbl_planet.text = "Pianeta: %s" % (s.current_planet if s.current_planet != "" else "—")
 
+	# Caratteristiche del pianeta nello Stato della Missione (orbita/spedizione).
+	var planet_stats := find_child("PlanetStats", true, false) as RichTextLabel
+	if planet_stats:
+		var a := s.planet_attrs
+		var show_stats := (s.current_phase == s.Phase.ORBIT or s.current_phase == s.Phase.EXPEDITION or s.current_phase == s.Phase.PARAGRAPH) and not a.is_empty()
+		planet_stats.visible = show_stats
+		if show_stats:
+			var atmo: String = a.get("atmosphere", "Normal")
+			var ps := "Gravità: [b]%s[/b] · Atmosfera: [b]%s[/b]\n" % [GameData.gravity_it(s.planet_gravity), GameData.atmosphere_it(atmo)]
+			ps += "Idro: [b]%d%%[/b] · Geologia: [b]%s[/b] · LSV: [b]%d[/b]" % [int(a.get("hydro", 0)), str(a.get("geology", "—")), int(a.get("lsv", 0))]
+			if a.has("climate"):
+				ps += " · Clima: [b]%s[/b]" % str(a.get("climate"))
+			planet_stats.text = ps
+
 	var lbl_vp := find_child("VPLabel", true, false) as Label
 	if lbl_vp: lbl_vp.text = "Punti Vittoria: %d" % s.victory_points
 
@@ -1435,13 +1461,18 @@ func _refresh_disposition() -> void:
 		if box:
 			box.set_meta("keys", buckets[bucket])
 			box.set_meta("clickable", clickable)
-	# 5.7: la spedizione è O nel Rover O a piedi → mostra un solo box di superficie.
+	# In orbita i box di superficie non servono (squadra a bordo/shuttle): si mostrano
+	# solo Pandora e Shuttle, così i due box sono più grandi. Sulla superficie (5.7) la
+	# spedizione è O nel Rover O a piedi → un solo box di superficie.
 	for surf in ["Rover", "A piedi"]:
 		var sbox := find_child("Disp_%s" % surf, true, false) as Control
 		if sbox:
 			var col := sbox.get_parent().get_parent() as Control
 			if col:
-				col.visible = (surf == "Rover") if on_rover else (surf == "A piedi")
+				if not landed:
+					col.visible = false
+				else:
+					col.visible = (surf == "Rover") if on_rover else (surf == "A piedi")
 	# Ridispone tutte le pedine con dimensione uniforme che entra in ogni box.
 	_relayout_all_disp()
 	# Riga informativa: fase + capacità di superficie + scelta del mezzo.
@@ -1549,34 +1580,17 @@ func _disp_rows_needed(groups: Array, cols: int) -> int:
 
 # Dimensione GLOBALE delle pedine: la più grande in [MIN,MAX] per cui TUTTI i box
 # visibili riescono a contenere le proprie pedine senza scroll né tagli.
+# Dimensione FISSA delle pedine: l'altezza del box diviso 3 (tre file che riempiono
+# l'altezza). Non dipende dal numero di unità ed è uguale in tutti i box (stessa altezza).
 func _disp_global_tile_size() -> float:
-	var gap := 4.0
-	var best := 60.0
+	var ref_h := 0.0
 	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
 		var box := find_child("Disp_%s" % bucket, true, false) as Control
-		if box == null or not box.is_visible_in_tree():
-			continue
-		var keys: Array = box.get_meta("keys", [])
-		if keys.is_empty():
-			continue
-		var w := box.size.x
-		var h := box.size.y
-		if w < 10.0 or h < 10.0:
-			continue
-		var groups := _disp_groups(keys)
-		# Si scende fino a 22px pur di NON tagliare la terza fila di pedine.
-		var fit := 22.0
-		for ti in range(60, 21, -2):
-			var t := float(ti)
-			var cols := maxi(1, int((w + gap) / (t + gap)))
-			var need_h := _disp_rows_needed(groups, cols) * (t + gap)
-			if need_h <= h:
-				fit = t
-				break
-		best = minf(best, fit)
-	return clampf(best, 22.0, 60.0)
+		if box and box.is_visible_in_tree():
+			ref_h = maxf(ref_h, box.size.y)
+	return clampf(ref_h / 3.0 - 4.0, 28.0, 110.0)
 
-# Ridispone TUTTI i box con la stessa dimensione di pedina (uniforme e che entra).
+# Ridispone TUTTI i box con la stessa dimensione di pedina (fissa, uguale ovunque).
 func _relayout_all_disp() -> void:
 	var ts := _disp_global_tile_size()
 	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
@@ -1584,8 +1598,8 @@ func _relayout_all_disp() -> void:
 		if box:
 			_layout_disp_box(box, ts)
 
-# Dispone le pedine di un box in righe per categoria (equipaggio / equipaggiamento /
-# robot), a griglia con posizionamento manuale: pedine uguali, niente scroll.
+# Dispone le pedine in TRE file (equipaggio / strumenti / robot) che riempiono
+# l'altezza del box; pedine di dimensione fissa, allineate a sinistra.
 func _layout_disp_box(box: Control, ts: float) -> void:
 	for c in box.get_children():
 		c.queue_free()
@@ -1593,28 +1607,20 @@ func _layout_disp_box(box: Control, ts: float) -> void:
 	var clickable: bool = box.get_meta("clickable", false)
 	if keys.is_empty():
 		return
-	var w := box.size.x
-	if w < 10.0:
-		return
 	var gap := 4.0
-	var cols := maxi(1, int((w + gap) / (ts + gap)))
-	var y := 0.0
-	for g in _disp_groups(keys):
-		if g.is_empty():
-			continue
-		var col := 0
+	var row_h := maxf(box.size.y / 3.0, ts)
+	var groups := _disp_groups(keys)
+	for gi in range(groups.size()):
+		var g: Array = groups[gi]
+		var y := gi * row_h + (row_h - ts) * 0.5   # centra verticalmente nella fila
+		var x := 0.0
 		for k in g:
 			var t := _make_disp_tile(str(k), clickable)
-			t.position = Vector2(col * (ts + gap), y)
+			t.position = Vector2(x, y)
 			t.size = Vector2(ts, ts)
 			t.custom_minimum_size = Vector2(ts, ts)
 			box.add_child(t)
-			col += 1
-			if col >= cols:
-				col = 0
-				y += ts + gap
-		if col > 0:
-			y += ts + gap   # chiude la riga parziale prima del gruppo successivo
+			x += ts + gap
 
 # Bucket di un'unità: Pandora (a bordo) / Shuttle (in spedizione non sbarcata) /
 # A piedi o Rover (in spedizione, sbarcata, secondo l'uso del rover).
