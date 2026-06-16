@@ -2362,7 +2362,13 @@ func _on_paragraph_request(para_num: int) -> void:
 					bb += ("\n" if narr != "" else "") + "[color=#9fb8d6]%s[/color]" % formulas
 				bb += "  [/bgcolor]\n"
 			else:
-				bb += "[bgcolor=#10243a]  [url=trail_expand][color=#7fc7ff]▶ Cosa succede (%d)[/color][/url]  [/bgcolor]\n" % n
+				# Chiuso, ma con l'ULTIMA riga-esito sempre in chiaro accanto all'intestazione.
+				var src := narr if narr != "" else formulas
+				var lines := src.split("\n")
+				var last_line := lines[lines.size() - 1].strip_edges() if lines.size() > 0 else ""
+				if last_line.begins_with("•"):
+					last_line = last_line.substr(1).strip_edges()
+				bb += "[bgcolor=#10243a]  [url=trail_expand][color=#7fc7ff]▶ Cosa succede (%d)[/color][/url]  [color=#ffe27a][b]%s[/b][/color]  [/bgcolor]\n" % [n, last_line]
 		# In orbita i rimandi del paragrafo (opzioni d'atterraggio) non sono cliccabili:
 		# l'atterraggio si determina col tiro alla preparazione (5.4).
 		if GameState.is_orbit_decision():
