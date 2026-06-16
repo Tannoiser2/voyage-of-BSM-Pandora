@@ -441,6 +441,22 @@ func add_log(msg: String) -> void:
 func _trail(msg: String) -> void:
 	encounter_trail += ("• " + msg + "\n")
 
+# Narrazione unificata (prototipo «centro arricchito»): la riga appare SIA nel
+# Registro di Bordo a destra (storico persistente) SIA nel diario «Cosa succede»
+# al centro, così la finestra principale si spiega da sola senza guardare il log.
+func _narrate(msg: String) -> void:
+	_trail(msg)
+	add_log(msg)
+
+# Check esplicito (es.: «c'è un robot?»): scrive la domanda, l'esito Sì/No e la
+# conseguenza in un'unica riga, così la logica del paragrafo è leggibile invece di
+# eseguirsi in silenzio. Da usare ovunque un paragrafo verifichi una condizione.
+func _narrate_check(question: String, yes: bool, consequence := "") -> void:
+	var line := "Controllo — %s  ▸ %s" % [question, ("Sì" if yes else "No")]
+	if consequence != "":
+		line += " → " + consequence
+	_narrate(line)
+
 func months_remaining() -> int:
 	return tour_length - tour_months_used
 
@@ -2361,6 +2377,8 @@ func _apply_paragraph_effect(para: int) -> int:
 				taken += 1
 			add_log("¶189: gli alieni invisibili sottraggono %d oggetto/i (robot per primi)." % taken)
 		223:
+			# Check robot esplicito (prototipo): l'aeron preferisce un robot come preda.
+			# Se c'è un robot funzionante lo afferra; altrimenti colpisce un personaggio.
 			var bots223 := _functioning_bots()
 			if not bots223.is_empty():
 				var b: String = bots223[randi_range(0, bots223.size() - 1)]
@@ -2368,12 +2386,17 @@ func _apply_paragraph_effect(para: int) -> int:
 				expedition_units.erase(b)
 				if not damaged_gear.has(b):
 					damaged_gear.append(b)
-				add_log("¶223: l'aeron afferra %s e schizza via." % GameData.get_unit(b).get("name", b))
+				_narrate_check("¶223 — c'è un robot funzionante nella spedizione?", true,
+					"l'aeron afferra %s e schizza via (robot perso, considerato danneggiato)." % GameData.get_unit(b).get("name", b))
 			else:
 				var vc223 := _random_alive_char()
 				if vc223 != "":
 					crew[vc223]["endurance"] = maxi(0, int(crew[vc223].get("endurance", 0)) - 2)
-					add_log("¶223: l'aeron colpisce %s di striscio: −2 Resistenza." % crew[vc223].get("name", vc223))
+					_narrate_check("¶223 — c'è un robot funzionante nella spedizione?", false,
+						"nessun robot: l'aeron colpisce %s di striscio (−2 Resistenza)." % crew[vc223].get("name", vc223))
+				else:
+					_narrate_check("¶223 — c'è un robot funzionante nella spedizione?", false,
+						"nessun robot e nessun personaggio bersagliabile: l'aeron schizza via a vuoto.")
 		147:
 			# Vermi-tunnel (8.1): se colti di sorpresa, ogni personaggio che NON indossa
 			# un armorig perde 1d6 Resistenza (tiro per ciascuno); l'enviorig sottrae 1
@@ -3144,6 +3167,11 @@ func _advance_supply_track(h: int) -> void:
 	# controllo e si azzera la posizione, conservando le ore residue (loop multiplo).
 	while supply_track_pos >= space:
 		supply_track_pos -= space
+		# Prototipo «cosa succede»: spiega PERCHÉ scatta ora (la Traccia del Tempo ha
+		# raggiunto lo spazio di controllo dato dalla gravità, 6.8), così il giocatore
+		# capisce quando il Controllo del Rifornimento viene fatto.
+		_narrate("Traccia del Tempo: raggiunte %d ore (soglia gravità «%s» = %d h) → si esegue un Controllo del Rifornimento (7.2)." % [
+			space, str(planet_attrs.get("gravity", planet_gravity)), space])
 		_request_supply_check()
 
 # Avvia un Controllo del Rifornimento (7.2): col dado automatico lo risolve subito,
@@ -3204,9 +3232,11 @@ func resolve_supply_check(die: int) -> void:
 	var summ := lsv + terr_supply
 	var calc2 := mini(int(summ / die), 4) if summ > 0 else 0
 	var total := calc1 + calc2
-	add_log("Controllo Rifornimento (7.2): dado %d · Utenti %d → %d · (LSV %d + terreno %d = %d) → %d · totale %d." % [
-		die, users, calc1, lsv, terr_supply, summ, calc2, total])
-	_trail("Controllo del Rifornimento (7.2): dado %d → spesi %d Punti Rifornimento (scorte %d)." % [die, total, expedition_supply])
+	# Prototipo «cosa succede»: la formula completa del Controllo (7.2) finisce sia nel
+	# Registro di Bordo sia nel diario centrale, così l'esito è leggibile dalla finestra
+	# principale. Calcolo 1 = ⌊Utenti/dado⌋ (max 4); Calcolo 2 = ⌊(LSV+terreno)/dado⌋ (max 4).
+	_narrate("Controllo del Rifornimento (7.2) — dado %d · Utenti %d→⌊%d/%d⌋=%d · (LSV %d + terreno %d = %d)→%d · totale %d Punti." % [
+		die, users, users, die, calc1, lsv, terr_supply, summ, calc2, total])
 	_expend_supply(total)
 	# Infezioni in corso (¶197/¶209): ogni personaggio infetto perde 1 Resistenza a
 	# ogni Controllo del Rifornimento, finché non rientra sulla Pandora.
@@ -3277,13 +3307,13 @@ func _expend_supply(points: int) -> void:
 		return
 	if expedition_supply >= points:
 		expedition_supply -= points
-		add_log("Spesi %d Punti Rifornimento (rimasti %d)." % [points, expedition_supply])
+		_narrate("Spesi %d Punti Rifornimento (rimasti %d)." % [points, expedition_supply])
 	else:
 		var short := points - expedition_supply
 		if expedition_supply > 0:
-			add_log("Spesi %d Punti Rifornimento: rifornimenti esauriti." % expedition_supply)
+			_narrate("Spesi %d Punti Rifornimento: rifornimenti esauriti." % expedition_supply)
 		expedition_supply = 0
-		add_log("Rifornimenti insufficienti (7.3): %d Punti pagati in Resistenza." % short)
+		_narrate("Rifornimenti insufficienti (7.3): %d Punti pagati in Resistenza." % short)
 		_apply_damage(short)
 
 func use_expedition_supply(amount: int) -> bool:
@@ -3889,10 +3919,14 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 		add_log("Risultato di combattimento %s rimappato a %s." % [result, newr])
 		result = newr
 	var shift_txt := (" [%+d col. sin.]" % pending_combat_shift) if pending_combat_shift != 0 else ""
-	var detail := "%s: val.%d vs creatura %d → diff %+d%s, dado %d → %s" % [
-		mode, player_combat, creature_rating, differential, shift_txt, die, result
+	var mode_lbl := "Cattura" if mode == "capture" else "Uccidi"
+	# Prototipo «cosa succede»: la formula di combattimento (8.5) — Valore di Combattimento
+	# della squadra vs Valore della creatura → differenziale, dado, eventuale spostamento
+	# di colonna → lettera-risultato — finisce sia nel log sia nel diario centrale.
+	var detail := "Combattimento (%s) — squadra %d vs creatura %d → differenziale %+d%s · dado %d → risultato %s" % [
+		mode_lbl, player_combat, creature_rating, differential, shift_txt, die, result
 	]
-	add_log(detail)
+	_narrate(detail)
 	# ¶206: combattimento in due round. Al PRIMO round i risultati sono riletti
 	# (non come da tabella); poi si ricalcola il differenziale e il SECONDO round usa
 	# i risultati normali. Il Valore di Combattimento della creatura può aumentare.
@@ -3971,10 +4005,10 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 		elif pending_resistance_only:
 			# Tutti i Punti Danno presi come Resistenza dei personaggi (no scudo robot).
 			_apply_damage_to_chars(dmg)
-			add_log("Risultato %s: %d Punto/i Danno come Resistenza." % [result, dmg])
+			_narrate("Risultato %s (8.7): %d Punto/i Danno presi come Resistenza." % [result, dmg])
 		else:
 			_apply_damage(dmg)
-			add_log("Risultato %s: %d Punto/i Danno alla spedizione." % [result, dmg])
+			_narrate("Risultato %s (8.7): %d Punto/i Danno alla spedizione." % [result, dmg])
 	# ¶024: se il duellante muore, la creatura è illesa e affronta il resto della
 	# spedizione (combattimento senza spostamenti, niente cattura).
 	if solo_key != "" and not crew.get(solo_key, {}).get("alive", true):
@@ -3986,7 +4020,7 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 		state_updated.emit()
 		return
 	if escapes:
-		add_log("%s sfugge al combattimento e fugge." % current_creature)
+		_narrate("Esito: %s sfugge al combattimento e fugge." % current_creature)
 		_end_encounter()
 	elif as_capture:
 		_capture_creature(current_creature)
@@ -4037,12 +4071,12 @@ func _capture_creature(name: String) -> void:
 	var needed := int(GameData.get_creature(name).get("ecages", 1))
 	if _ecages_free() < needed:
 		_record_creature_attributes(name)
-		add_log("%s è sopraffatta ma servono %d E-cage libere (ne hai %d): viene rilasciata." % [name, needed, _ecages_free()])
+		_narrate("Esito: %s è sopraffatta ma servono %d E-cage libere (ne hai %d): viene rilasciata." % [name, needed, _ecages_free()])
 		_end_encounter()
 		return
 	captured_creatures.append(name)
 	_record_creature_attributes(name)
-	add_log("%s catturata viva in %d E-cage! (riportala alla Pandora per i PV)" % [name, needed])
+	_narrate("Esito: %s catturata viva in %d E-cage! (riportala alla Pandora per i PV)" % [name, needed])
 	_end_encounter()
 
 # Capacità totale di E-cage (numero di celle) se la spedizione le porta (qty dal segnalino).
@@ -4067,7 +4101,7 @@ func _kill_creature(name: String) -> void:
 	if cd.has("poison_bite"):
 		_apply_poison_bite(name, cd["poison_bite"])
 	_record_creature_attributes(name)
-	add_log("%s eliminata." % name)
+	_narrate("Esito: %s eliminata." % name)
 	_end_encounter()
 
 # Morso velenoso (¶005): solo un personaggio che NON indossa un enviorig né un

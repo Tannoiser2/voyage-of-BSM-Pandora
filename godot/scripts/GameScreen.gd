@@ -2236,7 +2236,7 @@ func _on_paragraph_request(para_num: int) -> void:
 		# degli snodi 6.5 e controlli di rifornimento, così la logica di scelta del
 		# paragrafo è chiara (non solo nel log). Mostrato per esplorazione/creatura/evento.
 		if GameState.expedition_pos > 0 and GameState.encounter_trail != "":
-			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Come ci sei arrivato (logica di scelta):[/color]\n[color=#bcd6ee]%s[/color]  [/bgcolor]\n\n" % GameState.encounter_trail.strip_edges()
+			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Cosa succede (logica, check ed esiti):[/color]\n[color=#bcd6ee]%s[/color]  [/bgcolor]\n\n" % GameState.encounter_trail.strip_edges()
 		# In orbita i rimandi del paragrafo (opzioni d'atterraggio) non sono cliccabili:
 		# l'atterraggio si determina col tiro alla preparazione (5.4).
 		if GameState.is_orbit_decision():
