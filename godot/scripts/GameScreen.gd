@@ -2306,8 +2306,12 @@ func _combat_result_label(code: String, as_capture: bool) -> String:
 	return "%s, −%d" % [verb, int(dmg.get(code, 0))]
 
 func _on_paragraph_request(para_num: int) -> void:
-	_play("page")
-	_flash_paragraph()
+	# Se è lo stesso paragrafo già mostrato è un semplice aggiornamento del diario
+	# (es. effetti di un evento interstellare applicati dopo il render): niente
+	# suono/lampeggio di «cambio pagina».
+	if para_num != current_para_num:
+		_play("page")
+		_flash_paragraph()
 	current_para_num = para_num
 	var text := GameData.get_paragraph_text(para_num)
 
@@ -2334,10 +2338,10 @@ func _on_paragraph_request(para_num: int) -> void:
 			var img_path := GameData.get_event_image_path(para_num)
 			if not img_path.is_empty():
 				bb += "[center][img=360]" + img_path + "[/img][/center]\n\n"
-		# «Come ci sei arrivato»: tiri della Matrice di Esplorazione, instradamento
-		# degli snodi 6.5 e controlli di rifornimento, così la logica di scelta del
-		# paragrafo è chiara (non solo nel log). Mostrato per esplorazione/creatura/evento.
-		if GameState.expedition_pos > 0 and (GameState.encounter_trail != "" or GameState.encounter_formulas != ""):
+		# Diario «Cosa succede»: tiri della Matrice/snodi 6.5, controlli di rifornimento,
+		# combattimenti, MA anche eventi interstellari (4.2) e arrivo in orbita — tutta la
+		# logica/esiti dell'azione corrente, non solo nel log.
+		if GameState.encounter_trail != "" or GameState.encounter_formulas != "":
 			# Narrazione dell'azione: mostrata SEMPRE per intero (è il centro dell'azione).
 			var narr := GameState.encounter_trail.strip_edges()
 			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Cosa succede:[/color]\n[color=#d6e8c6]%s[/color]" % narr

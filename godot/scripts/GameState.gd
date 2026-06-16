@@ -441,12 +441,23 @@ func phase_name(p: Phase) -> String:
 
 func add_log(msg: String) -> void:
 	log_entries.append(msg)
-	# La finestra principale è il cuore dell'azione: durante un'azione di spedizione
-	# (expedition_pos > 0) ogni conseguenza registrata appare anche nel diario «Cosa
-	# succede» al centro. Le righe-formula sono escluse (vanno nella sezione collassabile).
-	if expedition_pos > 0 and not _suppress_trail_mirror:
+	# La finestra principale è il cuore dell'azione: durante una fase giocata
+	# (interstellare/orbita/spedizione/paragrafo) ogni conseguenza registrata appare
+	# anche nel diario «Cosa succede» al centro. Le righe-formula sono escluse (vanno
+	# nella sezione collassabile).
+	if _narration_active() and not _suppress_trail_mirror:
 		_trail(msg)
 	message_posted.emit(msg)
+
+# Vero nelle fasi in cui ha senso mostrare il diario «Cosa succede» (tutto tranne menu
+# e setup): include ora anche viaggio interstellare e orbita, non solo la spedizione.
+func _narration_active() -> bool:
+	return current_phase in [Phase.INTERSTELLAR, Phase.ORBIT, Phase.EXPEDITION, Phase.PARAGRAPH]
+
+# Azzera il diario d'azione (narrazione + formule) all'inizio di una nuova azione.
+func _reset_action_diary() -> void:
+	encounter_trail = ""
+	encounter_formulas = ""
 
 # Aggiunge una riga alla traccia «cosa succede» (mostrata nel testo centrale).
 func _trail(msg: String) -> void:
@@ -487,6 +498,9 @@ func move_pandora_to(hex_id: int) -> void:
 	if not can_move_to(hex_id):
 		add_log("Non abbastanza mesi per raggiungere quel sistema.")
 		return
+	# Nuova azione interstellare: il diario «Cosa succede» riparte (salto → controllo
+	# evento 4.0 → eventuale evento 4.2 → orbita formano una sola sequenza leggibile).
+	_reset_action_diary()
 	var cost := GameData.get_hex_distance(pandora_hex, hex_id)
 	# Memorizza l'origine e la destinazione del salto interstellare attuale: servono
 	# ai paragrafi-evento (4.2) che ragionano sulla ROTTA percorsa (es. ¶064 e la
@@ -558,6 +572,8 @@ func resolve_interstellar_event(die: int) -> void:
 		show_paragraph(para)
 		# Applica gli effetti meccanici interni del paragrafo-evento (4.2).
 		_apply_interstellar_event_effect(para)
+		# Gli effetti sono applicati DOPO il render: aggiorna il diario centrale.
+		_refresh_paragraph_view()
 	else:
 		# Con la Tabella 4.2 corretta (2-12) ogni risultato ha un paragrafo;
 		# questo ramo è una salvaguardia: in assenza di voce si va in orbita.
@@ -1008,6 +1024,14 @@ func resolve_event_die(die: int) -> void:
 		61: _resolve_061(die)
 		84: _resolve_084(die, creature_rating)
 		_:  pass
+	# Effetti dell'evento risolti dopo il render iniziale: aggiorna il diario centrale.
+	_refresh_paragraph_view()
+
+# Aggiorna la finestra centrale (diario «Cosa succede») quando gli effetti sono stati
+# applicati DOPO che il paragrafo era già stato mostrato (tipico degli eventi 4.2).
+func _refresh_paragraph_view() -> void:
+	if current_phase == Phase.PARAGRAPH and current_paragraph > 0:
+		paragraph_request.emit(current_paragraph)
 
 # Ingresso in orbita: prepara gli attributi del pianeta e mostra il paragrafo
 # che lo descrive (Tabella Pianeti, 5.0). Il giocatore decide se esplorare.
@@ -3103,6 +3127,8 @@ func return_to_pandora() -> void:
 			add_log(msg076)
 			message_posted.emit(msg076)
 			return
+		# Rientro effettivo: nuova azione, il diario «Cosa succede» riparte pulito.
+		_reset_action_diary()
 		shuttle_supply += expedition_supply
 		expedition_supply = 0
 		# Le infezioni vengono curate dall'attrezzatura sofisticata della Pandora (6.9).
