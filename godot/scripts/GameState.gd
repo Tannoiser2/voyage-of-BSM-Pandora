@@ -1217,11 +1217,29 @@ func toggle_vehicle() -> void:
 func surface_carry_capacity() -> int:
 	if expedition_on_rover():
 		return GameData.rover_capacity_for(planet_gravity)
+	# A piedi (5.6/5.8): Porto totale di TUTTI i personaggi e robot della spedizione,
+	# scalato per gravità.
 	var total := 0
 	for k in expedition_units:
 		if GameData.get_character_keys().has(k) and crew.get(k, {}).get("alive", false):
 			total += effective_char_stat(k, "port")
+	for k in expedition_gear:
+		if _gear_is_bot(k) and not (k in damaged_gear):
+			total += GameData.port_for_gravity(int(GameData.get_unit(k).get("port", 0)), planet_gravity)
 	return total
+
+# Peso che la spedizione deve TRASPORTARE in superficie (5.6): solo strumenti e
+# Punti Rifornimento. Personaggi e robot si muovono da soli (non sono «carico»); il
+# Rover non si auto-trasporta. `prep` usa i rifornimenti pianificati (preparazione in
+# orbita), altrimenti quelli effettivi della spedizione.
+func surface_carried_weight(prep := false) -> int:
+	var w := 0
+	for k in expedition_gear:
+		if k == "Rover" or _gear_is_bot(k):
+			continue
+		w += int(GameData.get_unit(k).get("weight", 0))
+	w += planned_supply if prep else expedition_supply
+	return w
 
 # --- Stato dei rig di protezione per-personaggio (regola 5.2) -----------------
 # L'enviorig e l'armorig sono indossati per personaggio. La regola 5.2 li rende
@@ -1290,9 +1308,17 @@ func max_planned_supply() -> int:
 func has_character_selected() -> bool:
 	return expedition_units.size() > 0
 
-# La preparazione è valida se c'è almeno un personaggio e il carico sta nella capacità (5.2).
+# La preparazione è valida se c'è almeno un personaggio, il carico sta nella capacità
+# dello shuttle (5.3) E il peso da trasportare in superficie sta nel Porto del mezzo
+# scelto (5.6: strumenti+rifornimenti ≤ Porto di personaggi e robot, o capacità Rover).
 func prep_valid() -> bool:
-	return has_character_selected() and total_load() <= shuttle_capacity
+	return has_character_selected() \
+		and total_load() <= shuttle_capacity \
+		and surface_carried_weight(true) <= surface_carry_capacity()
+
+# Vero se il peso da trasportare in superficie eccede la capacità del mezzo scelto (5.6).
+func surface_overloaded(prep := false) -> bool:
+	return surface_carried_weight(prep) > surface_carry_capacity()
 
 # Lancia lo shuttle con la squadra e i rifornimenti scelti.
 func launch_expedition(die_result: int) -> void:
@@ -2310,19 +2336,21 @@ func _apply_paragraph_effect(para: int) -> int:
 		70:
 			var ni := character_intelligence("Nav") if crew.get("Nav", {}).get("alive", false) else 0
 			var r70 := randi_range(1, 6) + randi_range(1, 6)
+			_narrate_formula("¶070 — 2 dadi = %d vs Intelligenza navigatore %d." % [r70, ni])
 			if r70 <= ni - 2:
-				add_log("¶070: 2 dadi %d → atterraggio sicuro, nessun danno." % r70)
+				_narrate("Atterraggio sicuro: nessun danno.")
 			elif r70 <= ni + 1:
-				add_log("¶070: 2 dadi %d → atterraggio movimentato: un robot danneggiato." % r70)
+				_narrate("Atterraggio movimentato: un robot (a caso) viene danneggiato.")
 				_damage_random_robot()
 			else:
-				add_log("¶070: 2 dadi %d → schianto: 5 Punti Danno." % r70)
+				_narrate("Lo shuttle si schianta: 5 Punti Danno alla spedizione.")
 				_apply_damage(5)
 		148:
 			var hi := _highest_aboard_intel()
 			var r148 := randi_range(1, 6) + randi_range(1, 6)
 			var dmg148 := 5 if r148 < hi else 12
-			add_log("¶148: 2 dadi %d vs Int %d → schianto: %d Punti Danno." % [r148, hi, dmg148])
+			_narrate_formula("¶148 — 2 dadi = %d vs Intelligenza più alta a bordo %d." % [r148, hi])
+			_narrate("Lo shuttle si schianta: %d Punti Danno alla spedizione." % dmg148)
 			_apply_damage(dmg148)
 		183:
 			var die183 := randi_range(1, 6)
