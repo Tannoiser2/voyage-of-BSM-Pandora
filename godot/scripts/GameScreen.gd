@@ -229,14 +229,17 @@ func _build_ui() -> void:
 		info_lbl.visible = false   # mostrata solo per i box di superficie (vedi _refresh_disposition)
 		cv.add_child(info_lbl)
 		parent.add_child(col)
-	# Box impilati a tutta larghezza e di altezza uguale: Pandora, Shuttle e il box di
-	# superficie (Rover O A piedi). Le pedine hanno dimensione fissa (altezza box / 3),
-	# uguali in tutti i box, con le 3 file (equipaggio/strumenti/robot) che riempiono
-	# l'altezza. Niente più rimpicciolimento dinamico in base al numero di unità.
+	# Pandora a tutta larghezza in alto; sotto, Shuttle e il box di superficie AFFIANCATI.
+	# In orbita è visibile solo lo Shuttle (occupa tutta la riga). Scendendo nell'environ
+	# la riga si divide: Shuttle a sinistra, Rover o A piedi a destra.
 	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
-	_disp_add_bucket.call(disp_vbox, "Shuttle", 1)
-	_disp_add_bucket.call(disp_vbox, "A piedi", 1)
-	_disp_add_bucket.call(disp_vbox, "Rover", 1)
+	var disp_row := HBoxContainer.new()
+	disp_row.add_theme_constant_override("separation", 6)
+	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	disp_vbox.add_child(disp_row)
+	_disp_add_bucket.call(disp_row, "Shuttle", 1)
+	_disp_add_bucket.call(disp_row, "A piedi", 1)
+	_disp_add_bucket.call(disp_row, "Rover", 1)
 	# Riga informativa: fase corrente + capacità di superficie + scelta del mezzo (5.7/5.8).
 	var info_row := HBoxContainer.new()
 	info_row.name = "DispInfoRow"
@@ -602,20 +605,14 @@ func _build_status_rows(parent: Control) -> void:
 		lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
 		parent.add_child(lbl)
 
-	# Caratteristiche del pianeta (gravità/atmosfera/idro/geologia/clima/LSV).
-	var planet_stats := RichTextLabel.new()
-	planet_stats.name = "PlanetStats"
-	planet_stats.bbcode_enabled = true
-	planet_stats.fit_content = true
-	planet_stats.scroll_active = false
-	planet_stats.add_theme_font_size_override("normal_font_size", 12)
-	planet_stats.add_theme_color_override("default_color", Color(0.78, 0.86, 0.95))
-	parent.add_child(planet_stats)
+	# (Le caratteristiche del pianeta sono mostrate nella vista del pianeta a sinistra,
+	# non qui, per evitare la ripetizione.)
 
 	# Traccia del Tempo (6.8): quante ore mancano al prossimo Controllo del Rifornimento
 	var time_lbl := Label.new()
 	time_lbl.name = "TimeTrackLabel"
-	time_lbl.text = "Traccia Tempo: — / — h (prossimo Controllo del Rifornimento)"
+	time_lbl.text = "Traccia Tempo: — / — h"
+	time_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	time_lbl.add_theme_font_size_override("font_size", 12)
 	time_lbl.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
 	parent.add_child(time_lbl)
@@ -1154,7 +1151,7 @@ func _update_display() -> void:
 		time_bar.value = float(pos)
 	if time_lbl:
 		if GameState.expedition_pos > 0:
-			time_lbl.text = "Traccia Tempo: %d / %d h → prossimo Controllo del Rifornimento" % [pos, spc]
+			time_lbl.text = "Traccia Tempo: %d / %d h → Controllo Rifornimento" % [pos, spc]
 		else:
 			time_lbl.text = "Traccia Tempo: (fuori spedizione)"
 
@@ -1169,20 +1166,6 @@ func _update_display() -> void:
 
 	var lbl_planet := find_child("Planet", true, false) as Label
 	if lbl_planet: lbl_planet.text = "Pianeta: %s" % (s.current_planet if s.current_planet != "" else "—")
-
-	# Caratteristiche del pianeta nello Stato della Missione (orbita/spedizione).
-	var planet_stats := find_child("PlanetStats", true, false) as RichTextLabel
-	if planet_stats:
-		var a := s.planet_attrs
-		var show_stats := (s.current_phase == s.Phase.ORBIT or s.current_phase == s.Phase.EXPEDITION or s.current_phase == s.Phase.PARAGRAPH) and not a.is_empty()
-		planet_stats.visible = show_stats
-		if show_stats:
-			var atmo: String = a.get("atmosphere", "Normal")
-			var ps := "Gravità: [b]%s[/b] · Atmosfera: [b]%s[/b]\n" % [GameData.gravity_it(s.planet_gravity), GameData.atmosphere_it(atmo)]
-			ps += "Idro: [b]%d%%[/b] · Geologia: [b]%s[/b] · LSV: [b]%d[/b]" % [int(a.get("hydro", 0)), str(a.get("geology", "—")), int(a.get("lsv", 0))]
-			if a.has("climate"):
-				ps += " · Clima: [b]%s[/b]" % str(a.get("climate"))
-			planet_stats.text = ps
 
 	var lbl_vp := find_child("VPLabel", true, false) as Label
 	if lbl_vp: lbl_vp.text = "Punti Vittoria: %d" % s.victory_points
@@ -1473,6 +1456,23 @@ func _refresh_disposition() -> void:
 					col.visible = false
 				else:
 					col.visible = (surf == "Rover") if on_rover else (surf == "A piedi")
+	# Altezze proporzionali al contenuto: Pandora si stringe quando ha poche pedine e
+	# cede spazio alla riga Shuttle/superficie (che con la squadra può servirne di più),
+	# così non si tagliano le pedine in basso.
+	var pandora_box := find_child("Disp_Pandora", true, false) as Control
+	var shuttle_box := find_child("Disp_Shuttle", true, false) as Control
+	if pandora_box and shuttle_box:
+		var full_w: float = maxf(pandora_box.size.x, 600.0)
+		var half_w: float = maxf(shuttle_box.size.x, 280.0)
+		var pandora_rows := _disp_rows_for(buckets["Pandora"], full_w)
+		var surf_keys: Array = buckets["Rover"] if on_rover else buckets["A piedi"]
+		var bottom_rows: int = maxi(_disp_rows_for(buckets["Shuttle"], half_w), _disp_rows_for(surf_keys, half_w))
+		var pandora_col := pandora_box.get_parent().get_parent() as Control
+		var disp_row := shuttle_box.get_parent().get_parent().get_parent() as Control
+		if pandora_col:
+			pandora_col.size_flags_stretch_ratio = float(maxi(1, pandora_rows))
+		if disp_row:
+			disp_row.size_flags_stretch_ratio = float(maxi(1, bottom_rows))
 	# Ridispone tutte le pedine con dimensione uniforme che entra in ogni box.
 	_relayout_all_disp()
 	# Riga informativa: fase + capacità di superficie + scelta del mezzo.
@@ -1580,26 +1580,36 @@ func _disp_rows_needed(groups: Array, cols: int) -> int:
 
 # Dimensione GLOBALE delle pedine: la più grande in [MIN,MAX] per cui TUTTI i box
 # visibili riescono a contenere le proprie pedine senza scroll né tagli.
-# Dimensione FISSA delle pedine: l'altezza del box diviso 3 (tre file che riempiono
-# l'altezza). Non dipende dal numero di unità ed è uguale in tutti i box (stessa altezza).
+# Dimensione FISSA e COSTANTE delle pedine, identica in ogni schermata (orbita,
+# viaggio interstellare, environ): non si ricalcola mai in base allo spazio o al numero
+# di unità. Le pedine sono disposte in file per categoria, dall'alto.
+const DISP_TILE := 60.0
+
 func _disp_global_tile_size() -> float:
-	var ref_h := 0.0
-	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
-		var box := find_child("Disp_%s" % bucket, true, false) as Control
-		if box and box.is_visible_in_tree():
-			ref_h = maxf(ref_h, box.size.y)
-	return clampf(ref_h / 3.0 - 4.0, 28.0, 110.0)
+	return DISP_TILE
+
+# Numero di file (per categoria, con a-capo) necessarie a un box di larghezza w, a
+# dimensione di pedina fissa. Serve a dare a ogni box l'altezza proporzionale al contenuto.
+func _disp_rows_for(keys: Array, w: float) -> int:
+	if keys.is_empty():
+		return 0
+	var gap := 4.0
+	var cols := maxi(1, int((w + gap) / (DISP_TILE + gap)))
+	var rows := 0
+	for g in _disp_groups(keys):
+		if not g.is_empty():
+			rows += int(ceil(float(g.size()) / float(cols)))
+	return rows
 
 # Ridispone TUTTI i box con la stessa dimensione di pedina (fissa, uguale ovunque).
 func _relayout_all_disp() -> void:
-	var ts := _disp_global_tile_size()
 	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
 		var box := find_child("Disp_%s" % bucket, true, false) as Control
 		if box:
-			_layout_disp_box(box, ts)
+			_layout_disp_box(box, DISP_TILE)
 
-# Dispone le pedine in TRE file (equipaggio / strumenti / robot) che riempiono
-# l'altezza del box; pedine di dimensione fissa, allineate a sinistra.
+# Dispone le pedine in file per categoria (equipaggio / strumenti / robot), dall'alto,
+# a dimensione fissa; va a capo se una categoria supera la larghezza del box.
 func _layout_disp_box(box: Control, ts: float) -> void:
 	for c in box.get_children():
 		c.queue_free()
@@ -1607,20 +1617,28 @@ func _layout_disp_box(box: Control, ts: float) -> void:
 	var clickable: bool = box.get_meta("clickable", false)
 	if keys.is_empty():
 		return
+	var w := box.size.x
+	if w < 10.0:
+		return
 	var gap := 4.0
-	var row_h := maxf(box.size.y / 3.0, ts)
-	var groups := _disp_groups(keys)
-	for gi in range(groups.size()):
-		var g: Array = groups[gi]
-		var y := gi * row_h + (row_h - ts) * 0.5   # centra verticalmente nella fila
-		var x := 0.0
+	var cols := maxi(1, int((w + gap) / (ts + gap)))
+	var y := 0.0
+	for g in _disp_groups(keys):
+		if g.is_empty():
+			continue
+		var col := 0
 		for k in g:
 			var t := _make_disp_tile(str(k), clickable)
-			t.position = Vector2(x, y)
+			t.position = Vector2(col * (ts + gap), y)
 			t.size = Vector2(ts, ts)
 			t.custom_minimum_size = Vector2(ts, ts)
 			box.add_child(t)
-			x += ts + gap
+			col += 1
+			if col >= cols:
+				col = 0
+				y += ts + gap
+		if col > 0:
+			y += ts + gap   # chiude la riga parziale prima della categoria successiva
 
 # Bucket di un'unità: Pandora (a bordo) / Shuttle (in spedizione non sbarcata) /
 # A piedi o Rover (in spedizione, sbarcata, secondo l'uso del rover).
