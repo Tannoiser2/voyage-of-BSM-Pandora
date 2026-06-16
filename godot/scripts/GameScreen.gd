@@ -309,9 +309,43 @@ func _build_ui() -> void:
 	para_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	para_vbox.add_child(para_title)
 
+	# Corpo del paragrafo: DUE COLONNE distinte — immagine a sinistra (300px) e testo a
+	# destra, a tutta altezza. La colonna immagine è nascosta se il paragrafo non ne ha.
+	var body_hbox := HBoxContainer.new()
+	body_hbox.name = "ParaBody"
+	body_hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body_hbox.add_theme_constant_override("separation", 12)
+	para_vbox.add_child(body_hbox)
+
+	var img_col := VBoxContainer.new()
+	img_col.name = "ParaImageCol"
+	img_col.custom_minimum_size = Vector2(300, 0)
+	img_col.add_theme_constant_override("separation", 6)
+	img_col.visible = false
+	body_hbox.add_child(img_col)
+	var para_img := TextureRect.new()
+	para_img.name = "ParaImage"
+	para_img.custom_minimum_size = Vector2(300, 0)
+	# EXPAND_IGNORE_SIZE + fill verticale: il TextureRect riempie la colonna e l'immagine
+	# è scalata mantenendo le proporzioni (altrimenti FIT_WIDTH_PROPORTIONAL collassa a 0).
+	para_img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	para_img.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	para_img.size_flags_horizontal = Control.SIZE_FILL
+	para_img.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	img_col.add_child(para_img)
+	var img_caption := Label.new()
+	img_caption.name = "ParaImageCaption"
+	img_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	img_caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	img_caption.add_theme_font_size_override("font_size", 14)
+	img_caption.add_theme_color_override("font_color", UITheme.AMBER)
+	img_caption.visible = false
+	img_col.add_child(img_caption)
+
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	para_vbox.add_child(scroll)
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body_hbox.add_child(scroll)
 
 	paragraph_display = RichTextLabel.new()
 	paragraph_display.name = "ParagraphText"
@@ -2159,13 +2193,12 @@ func _on_encounter_started(creature_name: String) -> void:
 	var title_lbl := find_child("ParaTitle", true, false) as Label
 	if title_lbl: title_lbl.text = "Incontro: %s" % creature_name
 
+	# Immagine della creatura nella colonna sinistra.
+	_set_para_image("res://assets/creatures/%s.png" % cdata.get("img", ""), creature_name)
+
 	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
 	if para_display:
 		var bb := ""
-		var tex_path := "res://assets/creatures/%s.png" % cdata.get("img", "")
-		if ResourceLoader.exists(tex_path):
-			bb += "[center][img=160]" + tex_path + "[/img][/center]\n\n"
-		bb += "[center][b]%s[/b][/center]\n\n" % creature_name
 		bb += _creature_combat_summary() + "\n\n"
 		bb += "Modificatori creatura — Intelligenza: %d · Combattimento: %d · Aggressività: %d · Velocità: %d\n\n" % [
 			cdata.get("intel", 0), cdata.get("combat", 0), cdata.get("aggression", 0), cdata.get("speed", 0)
@@ -2178,8 +2211,24 @@ func _on_encounter_started(creature_name: String) -> void:
 func _on_encounter_ended() -> void:
 	_show_expedition_panel()
 
+# Imposta l'immagine della colonna sinistra (e la sua didascalia). Path vuoto/assente
+# → la colonna si nasconde. Centralizza la gestione delle due colonne.
+func _set_para_image(path: String, caption: String) -> void:
+	var img_col := find_child("ParaImageCol", true, false) as Control
+	var para_img := find_child("ParaImage", true, false) as TextureRect
+	var img_caption := find_child("ParaImageCaption", true, false) as Label
+	var ok := path != "" and ResourceLoader.exists(path)
+	if para_img:
+		para_img.texture = load(path) if ok else null
+	if img_col:
+		img_col.visible = ok
+	if img_caption:
+		img_caption.text = caption
+		img_caption.visible = ok and caption != ""
+
 func _show_expedition_panel() -> void:
 	_clear_choices()
+	_set_para_image("", "")   # vista di movimento: nessuna immagine, colonna nascosta
 	var title_lbl := find_child("ParaTitle", true, false) as Label
 	if title_lbl: title_lbl.text = "— Spedizione su %s —" % GameState.current_planet
 
@@ -2343,18 +2392,13 @@ func _on_paragraph_request(para_num: int) -> void:
 	var para_display := find_child("ParagraphText", true, false) as RichTextLabel
 	if para_display:
 		var bb := ""
+		# Immagine nella COLONNA SINISTRA (non più incorporata nel testo): creatura in
+		# corso oppure illustrazione dell'evento; la didascalia è il nome della creatura.
 		if is_creature_here:
-			# Segnalino originale della creatura + valutazione, sopra al testo
-			var cpath := "res://assets/creatures/%s.png" % GameData.get_creature(creature).get("img", "")
-			if ResourceLoader.exists(cpath):
-				bb += "[center][img=150]" + cpath + "[/img][/center]\n"
-			bb += "[center][b]%s[/b][/center]\n\n" % creature
+			_set_para_image("res://assets/creatures/%s.png" % GameData.get_creature(creature).get("img", ""), creature)
 			bb += _creature_combat_summary() + "\n\n"
 		else:
-			# Illustrazione narrativa dell'evento (se presente)
-			var img_path := GameData.get_event_image_path(para_num)
-			if not img_path.is_empty():
-				bb += "[center][img=360]" + img_path + "[/img][/center]\n\n"
+			_set_para_image(GameData.get_event_image_path(para_num), "")
 		# Diario «Cosa succede»: tiri della Matrice/snodi 6.5, controlli di rifornimento,
 		# combattimenti, MA anche eventi interstellari (4.2) e arrivo in orbita — tutta la
 		# logica/esiti dell'azione corrente, non solo nel log.
