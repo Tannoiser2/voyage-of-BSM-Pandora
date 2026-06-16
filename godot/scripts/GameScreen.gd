@@ -186,10 +186,10 @@ func _build_ui() -> void:
 	center_vbox.add_child(center_panel)
 
 	# --- Pannello DISPOSIZIONE (sotto il testo): dove sta ogni unità (5.6/5.7) ---
-	# Pedine grandi e sovrapposte a ventaglio (niente scroll), il nome è sulla pedina.
-	var disp_sec := UITheme.section("Disposizione · dove sta ogni unità")
+	# Senza titolo di sezione (lo spazio va ai box delle pedine).
+	var disp_sec := UITheme.section("")
 	disp_sec["panel"].name = "DispositionSection"
-	disp_sec["panel"].custom_minimum_size = Vector2(0, 440)
+	disp_sec["panel"].custom_minimum_size = Vector2(0, 460)
 	disp_sec["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
 	center_vbox.add_child(disp_sec["panel"])
 	var disp_vbox := VBoxContainer.new()
@@ -228,15 +228,14 @@ func _build_ui() -> void:
 		info_lbl.visible = false   # mostrata solo per i box di superficie (vedi _refresh_disposition)
 		cv.add_child(info_lbl)
 		parent.add_child(col)
-	# Pandora ospita tutta la nave (3 categorie su più righe): leggermente più bassa
-	# dei box di superficie, ma sufficiente per le 3 file di pedine.
+	# Pandora ospita tutta la nave (3 categorie su più righe): più spazio in alto.
 	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
-	(disp_vbox.get_child(disp_vbox.get_child_count() - 1) as Control).size_flags_stretch_ratio = 1.0
-	# Riga inferiore: Shuttle + A piedi + Rover (larghezza uguale), un po' più alta.
+	(disp_vbox.get_child(disp_vbox.get_child_count() - 1) as Control).size_flags_stretch_ratio = 1.5
+	# Riga inferiore: Shuttle + A piedi + Rover (larghezza uguale).
 	var disp_row := HBoxContainer.new()
 	disp_row.add_theme_constant_override("separation", 6)
 	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	disp_row.size_flags_stretch_ratio = 1.3
+	disp_row.size_flags_stretch_ratio = 1.0
 	disp_vbox.add_child(disp_row)
 	_disp_add_bucket.call(disp_row, "Shuttle", 1)
 	_disp_add_bucket.call(disp_row, "A piedi", 1)
@@ -1427,9 +1426,15 @@ func _refresh_disposition() -> void:
 		if sval: sval.text = "%d" % GameState.planned_supply
 		var ll := find_child("DispLoad", true, false) as Label
 		if ll:
-			var over := GameState.total_load() > GameState.shuttle_capacity
-			ll.text = "Carico %d/%d (unità %d + rif. %d)" % [GameState.total_load(), GameState.shuttle_capacity, GameState.units_weight(), GameState.planned_supply]
-			ll.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if over else UITheme.GREEN)
+			# Mostra ENTRAMBI i limiti: capacità dello shuttle (5.3) e Porto di superficie
+			# del mezzo scelto (5.6). Rosso se uno dei due è superato.
+			var over_shuttle := GameState.total_load() > GameState.shuttle_capacity
+			var over_surface := GameState.surface_overloaded(true)
+			ll.text = "Shuttle %d/%d · Porto superf. %d/%d%s" % [
+				GameState.total_load(), GameState.shuttle_capacity,
+				GameState.surface_carried_weight(true), GameState.surface_carry_capacity(),
+				(" ⚠" if over_surface else "")]
+			ll.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if (over_shuttle or over_surface) else UITheme.GREEN)
 		var launch := find_child("DispLaunch", true, false) as Button
 		if launch: launch.disabled = not GameState.prep_valid()
 
@@ -1439,11 +1444,17 @@ func _refresh_disposition() -> void:
 		if not info:
 			continue
 		if landed:
-			var cap := GameState.surface_carry_capacity()
-			var load_cur := GameState.units_weight()
-			var sup := GameState.expedition_supply
-			info.text = "Porto %d/%d · Rif. %d" % [load_cur, cap, sup]
-			info.visible = true
+			# Sui box di superficie (A piedi/Rover) il «carico» è strumenti+rifornimenti
+			# vs Porto del mezzo (5.6). Il box Shuttle (unità lasciate) non mostra il Porto.
+			if surf == "Shuttle":
+				info.visible = false
+			else:
+				var cap := GameState.surface_carry_capacity()
+				var carried := GameState.surface_carried_weight()
+				var over := carried > cap
+				info.text = "Porto %d/%d%s · Rif. %d" % [carried, cap, (" ⚠ troppo!" if over else ""), GameState.expedition_supply]
+				info.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if over else Color(0.65, 0.85, 1.0))
+				info.visible = true
 		elif orbit and surf == "Shuttle":
 			var over := GameState.total_load() > GameState.shuttle_capacity
 			info.text = "Carico %d/%d" % [GameState.total_load(), GameState.shuttle_capacity]
@@ -1519,8 +1530,9 @@ func _disp_global_tile_size() -> float:
 		if w < 10.0 or h < 10.0:
 			continue
 		var groups := _disp_groups(keys)
-		var fit := 36.0
-		for ti in range(60, 35, -2):
+		# Si scende fino a 22px pur di NON tagliare la terza fila di pedine.
+		var fit := 22.0
+		for ti in range(60, 21, -2):
 			var t := float(ti)
 			var cols := maxi(1, int((w + gap) / (t + gap)))
 			var need_h := _disp_rows_needed(groups, cols) * (t + gap)
@@ -1528,7 +1540,7 @@ func _disp_global_tile_size() -> float:
 				fit = t
 				break
 		best = minf(best, fit)
-	return clampf(best, 36.0, 60.0)
+	return clampf(best, 22.0, 60.0)
 
 # Ridispone TUTTI i box con la stessa dimensione di pedina (uniforme e che entra).
 func _relayout_all_disp() -> void:
