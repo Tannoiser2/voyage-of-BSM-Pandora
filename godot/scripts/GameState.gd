@@ -139,6 +139,9 @@ var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0
 # Esplorazione, instradamento snodo 6.5, controllo rifornimento): mostrata nel box
 # di testo centrale così che la logica di scelta sia chiara, non solo nel registro.
 var encounter_trail: String = ""
+# Formule e controlli dettagliati (matematica del rifornimento/combattimento): mostrati
+# al centro in una sezione COLLASSABILE, separati dalla narrazione visibile.
+var encounter_formulas: String = ""
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
 # affrettato» degli snodi «Incontro di spedizione» (6.5).
@@ -441,11 +444,17 @@ func add_log(msg: String) -> void:
 func _trail(msg: String) -> void:
 	encounter_trail += ("• " + msg + "\n")
 
-# Narrazione unificata (prototipo «centro arricchito»): la riga appare SIA nel
-# Registro di Bordo a destra (storico persistente) SIA nel diario «Cosa succede»
-# al centro, così la finestra principale si spiega da sola senza guardare il log.
+# Narrazione unificata: la riga appare SIA nel Registro di Bordo a destra (storico
+# persistente) SIA nel diario «Cosa succede» al centro (narrazione visibile), così la
+# finestra principale è il centro dell'azione.
 func _narrate(msg: String) -> void:
 	_trail(msg)
+	add_log(msg)
+
+# Dettaglio/formula: va nel Registro di Bordo (storico) e nella sezione COLLASSABILE
+# «Formule e controlli» al centro — non ingombra la narrazione principale.
+func _narrate_formula(msg: String) -> void:
+	encounter_formulas += ("• " + msg + "\n")
 	add_log(msg)
 
 # Check esplicito (es.: «c'è un robot?»): scrive la domanda, l'esito Sì/No e la
@@ -3232,11 +3241,12 @@ func resolve_supply_check(die: int) -> void:
 	var summ := lsv + terr_supply
 	var calc2 := mini(int(summ / die), 4) if summ > 0 else 0
 	var total := calc1 + calc2
-	# Prototipo «cosa succede»: la formula completa del Controllo (7.2) finisce sia nel
-	# Registro di Bordo sia nel diario centrale, così l'esito è leggibile dalla finestra
-	# principale. Calcolo 1 = ⌊Utenti/dado⌋ (max 4); Calcolo 2 = ⌊(LSV+terreno)/dado⌋ (max 4).
-	_narrate("Controllo del Rifornimento (7.2) — dado %d · Utenti %d→⌊%d/%d⌋=%d · (LSV %d + terreno %d = %d)→%d · totale %d Punti." % [
-		die, users, users, die, calc1, lsv, terr_supply, summ, calc2, total])
+	# Narrazione visibile: l'esito del Controllo. La matematica completa va nella
+	# sezione collassabile «Formule e controlli» (Calcolo 1 = ⌊Utenti/dado⌋ max 4;
+	# Calcolo 2 = ⌊(LSV+terreno)/dado⌋ max 4).
+	_narrate("Controllo del Rifornimento (7.2): dado %d → %d Punti Rifornimento da spendere." % [die, total])
+	_narrate_formula("Rifornimento — Utenti %d→⌊%d/%d⌋=%d · (LSV %d + terreno %d = %d)→%d · totale %d." % [
+		users, users, die, calc1, lsv, terr_supply, summ, calc2, total])
 	_expend_supply(total)
 	# Infezioni in corso (¶197/¶209): ogni personaggio infetto perde 1 Resistenza a
 	# ogni Controllo del Rifornimento, finché non rientra sulla Pandora.
@@ -3337,6 +3347,7 @@ func reset_expedition_state() -> void:
 	captured_creatures = []
 	damage_points = 0
 	encounter_trail = ""
+	encounter_formulas = ""
 	shuttle_party = []    # 5.6: nessuno resta sullo shuttle all'inizio di una spedizione
 	prefer_foot = false   # 5.7: ogni spedizione riparte con la scelta del mezzo di default
 	_archive_damaged_gear()   # 9.2: conserva i danni ai fini dello scoring finale
@@ -3502,7 +3513,8 @@ func explore_current_hex() -> void:
 		return
 	# Esplorazione dell'esagono occupato: nuova azione, niente percorso affrettato (6.5).
 	hasty_path_terrains = []
-	encounter_trail = ""   # nuova azione: ricomincia la traccia «come ci sei arrivato»
+	encounter_trail = ""   # nuova azione: ricomincia la narrazione «cosa succede»
+	encounter_formulas = ""
 	explore_environ_hex(expedition_pos, cell.get("terrain", "Open"))
 
 # Versione legacy (atterraggio al centro) mantenuta per compatibilità.
@@ -3669,7 +3681,8 @@ func move_expedition(hex_id: int) -> void:
 		return
 	# Un movimento normale azzera la traccia del movimento affrettato (nuova azione, 6.5).
 	hasty_path_terrains = []
-	encounter_trail = ""   # nuova azione: ricomincia la traccia «come ci sei arrivato»
+	encounter_trail = ""   # nuova azione: ricomincia la narrazione «cosa succede»
+	encounter_formulas = ""
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
 	var real_id: String = cell.get("real", str(hex_id))
@@ -3926,7 +3939,9 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 	var detail := "Combattimento (%s) — squadra %d vs creatura %d → differenziale %+d%s · dado %d → risultato %s" % [
 		mode_lbl, player_combat, creature_rating, differential, shift_txt, die, result
 	]
-	_narrate(detail)
+	# Narrazione visibile: l'esito; la formula del differenziale va fra le formule collassabili.
+	_narrate("Combattimento (%s): risultato %s." % [mode_lbl, result])
+	_narrate_formula(detail)
 	# ¶206: combattimento in due round. Al PRIMO round i risultati sono riletti
 	# (non come da tabella); poi si ricalcola il differenziale e il SECONDO round usa
 	# i risultati normali. Il Valore di Combattimento della creatura può aumentare.

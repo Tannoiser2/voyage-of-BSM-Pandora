@@ -189,7 +189,7 @@ func _build_ui() -> void:
 	# Pedine grandi e sovrapposte a ventaglio (niente scroll), il nome è sulla pedina.
 	var disp_sec := UITheme.section("Disposizione · dove sta ogni unità")
 	disp_sec["panel"].name = "DispositionSection"
-	disp_sec["panel"].custom_minimum_size = Vector2(0, 420)
+	disp_sec["panel"].custom_minimum_size = Vector2(0, 440)
 	disp_sec["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
 	center_vbox.add_child(disp_sec["panel"])
 	var disp_vbox := VBoxContainer.new()
@@ -225,16 +225,18 @@ func _build_ui() -> void:
 		info_lbl.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0))
 		info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		info_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info_lbl.visible = false   # mostrata solo per i box di superficie (vedi _refresh_disposition)
 		cv.add_child(info_lbl)
 		parent.add_child(col)
-	# Pandora ospita tutta la nave (3 categorie su più righe): più alta.
+	# Pandora ospita tutta la nave (3 categorie su più righe): leggermente più bassa
+	# dei box di superficie, ma sufficiente per le 3 file di pedine.
 	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
-	(disp_vbox.get_child(disp_vbox.get_child_count() - 1) as Control).size_flags_stretch_ratio = 0.8
-	# Riga inferiore: Shuttle (più grande) + A piedi + Rover
+	(disp_vbox.get_child(disp_vbox.get_child_count() - 1) as Control).size_flags_stretch_ratio = 1.0
+	# Riga inferiore: Shuttle + A piedi + Rover (larghezza uguale), un po' più alta.
 	var disp_row := HBoxContainer.new()
 	disp_row.add_theme_constant_override("separation", 6)
 	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	disp_row.size_flags_stretch_ratio = 1.6
+	disp_row.size_flags_stretch_ratio = 1.3
 	disp_vbox.add_child(disp_row)
 	_disp_add_bucket.call(disp_row, "Shuttle", 1)
 	_disp_add_bucket.call(disp_row, "A piedi", 1)
@@ -2335,14 +2337,19 @@ func _on_paragraph_request(para_num: int) -> void:
 		# «Come ci sei arrivato»: tiri della Matrice di Esplorazione, instradamento
 		# degli snodi 6.5 e controlli di rifornimento, così la logica di scelta del
 		# paragrafo è chiara (non solo nel log). Mostrato per esplorazione/creatura/evento.
-		if GameState.expedition_pos > 0 and GameState.encounter_trail != "":
-			var trail_lines := GameState.encounter_trail.strip_edges().split("\n")
-			var show_all := _show_full_trail or trail_lines.size() <= 3
-			var shown := trail_lines if show_all else trail_lines.slice(0, 3)
-			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Cosa succede:[/color]\n[color=#bcd6ee]%s[/color]%s  [/bgcolor]\n\n" % [
-				"\n".join(shown),
-				("\n[url=trail_expand][color=#ffd24d]▼ mostra tutto (%d righe)[/color][/url]" % trail_lines.size()) if not show_all else ""
-			]
+		if GameState.expedition_pos > 0 and (GameState.encounter_trail != "" or GameState.encounter_formulas != ""):
+			# Narrazione dell'azione: mostrata SEMPRE per intero (è il centro dell'azione).
+			var narr := GameState.encounter_trail.strip_edges()
+			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Cosa succede:[/color]\n[color=#d6e8c6]%s[/color]" % narr
+			# Formule e controlli: sezione COLLASSABILE (espandi/comprimi col link).
+			if GameState.encounter_formulas != "":
+				var formulas := GameState.encounter_formulas.strip_edges()
+				var n_formulas := formulas.split("\n").size()
+				if _show_full_trail:
+					bb += "\n[url=trail_expand][color=#ffd24d]▲ nascondi formule e controlli[/color][/url]\n[color=#9fb8d6]%s[/color]" % formulas
+				else:
+					bb += "\n[url=trail_expand][color=#ffd24d]▶ formule e controlli (%d)[/color][/url]" % n_formulas
+			bb += "  [/bgcolor]\n\n"
 		# In orbita i rimandi del paragrafo (opzioni d'atterraggio) non sono cliccabili:
 		# l'atterraggio si determina col tiro alla preparazione (5.4).
 		if GameState.is_orbit_decision():
@@ -2444,16 +2451,9 @@ func _on_choice_act(act: Dictionary) -> void:
 
 func _on_meta_clicked(meta) -> void:
 	if str(meta) == "trail_expand":
-		# Mostra tutte le righe del diario «Cosa succede» (ricostruisce senza troncamento)
-		var para_display := find_child("ParagraphText", true, false) as RichTextLabel
-		if para_display and GameState.encounter_trail != "":
-			var full := GameState.encounter_trail.strip_edges()
-			# Trova e sostituisce il blocco breve con quello completo
-			var text := para_display.text
-			# Più semplice: ricostruisce l'intero bbcode del paragrafo con il trail completo
-			_show_full_trail = true
-			_on_paragraph_request(current_para_num)
-			_show_full_trail = false
+		# Espande/comprime la sezione collassabile «Formule e controlli» del centro.
+		_show_full_trail = not _show_full_trail
+		_on_paragraph_request(current_para_num)
 		return
 	var n := int(str(meta))
 	if n > 0:
