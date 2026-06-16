@@ -17,6 +17,7 @@ var status_display: Control
 var dice_panel: Control
 var current_para_num: int = 0
 var _prep_updating: bool = false
+var _show_full_trail: bool = false
 var choices_box: VBoxContainer
 
 # Audio: effetti brevi caricati all'avvio (feedback sugli eventi chiave)
@@ -218,17 +219,24 @@ func _build_ui() -> void:
 		# Al ridimensionamento ricalcola la dimensione globale e ridispone tutto.
 		box.resized.connect(_relayout_all_disp)
 		cv.add_child(box)
+		var info_lbl := Label.new()
+		info_lbl.name = "DispInfo_%s" % bucket
+		info_lbl.add_theme_font_size_override("font_size", 10)
+		info_lbl.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0))
+		info_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		info_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		cv.add_child(info_lbl)
 		parent.add_child(col)
 	# Pandora ospita tutta la nave (3 categorie su più righe): più alta.
 	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
-	(disp_vbox.get_child(disp_vbox.get_child_count() - 1) as Control).size_flags_stretch_ratio = 1.5
+	(disp_vbox.get_child(disp_vbox.get_child_count() - 1) as Control).size_flags_stretch_ratio = 0.8
 	# Riga inferiore: Shuttle (più grande) + A piedi + Rover
 	var disp_row := HBoxContainer.new()
 	disp_row.add_theme_constant_override("separation", 6)
 	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	disp_row.size_flags_stretch_ratio = 1.0
+	disp_row.size_flags_stretch_ratio = 1.6
 	disp_vbox.add_child(disp_row)
-	_disp_add_bucket.call(disp_row, "Shuttle", 2)
+	_disp_add_bucket.call(disp_row, "Shuttle", 1)
 	_disp_add_bucket.call(disp_row, "A piedi", 1)
 	_disp_add_bucket.call(disp_row, "Rover", 1)
 	# Riga informativa: fase corrente + capacità di superficie + scelta del mezzo (5.7/5.8).
@@ -591,12 +599,65 @@ func _build_status_rows(parent: Control) -> void:
 	var rows := [
 		["Position", "Sistema: —"],
 		["Months",   "Mesi: 0 / 0"],
-		["Supply",   "Rifornimenti: 6"],
-		["ExpTime",  "Ore spedizione: 0"],
-		["Damage",   "Danni: 0"],
 		["Planet",   "Pianeta: —"],
 	]
 	for row in rows:
+		var lbl := Label.new()
+		lbl.name = row[0]
+		lbl.text = row[1]
+		lbl.add_theme_font_size_override("font_size", 13)
+		lbl.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
+		parent.add_child(lbl)
+
+	# Traccia del Tempo (6.8): quante ore mancano al prossimo Controllo del Rifornimento
+	var time_lbl := Label.new()
+	time_lbl.name = "TimeTrackLabel"
+	time_lbl.text = "Traccia Tempo: — / — h (prossimo Controllo del Rifornimento)"
+	time_lbl.add_theme_font_size_override("font_size", 12)
+	time_lbl.add_theme_color_override("font_color", Color(0.7, 0.9, 1.0))
+	parent.add_child(time_lbl)
+	var time_bar := ProgressBar.new()
+	time_bar.name = "TimeTrackBar"
+	time_bar.custom_minimum_size = Vector2(0, 12)
+	time_bar.show_percentage = false
+	time_bar.add_theme_color_override("font_color", Color.TRANSPARENT)
+	var time_bar_style := StyleBoxFlat.new()
+	time_bar_style.bg_color = Color(0.4, 0.75, 1.0)
+	time_bar_style.set_corner_radius_all(3)
+	time_bar.add_theme_stylebox_override("fill", time_bar_style)
+	var time_bar_bg := StyleBoxFlat.new()
+	time_bar_bg.bg_color = Color(0.1, 0.18, 0.28)
+	time_bar_bg.set_corner_radius_all(3)
+	time_bar.add_theme_stylebox_override("background", time_bar_bg)
+	parent.add_child(time_bar)
+
+	# Rifornimenti spedizione: barra visiva
+	var sup_lbl := Label.new()
+	sup_lbl.name = "Supply"
+	sup_lbl.text = "Rifornimenti shuttle: 6  |  spedizione: 0"
+	sup_lbl.add_theme_font_size_override("font_size", 12)
+	sup_lbl.add_theme_color_override("font_color", Color(0.6, 1.0, 0.7))
+	parent.add_child(sup_lbl)
+	var sup_bar := ProgressBar.new()
+	sup_bar.name = "SupplyBar"
+	sup_bar.custom_minimum_size = Vector2(0, 12)
+	sup_bar.show_percentage = false
+	sup_bar.add_theme_color_override("font_color", Color.TRANSPARENT)
+	var sup_bar_style := StyleBoxFlat.new()
+	sup_bar_style.bg_color = Color(0.3, 0.85, 0.5)
+	sup_bar_style.set_corner_radius_all(3)
+	sup_bar.add_theme_stylebox_override("fill", sup_bar_style)
+	var sup_bar_bg := StyleBoxFlat.new()
+	sup_bar_bg.bg_color = Color(0.1, 0.22, 0.14)
+	sup_bar_bg.set_corner_radius_all(3)
+	sup_bar.add_theme_stylebox_override("background", sup_bar_bg)
+	parent.add_child(sup_bar)
+
+	var rows2 := [
+		["ExpTime",  "Ore spedizione: 0"],
+		["Damage",   "Danni: 0"],
+	]
+	for row in rows2:
 		var lbl := Label.new()
 		lbl.name = row[0]
 		lbl.text = row[1]
@@ -1074,6 +1135,26 @@ func _update_display() -> void:
 	var lbl_supply := find_child("Supply", true, false) as Label
 	if lbl_supply: lbl_supply.text = "Rifornimenti shuttle: %d  |  spedizione: %d" % [s.shuttle_supply, s.expedition_supply]
 
+	# Barra Rifornimenti spedizione
+	var sup_bar := find_child("SupplyBar", true, false) as ProgressBar
+	if sup_bar:
+		sup_bar.max_value = maxf(1.0, float(GameState.max_planned_supply()))
+		sup_bar.value = float(GameState.expedition_supply)
+
+	# Barra Traccia del Tempo (6.8)
+	var time_bar := find_child("TimeTrackBar", true, false) as ProgressBar
+	var time_lbl := find_child("TimeTrackLabel", true, false) as Label
+	var spc := GameState.supply_check_space()
+	var pos := GameState.supply_track_pos
+	if time_bar:
+		time_bar.max_value = maxf(1.0, float(spc))
+		time_bar.value = float(pos)
+	if time_lbl:
+		if GameState.expedition_pos > 0:
+			time_lbl.text = "Traccia Tempo: %d / %d h → prossimo Controllo del Rifornimento" % [pos, spc]
+		else:
+			time_lbl.text = "Traccia Tempo: (fuori spedizione)"
+
 	var lbl_exp := find_child("ExpTime", true, false) as Label
 	if lbl_exp: lbl_exp.text = "Ore spedizione: %d" % s.expedition_hours
 
@@ -1345,6 +1426,25 @@ func _refresh_disposition() -> void:
 			ll.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if over else UITheme.GREEN)
 		var launch := find_child("DispLaunch", true, false) as Button
 		if launch: launch.disabled = not GameState.prep_valid()
+
+	# Info carico+rifornimenti nei box di superficie
+	for surf in ["Shuttle", "A piedi", "Rover"]:
+		var info := find_child("DispInfo_%s" % surf, true, false) as Label
+		if not info:
+			continue
+		if landed:
+			var cap := GameState.surface_carry_capacity()
+			var load_cur := GameState.units_weight()
+			var sup := GameState.expedition_supply
+			info.text = "Porto %d/%d · Rif. %d" % [load_cur, cap, sup]
+			info.visible = true
+		elif orbit and surf == "Shuttle":
+			var over := GameState.total_load() > GameState.shuttle_capacity
+			info.text = "Carico %d/%d" % [GameState.total_load(), GameState.shuttle_capacity]
+			info.add_theme_color_override("font_color", Color(1, 0.4, 0.4) if over else Color(0.65, 0.85, 1.0))
+			info.visible = true
+		else:
+			info.visible = false
 
 # Riga informativa sotto i box: fase corrente, capacità di superficie (5.8) e
 # pulsante per scegliere il mezzo (Rover/piedi, 5.7).
@@ -2236,7 +2336,13 @@ func _on_paragraph_request(para_num: int) -> void:
 		# degli snodi 6.5 e controlli di rifornimento, così la logica di scelta del
 		# paragrafo è chiara (non solo nel log). Mostrato per esplorazione/creatura/evento.
 		if GameState.expedition_pos > 0 and GameState.encounter_trail != "":
-			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Cosa succede (logica, check ed esiti):[/color]\n[color=#bcd6ee]%s[/color]  [/bgcolor]\n\n" % GameState.encounter_trail.strip_edges()
+			var trail_lines := GameState.encounter_trail.strip_edges().split("\n")
+			var show_all := _show_full_trail or trail_lines.size() <= 3
+			var shown := trail_lines if show_all else trail_lines.slice(0, 3)
+			bb += "[bgcolor=#10243a]  [color=#7fc7ff]Cosa succede:[/color]\n[color=#bcd6ee]%s[/color]%s  [/bgcolor]\n\n" % [
+				"\n".join(shown),
+				("\n[url=trail_expand][color=#ffd24d]▼ mostra tutto (%d righe)[/color][/url]" % trail_lines.size()) if not show_all else ""
+			]
 		# In orbita i rimandi del paragrafo (opzioni d'atterraggio) non sono cliccabili:
 		# l'atterraggio si determina col tiro alla preparazione (5.4).
 		if GameState.is_orbit_decision():
@@ -2337,6 +2443,18 @@ func _on_choice_act(act: Dictionary) -> void:
 	GameState.resolve_paragraph_choice(act)
 
 func _on_meta_clicked(meta) -> void:
+	if str(meta) == "trail_expand":
+		# Mostra tutte le righe del diario «Cosa succede» (ricostruisce senza troncamento)
+		var para_display := find_child("ParagraphText", true, false) as RichTextLabel
+		if para_display and GameState.encounter_trail != "":
+			var full := GameState.encounter_trail.strip_edges()
+			# Trova e sostituisce il blocco breve con quello completo
+			var text := para_display.text
+			# Più semplice: ricostruisce l'intero bbcode del paragrafo con il trail completo
+			_show_full_trail = true
+			_on_paragraph_request(current_para_num)
+			_show_full_trail = false
+		return
 	var n := int(str(meta))
 	if n > 0:
 		GameState.show_paragraph(n)
