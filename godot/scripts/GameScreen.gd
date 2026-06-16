@@ -1456,6 +1456,23 @@ func _refresh_disposition() -> void:
 					col.visible = false
 				else:
 					col.visible = (surf == "Rover") if on_rover else (surf == "A piedi")
+	# Altezze proporzionali al contenuto: Pandora si stringe quando ha poche pedine e
+	# cede spazio alla riga Shuttle/superficie (che con la squadra può servirne di più),
+	# così non si tagliano le pedine in basso.
+	var pandora_box := find_child("Disp_Pandora", true, false) as Control
+	var shuttle_box := find_child("Disp_Shuttle", true, false) as Control
+	if pandora_box and shuttle_box:
+		var full_w: float = maxf(pandora_box.size.x, 600.0)
+		var half_w: float = maxf(shuttle_box.size.x, 280.0)
+		var pandora_rows := _disp_rows_for(buckets["Pandora"], full_w)
+		var surf_keys: Array = buckets["Rover"] if on_rover else buckets["A piedi"]
+		var bottom_rows: int = maxi(_disp_rows_for(buckets["Shuttle"], half_w), _disp_rows_for(surf_keys, half_w))
+		var pandora_col := pandora_box.get_parent().get_parent() as Control
+		var disp_row := shuttle_box.get_parent().get_parent().get_parent() as Control
+		if pandora_col:
+			pandora_col.size_flags_stretch_ratio = float(maxi(1, pandora_rows))
+		if disp_row:
+			disp_row.size_flags_stretch_ratio = float(maxi(1, bottom_rows))
 	# Ridispone tutte le pedine con dimensione uniforme che entra in ogni box.
 	_relayout_all_disp()
 	# Riga informativa: fase + capacità di superficie + scelta del mezzo.
@@ -1570,6 +1587,19 @@ const DISP_TILE := 60.0
 
 func _disp_global_tile_size() -> float:
 	return DISP_TILE
+
+# Numero di file (per categoria, con a-capo) necessarie a un box di larghezza w, a
+# dimensione di pedina fissa. Serve a dare a ogni box l'altezza proporzionale al contenuto.
+func _disp_rows_for(keys: Array, w: float) -> int:
+	if keys.is_empty():
+		return 0
+	var gap := 4.0
+	var cols := maxi(1, int((w + gap) / (DISP_TILE + gap)))
+	var rows := 0
+	for g in _disp_groups(keys):
+		if not g.is_empty():
+			rows += int(ceil(float(g.size()) / float(cols)))
+	return rows
 
 # Ridispone TUTTI i box con la stessa dimensione di pedina (fissa, uguale ovunque).
 func _relayout_all_disp() -> void:
