@@ -75,7 +75,7 @@ func _build_ui() -> void:
 
 	# LEFT PANEL - Interstellar/Expedition Display
 	left_panel = Panel.new()
-	left_panel.custom_minimum_size = Vector2(490, 0)
+	left_panel.custom_minimum_size = Vector2(450, 0)
 	left_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hbox.add_child(left_panel)
 
@@ -283,13 +283,13 @@ func _build_ui() -> void:
 
 	var img_col := VBoxContainer.new()
 	img_col.name = "ParaImageCol"
-	img_col.custom_minimum_size = Vector2(300, 0)
+	img_col.custom_minimum_size = Vector2(280, 0)
 	img_col.add_theme_constant_override("separation", 6)
 	img_col.visible = false
 	body_hbox.add_child(img_col)
 	var para_img := TextureRect.new()
 	para_img.name = "ParaImage"
-	para_img.custom_minimum_size = Vector2(300, 0)
+	para_img.custom_minimum_size = Vector2(280, 0)
 	# L'immagine RIEMPIE tutto il box (KEEP_ASPECT_COVERED: copre l'area mantenendo le
 	# proporzioni, ritagliando l'eccesso) invece di lasciare bordi vuoti.
 	para_img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -479,7 +479,7 @@ func _build_ui() -> void:
 
 	# RIGHT PANEL - Stato della Missione (a sezioni/card)
 	right_panel = Panel.new()
-	right_panel.custom_minimum_size = Vector2(340, 0)
+	right_panel.custom_minimum_size = Vector2(320, 0)
 	right_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hbox.add_child(right_panel)
 
