@@ -142,6 +142,9 @@ var encounter_trail: String = ""
 # Formule e controlli dettagliati (matematica del rifornimento/combattimento): mostrati
 # al centro in una sezione COLLASSABILE, separati dalla narrazione visibile.
 var encounter_formulas: String = ""
+# Guardia interna: quando true, add_log NON rispecchia la riga nella narrazione centrale
+# (usata da _narrate_formula per indirizzare le formule alla sola sezione collassabile).
+var _suppress_trail_mirror: bool = false
 # Terreni (reali, es. "Mountain") attraversati durante l'ULTIMO movimento affrettato
 # (6.3): servono a valutare la variante «oppure vi si è entrati durante il movimento
 # affrettato» degli snodi «Incontro di spedizione» (6.5).
@@ -438,24 +441,29 @@ func phase_name(p: Phase) -> String:
 
 func add_log(msg: String) -> void:
 	log_entries.append(msg)
+	# La finestra principale è il cuore dell'azione: durante un'azione di spedizione
+	# (expedition_pos > 0) ogni conseguenza registrata appare anche nel diario «Cosa
+	# succede» al centro. Le righe-formula sono escluse (vanno nella sezione collassabile).
+	if expedition_pos > 0 and not _suppress_trail_mirror:
+		_trail(msg)
 	message_posted.emit(msg)
 
-# Aggiunge una riga alla traccia «come ci sei arrivato» (mostrata nel testo centrale).
+# Aggiunge una riga alla traccia «cosa succede» (mostrata nel testo centrale).
 func _trail(msg: String) -> void:
 	encounter_trail += ("• " + msg + "\n")
 
-# Narrazione unificata: la riga appare SIA nel Registro di Bordo a destra (storico
-# persistente) SIA nel diario «Cosa succede» al centro (narrazione visibile), così la
-# finestra principale è il centro dell'azione.
+# Narrazione esplicita: equivale ad add_log (che già rispecchia al centro durante una
+# spedizione). Resta come marcatore di intento «questa riga è narrazione d'azione».
 func _narrate(msg: String) -> void:
-	_trail(msg)
 	add_log(msg)
 
 # Dettaglio/formula: va nel Registro di Bordo (storico) e nella sezione COLLASSABILE
 # «Formule e controlli» al centro — non ingombra la narrazione principale.
 func _narrate_formula(msg: String) -> void:
 	encounter_formulas += ("• " + msg + "\n")
+	_suppress_trail_mirror = true   # evita il doppione nella narrazione visibile
 	add_log(msg)
+	_suppress_trail_mirror = false
 
 # Check esplicito (es.: «c'è un robot?»): scrive la domanda, l'esito Sì/No e la
 # conseguenza in un'unica riga, così la logica del paragrafo è leggibile invece di
@@ -2211,14 +2219,20 @@ func _apply_paragraph_effect(para: int) -> int:
 			add_log("¶032: scossa sismica → %d Punti Danno." % d)
 			_apply_damage(d)
 		38:
-			var d2 := 6 if _gear_has("Armorig") else 12
+			var has_armorig38 := _gear_has("Armorig")
+			_narrate_check("¶038 — la squadra dispone di un armorig?", has_armorig38, "%d Punti Danno dall'eruzione vulcanica." % (6 if has_armorig38 else 12))
+			var d2 := 6 if has_armorig38 else 12
 			add_log("¶038: eruzione vulcanica → %d Punti Resistenza persi." % d2)
 			_apply_damage(d2)
-			if _gear_has("Rover") and not damaged_gear.has("Rover"):
+			var rover38 := _gear_has("Rover") and not damaged_gear.has("Rover")
+			_narrate_check("¶038 — è presente un rover integro?", rover38, "viene danneggiato dall'eruzione." if rover38 else "nessun rover da danneggiare.")
+			if rover38:
 				damaged_gear.append("Rover")
 				add_log("¶038: il rover viene danneggiato.")
 		166:
-			var nd := 1 if (("GSO" in expedition_units) or _gear_has("Reconbot")) else 2
+			var safe166 := ("GSO" in expedition_units) or _gear_has("Reconbot")
+			_narrate_check("¶166 — c'è l'Uff. Scienze (GSO) o un Reconbot a prevenire la caduta?", safe166, ("solo 1d6 Punti Danno." if safe166 else "2d6 Punti Danno (caduta più grave)."))
+			var nd := 1 if safe166 else 2
 			var d3 := 0
 			for _i in range(nd):
 				d3 += randi_range(1, 6)
