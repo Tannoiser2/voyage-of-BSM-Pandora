@@ -200,19 +200,19 @@ func _build_ui() -> void:
 	# Senza titolo di sezione (lo spazio va ai box delle pedine).
 	var disp_sec := UITheme.section("")
 	disp_sec["panel"].name = "DispositionSection"
-	disp_sec["panel"].custom_minimum_size = Vector2(0, 360)
-	disp_sec["panel"].size_flags_vertical = Control.SIZE_EXPAND_FILL
-	disp_sec["panel"].size_flags_stretch_ratio = 1.7   # più spazio verticale → pedine più grandi
+	# Niente espansione verticale: l'altezza è quella delle file di pedine (misura fissa),
+	# così la Disposizione è IDENTICA in tutte le schermate. Il resto va al testo.
+	disp_sec["panel"].size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	center_vbox.add_child(disp_sec["panel"])
 	var disp_vbox := VBoxContainer.new()
 	disp_vbox.add_theme_constant_override("separation", 6)
-	disp_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	disp_vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	disp_sec["vbox"].add_child(disp_vbox)
 	# Riga superiore: Pandora (box largo, molte pedine in orizzontale)
 	var _disp_add_bucket := func(parent: Control, bucket: String, h_stretch: int):
 		var col := PanelContainer.new()
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		col.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		col.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		col.size_flags_stretch_ratio = float(h_stretch)
 		var cv := VBoxContainer.new()
 		cv.add_theme_constant_override("separation", 2)
@@ -234,7 +234,7 @@ func _build_ui() -> void:
 		var box := Control.new()
 		box.name = "Disp_%s" % bucket
 		box.clip_contents = true
-		box.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		box.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		# Al ridimensionamento ricalcola la dimensione globale e ridispone tutto.
 		box.resized.connect(_relayout_all_disp)
@@ -254,7 +254,7 @@ func _build_ui() -> void:
 	_disp_add_bucket.call(disp_vbox, "Pandora", 1)
 	var disp_row := HBoxContainer.new()
 	disp_row.add_theme_constant_override("separation", 6)
-	disp_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	disp_row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	disp_vbox.add_child(disp_row)
 	_disp_add_bucket.call(disp_row, "Shuttle", 1)
 	_disp_add_bucket.call(disp_row, "A piedi", 1)
@@ -1554,27 +1554,6 @@ func _refresh_disposition() -> void:
 		if scol:
 			var surf_keys_now: Array = buckets["Rover"] if on_rover else buckets["A piedi"]
 			scol.visible = not (landed and buckets["Shuttle"].is_empty() and not surf_keys_now.is_empty())
-	# Altezze proporzionali al contenuto: Pandora si stringe quando ha poche pedine e
-	# cede spazio alla riga Shuttle/superficie (che con la squadra può servirne di più),
-	# così non si tagliano le pedine in basso.
-	var pandora_box := find_child("Disp_Pandora", true, false) as Control
-	var shuttle_box := find_child("Disp_Shuttle", true, false) as Control
-	if pandora_box and shuttle_box:
-		var full_w: float = maxf(pandora_box.size.x, 600.0)
-		var half_w: float = maxf(shuttle_box.size.x, 280.0)
-		var pandora_rows := _disp_rows_for(buckets["Pandora"], full_w)
-		var surf_keys: Array = buckets["Rover"] if on_rover else buckets["A piedi"]
-		# Se il box Shuttle è nascosto la squadra dispone di tutta la larghezza.
-		var shuttle_visible: bool = (shuttle_box.get_parent().get_parent() as Control).visible
-		var surf_w: float = half_w if shuttle_visible else full_w
-		var bottom_rows: int = maxi(_disp_rows_for(buckets["Shuttle"], half_w), _disp_rows_for(surf_keys, surf_w))
-		var pandora_col := pandora_box.get_parent().get_parent() as Control
-		var disp_row := shuttle_box.get_parent().get_parent().get_parent() as Control
-		# Un box vuoto si riduce a una striscia (0.35) invece di occupare una fila piena.
-		if pandora_col:
-			pandora_col.size_flags_stretch_ratio = float(pandora_rows) if pandora_rows > 0 else 0.35
-		if disp_row:
-			disp_row.size_flags_stretch_ratio = float(bottom_rows) if bottom_rows > 0 else 0.35
 	# Ridispone tutte le pedine con dimensione uniforme che entra in ogni box.
 	_relayout_all_disp()
 	# Riga informativa: fase + capacità di superficie + scelta del mezzo.
@@ -1682,48 +1661,27 @@ func _disp_rows_needed(groups: Array, cols: int) -> int:
 
 # Dimensione GLOBALE delle pedine: la più grande in [MIN,MAX] per cui TUTTI i box
 # visibili riescono a contenere le proprie pedine senza scroll né tagli.
-# Dimensione delle pedine: la PIÙ GRANDE che entra in TUTTI i box visibili, così le
-# file riempiono davvero lo spazio invece di lasciarlo vuoto. Il valore è unico per
-# tutti i box (le pedine non cambiano mai misura da un box all'altro) e resta stabile
-# fra le schermate perché l'altezza di ogni box è già proporzionale alle sue file.
-const DISP_TILE_MIN := 44.0
-const DISP_TILE_MAX := 112.0
-const DISP_TILE := 60.0   # misura di riferimento per il calcolo delle file
+# Misura FISSA delle pedine, identica in OGNI schermata (viaggio interstellare,
+# orbita, evento, environ). Sono i box a dimensionarsi sulle pedine, non il contrario:
+# ogni box chiede esattamente l'altezza delle sue file, così le file lo riempiono e la
+# grafica non cambia passando da una schermata all'altra.
+const DISP_TILE := 96.0
+const DISP_GAP := 4.0
 
 func _disp_global_tile_size() -> float:
-	var migliore := DISP_TILE_MAX
-	var trovato := false
+	return DISP_TILE
+
+# Impone a ogni box l'altezza esatta delle sue file di pedine.
+func _update_disp_box_heights() -> void:
 	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
 		var box := find_child("Disp_%s" % bucket, true, false) as Control
-		if box == null or not box.is_visible_in_tree():
+		if box == null:
 			continue
-		var keys: Array = box.get_meta("keys", [])
-		if keys.is_empty():
-			continue
-		var w := box.size.x
-		var h := box.size.y
-		if w < 10.0 or h < 10.0:
-			continue
-		trovato = true
-		var groups := _disp_groups(keys)
-		var gap := 4.0
-		# La più grande misura con cui le file di questo box stanno nell'altezza.
-		var fit := DISP_TILE_MIN
-		var t := DISP_TILE_MAX
-		while t >= DISP_TILE_MIN:
-			var cols := maxi(1, int((w + gap) / (t + gap)))
-			var righe := 0
-			for g in groups:
-				if not g.is_empty():
-					righe += int(ceil(float(g.size()) / float(cols)))
-			if righe * (t + gap) <= h:
-				fit = t
-				break
-			t -= 4.0
-		migliore = minf(migliore, fit)
-	if not trovato:
-		return DISP_TILE
-	return clampf(migliore, DISP_TILE_MIN, DISP_TILE_MAX)
+		var w: float = box.size.x if box.size.x > 10.0 else 600.0
+		var righe := maxi(1, _disp_rows_for(box.get_meta("keys", []), w))
+		var alta := righe * (DISP_TILE + DISP_GAP)
+		if absf(box.custom_minimum_size.y - alta) > 0.5:
+			box.custom_minimum_size = Vector2(0, alta)
 
 # Numero di file (per categoria, con a-capo) necessarie a un box di larghezza w, a
 # dimensione di pedina fissa. Serve a dare a ogni box l'altezza proporzionale al contenuto.
@@ -1740,7 +1698,8 @@ func _disp_rows_for(keys: Array, w: float) -> int:
 
 # Ridispone TUTTI i box con la stessa dimensione di pedina (fissa, uguale ovunque).
 func _relayout_all_disp() -> void:
-	var ts := _disp_global_tile_size()
+	_update_disp_box_heights()
+	var ts := DISP_TILE
 	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
 		var box := find_child("Disp_%s" % bucket, true, false) as Control
 		if box:
