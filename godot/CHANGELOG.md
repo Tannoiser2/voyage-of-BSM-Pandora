@@ -2,6 +2,46 @@
 
 Adattamento digitale in Godot del libro-gioco SPI *Voyage of the BSM Pandora* (1981).
 
+## v0.11.0 — 2026-07-30
+
+### Illustrazioni rifatte da zero
+- **Tutti i paragrafi hanno la propria immagine**, generata dal **testo originale** del
+  paragrafo. Le vecchie illustrazioni venivano da un tema generico «paesaggio alieno»:
+  ¶002 (*lo shuttle scende con problemi meccanici*) e ¶069 (*creatura umanoide dalla
+  pelle traslucida*) mostravano la **stessa** scena di fulmini viola.
+- **196 immagini** su 232 paragrafi: i **36 snodi** della Matrice di Esplorazione (6.5)
+  non vengono mai mostrati al giocatore e restano senza illustrazione.
+- Catalogo dei prompt versionato (`docs/immagini/prompts_completo.json`) con lo stile
+  condiviso, più gli strumenti per rigenerare tutto o singoli paragrafi
+  (`tools/genera_immagini.py`) e per confrontare immagini e testi
+  (`tools/contact_sheet.py`).
+
+### Il testo racconta, il collassabile contabilizza
+- Il corpo del paragrafo mostra **solo la narrazione**; le istruzioni da libro-gioco
+  («tira due dadi e confronta col Valore di Intelligenza», «se … vai al ¶175») finiscono
+  in **«▶ Regole del paragrafo»**, chiuso di default.
+- **Esito in evidenza** in testa al testo, in parole povere.
+- **Combattimento spiegato:** riepilogo finale con le conseguenze reali — destino della
+  creatura, Punti Resistenza persi, PV guadagnati. Prima queste righe sparivano col
+  cambio di pannello e non si leggevano mai.
+
+### Interfaccia
+- **Disposizione identica in ogni schermata:** pedine fisse a 96 px e senza cornice; sono
+  i box a dimensionarsi sul contenuto. Prima misura e aspetto cambiavano fra viaggio
+  interstellare ed evento.
+- **Tooltip esplicativi** su tutte e 24 le unità: a cosa serve, Peso, Porto, Velocità,
+  Valori di Combattimento e Resistenza attuale.
+- Mappa interstellare che riempie il pannello, scelte leggibili per intero, azioni di
+  gioco distinte da quelle di servizio, segnalini di stato sulle pedine.
+
+### Correzioni di regole
+- **Ufficiale Scientifico (SO)** e **Uff. Rilevamento Terrestre (GSO)**: i nomi erano
+  sbagliati e, soprattutto, la catena della follia virale (¶058 → ¶067/¶073/¶144) era
+  agganciata al GSO invece che al SO. Anche il ¶047 considerava solo due dei tre
+  ufficiali citati dal regolamento.
+- Salvataggi con i «tiri manuali» attivi: i dadi tornano automatici, evitando l'attesa
+  di un tiro che non si può più eseguire.
+
 ## v0.10.1 — 2026-06-16
 
 ### Fedeltà al regolamento (Carta 6.6 verificata sull'originale)
