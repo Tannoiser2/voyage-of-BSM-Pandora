@@ -162,6 +162,8 @@ def main() -> int:
     p.add_argument("--cfg", type=float, default=6.5)
     p.add_argument("--sampler", default="", help="nome del sampler; se omesso si usa quello adatto al backend")
     p.add_argument("--seed-offset", type=int, default=0, help="sposta i seed per rigenerare varianti")
+    p.add_argument("--gen-size", default="", metavar="LxA",
+                   help="risoluzione di generazione, es. 768x432 per i modelli SD 1.5 (default: quella del catalogo)")
     p.add_argument("--dry-run", action="store_true", help="stampa i prompt senza generare")
     args = p.parse_args()
 
@@ -173,6 +175,11 @@ def main() -> int:
     stile = catalogo["stile"]
     negativo = catalogo["negative"]
     gen_w, gen_h = catalogo["dimensioni"]["generazione"]
+    if args.gen_size:
+        try:
+            gen_w, gen_h = (int(v) for v in args.gen_size.lower().split("x", 1))
+        except ValueError:
+            return print(f"--gen-size non valido: {args.gen_size} (atteso es. 768x432)") or 1
     out_w, out_h = catalogo["dimensioni"]["output"]
     seed_base = int(catalogo.get("seed_base", 0)) + args.seed_offset
 
