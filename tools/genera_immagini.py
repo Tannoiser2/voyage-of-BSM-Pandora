@@ -49,8 +49,14 @@ USCITA_DEFAULT = RADICE / "godot" / "assets" / "events"
 def _post_json(url: str, payload: dict, timeout: int = 600) -> dict:
     dati = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=dati, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=timeout) as risposta:
-        return json.loads(risposta.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as risposta:
+            return json.loads(risposta.read().decode("utf-8"))
+    except urllib.error.HTTPError as errore:
+        # Il corpo della risposta contiene il motivo vero del rifiuto (es. checkpoint
+        # inesistente o sampler sconosciuto): senza stamparlo l'errore è indecifrabile.
+        corpo = errore.read().decode("utf-8", "replace").strip()
+        raise RuntimeError(f"HTTP {errore.code} da {url}\n    risposta: {corpo[:900]}") from None
 
 
 def _get(url: str, timeout: int = 60) -> bytes:
@@ -148,6 +154,12 @@ def genera_comfy(api: str, modello: str, positivo: str, negativo: str, seed: int
     raise TimeoutError("ComfyUI: nessuna immagine entro il tempo massimo")
 
 
+def checkpoint_disponibili(api: str) -> list:
+    """Elenco dei checkpoint che ComfyUI vede davvero in models/checkpoints."""
+    info = json.loads(_get(f"{api.rstrip('/')}/object_info/CheckpointLoaderSimple").decode("utf-8"))
+    return list(info["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0])
+
+
 # --- programma --------------------------------------------------------------
 
 def main() -> int:
@@ -188,6 +200,26 @@ def main() -> int:
     if not voci:
         print("Nessun paragrafo selezionato.")
         return 1
+
+    # Controllo preventivo: col backend ComfyUI il 90% degli errori è un nome di
+    # checkpoint che non corrisponde al file presente. Meglio dirlo subito e chiaro.
+    if args.backend == "comfy" and not args.dry_run:
+        try:
+            disponibili = checkpoint_disponibili(args.api)
+        except Exception as errore:            # noqa: BLE001
+            print(f"Non riesco a interrogare ComfyUI su {args.api}: {errore}")
+            print("ComfyUI è avviato? Deve rispondere su http://127.0.0.1:8188")
+            return 1
+        if not disponibili:
+            print("ComfyUI non vede NESSUN checkpoint.")
+            print("Metti un file .safetensors in ~/ComfyUI/models/checkpoints/ e riavvia ComfyUI.")
+            return 1
+        if args.model not in disponibili:
+            print(f"Il checkpoint «{args.model}» non esiste. ComfyUI vede questi:")
+            for nome in disponibili:
+                print(f"    {nome}")
+            print(f"\nRilancia con:  --model {disponibili[0]}")
+            return 1
 
     print(f"{len(voci)} immagini · backend {args.backend} · sampler {sampler} · {gen_w}x{gen_h} → {out_w}x{out_h}")
     errori = 0
