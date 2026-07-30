@@ -160,10 +160,14 @@ def main() -> int:
     p.add_argument("--only", default="", help="solo questi paragrafi, es. 69,170")
     p.add_argument("--steps", type=int, default=30)
     p.add_argument("--cfg", type=float, default=6.5)
-    p.add_argument("--sampler", default="dpmpp_2m")
+    p.add_argument("--sampler", default="", help="nome del sampler; se omesso si usa quello adatto al backend")
     p.add_argument("--seed-offset", type=int, default=0, help="sposta i seed per rigenerare varianti")
     p.add_argument("--dry-run", action="store_true", help="stampa i prompt senza generare")
     args = p.parse_args()
+
+    # I due backend chiamano i sampler in modo diverso: A1111 «DPM++ 2M», ComfyUI
+    # «dpmpp_2m». Senza --sampler si sceglie quello giusto in automatico.
+    sampler = args.sampler or ("DPM++ 2M" if args.backend == "a1111" else "dpmpp_2m")
 
     catalogo = json.loads(args.prompts.read_text(encoding="utf-8"))
     stile = catalogo["stile"]
@@ -178,7 +182,7 @@ def main() -> int:
         print("Nessun paragrafo selezionato.")
         return 1
 
-    print(f"{len(voci)} immagini · backend {args.backend} · {gen_w}x{gen_h} → {out_w}x{out_h}")
+    print(f"{len(voci)} immagini · backend {args.backend} · sampler {sampler} · {gen_w}x{gen_h} → {out_w}x{out_h}")
     errori = 0
     for i, voce in enumerate(voci, 1):
         numero = int(voce["para"])
@@ -192,10 +196,10 @@ def main() -> int:
         try:
             if args.backend == "a1111":
                 dati = genera_a1111(args.api, positivo, negativo, seed, gen_w, gen_h,
-                                    args.steps, args.cfg, args.sampler)
+                                    args.steps, args.cfg, sampler)
             else:
                 dati = genera_comfy(args.api, args.model, positivo, negativo, seed,
-                                    gen_w, gen_h, args.steps, args.cfg, args.sampler)
+                                    gen_w, gen_h, args.steps, args.cfg, sampler)
             salva(dati, destinazione, out_w, out_h)
             print(f"    → {destinazione.relative_to(RADICE)}")
         except Exception as errore:            # noqa: BLE001 - vogliamo proseguire col lotto
