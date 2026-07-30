@@ -40,7 +40,8 @@ import urllib.parse
 import urllib.request
 
 RADICE = pathlib.Path(__file__).resolve().parent.parent
-PROMPT_DEFAULT = RADICE / "docs" / "immagini" / "prompts_pilota.json"
+_COMPLETO = RADICE / "docs" / "immagini" / "prompts_completo.json"
+PROMPT_DEFAULT = _COMPLETO if _COMPLETO.exists() else RADICE / "docs" / "immagini" / "prompts_pilota.json"
 USCITA_DEFAULT = RADICE / "godot" / "assets" / "events"
 
 
@@ -197,6 +198,13 @@ def main() -> int:
 
     filtro = {int(x) for x in args.only.split(",") if x.strip()} if args.only else None
     voci = [v for v in catalogo["paragrafi"] if filtro is None or int(v["para"]) in filtro]
+    # Gli snodi della Matrice di Esplorazione (6.5) non vengono mai mostrati al
+    # giocatore: illustrarli sarebbe lavoro sprecato. Con --only si generano comunque.
+    if filtro is None:
+        saltati = [v for v in voci if v.get("salta")]
+        voci = [v for v in voci if not v.get("salta")]
+        if saltati:
+            print(f"{len(saltati)} snodi 6.5 esclusi (non vengono mai mostrati)")
     if not voci:
         print("Nessun paragrafo selezionato.")
         return 1
