@@ -1,6 +1,6 @@
 extends Control
 
-const VERSION := "v0.10.1"
+const VERSION := "v0.11.0"
 
 func _ready() -> void:
 	theme = UITheme.make_theme()
