@@ -178,6 +178,57 @@ func get_paragraph(num: int) -> Dictionary:
 func get_paragraph_text(num: int) -> String:
 	return get_paragraph(num).get("it", "")
 
+# --- Separazione narrazione / meccanica del paragrafo --------------------------
+# Il testo originale mescola il racconto con le istruzioni per chi gioca col libro e i
+# dadi in mano («tira due dadi e confronta col Valore di Intelligenza», «se … vai al
+# ¶175»). Il motore risolve già tutto da solo, quindi la parte meccanica va nascosta in
+# una sezione collassabile e nel corpo resta solo la narrazione.
+func split_paragraph_text(num: int) -> Dictionary:
+	var text := get_paragraph_text(num)
+	var narrative: Array = []
+	var rules: Array = []
+	for line in text.split("\n", false):
+		var l: String = str(line).strip_edges()
+		if l.is_empty():
+			continue
+		for sentence in _split_sentences(l):
+			if _is_rules_sentence(sentence):
+				rules.append(sentence)
+			else:
+				narrative.append(sentence)
+	# Salvaguardia: se il paragrafo è tutto meccanico non si resta senza testo.
+	if narrative.is_empty():
+		return {"narrative": text.strip_edges(), "rules": ""}
+	return {"narrative": " ".join(narrative), "rules": " ".join(rules)}
+
+# Spezza in frasi mantenendo il punto finale (le abbreviazioni «¶» non contano).
+func _split_sentences(line: String) -> Array:
+	var out: Array = []
+	var buf := ""
+	for i in range(line.length()):
+		var c := line[i]
+		buf += c
+		if c == "." or c == "!" or c == "?":
+			# fine frase solo se segue uno spazio o è la fine della riga
+			if i + 1 >= line.length() or line[i + 1] == " ":
+				var s := buf.strip_edges()
+				if not s.is_empty():
+					out.append(s)
+				buf = ""
+	var tail := buf.strip_edges()
+	if not tail.is_empty():
+		out.append(tail)
+	return out
+
+# Vero se la frase è istruzione di gioco (rimandi, tiri di dado, riferimenti a regole
+# e tabelle, schieramento sul Display della Spedizione) e non racconto.
+func _is_rules_sentence(s: String) -> bool:
+	if s.find("¶") >= 0:
+		return true
+	var re := RegEx.new()
+	re.compile("(?i)(\\btira\\b|\\btirare\\b|due dadi|un dado|valore di (intelligenza|combattimento|aggressività|velocità|porto)|vedi \\d|display della spedizione|schiera |tabella (pianeti|degli eventi|di)|matrice di esplorazione|strategia d'incontro|carta \\d|scegli un'azione di spedizione|dopo aver applicato|ignora questo evento|procedi (all'uso|alla tabella))")
+	return re.search(s) != null
+
 # Clima dell'area dichiarato nel testo del paragrafo (5.1): «Il clima è X».
 # Restituisce "artico"|"temperato"|"tropicale"|"sahariano" oppure "" se assente.
 func paragraph_climate(num: int) -> String:
