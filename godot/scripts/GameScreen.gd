@@ -1790,7 +1790,14 @@ func _tooltip_unita(key: String, u: Dictionary, damaged: bool) -> String:
 func _make_disp_tile(key: String, clickable: bool) -> Control:
 	var u := GameData.get_unit(key)
 	var damaged := key in GameState.damaged_gear
-	var base: Control = Button.new() if clickable else PanelContainer.new()
+	# Sempre un Button piatto, anche quando non è cliccabile: il PanelContainer usato
+	# prima nei casi non cliccabili disegnava una cornice attorno a ogni pedina, ed è
+	# il motivo per cui la Disposizione aveva due aspetti diversi fra le schermate.
+	var base := Button.new()
+	base.flat = true
+	base.focus_mode = Control.FOCUS_NONE
+	if not clickable:
+		base.mouse_default_cursor_shape = Control.CURSOR_ARROW
 	base.tooltip_text = _tooltip_unita(key, u, damaged)
 	var tex := TextureRect.new()
 	var path := _unit_token_path(key)
@@ -1828,8 +1835,8 @@ func _make_disp_tile(key: String, clickable: bool) -> Control:
 		badge.add_theme_stylebox_override("normal", bsb)
 		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		base.add_child(badge)
-	if clickable and base is Button:
-		(base as Button).pressed.connect(_disp_toggle.bind(key))
+	if clickable:
+		base.pressed.connect(_disp_toggle.bind(key))
 	return base
 
 func _disp_toggle(key: String) -> void:
