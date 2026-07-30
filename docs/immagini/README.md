@@ -20,9 +20,28 @@ Il pattern: i paragrafi che descrivono un **paesaggio** funzionano per caso, que
 
 ### 1. Il catalogo dei prompt
 
-`prompts_pilota.json` contiene, per ogni paragrafo: il **tipo** (creatura / atterraggio /
-evento / interno nave / orbita), la **scena in italiano** ricavata dal testo originale e il
-**prompt in inglese** per il generatore.
+`prompts_completo.json` copre **tutti i 232 paragrafi** (è quello usato di default dallo
+script). `prompts_pilota.json` resta come primo lotto di prova su 20 paragrafi.
+
+Per ogni paragrafo il catalogo indica: il **tipo** (creatura / atterraggio / evento /
+esito / artefatto / interno nave / orbita / snodo), la **scena in italiano** ricavata dal
+testo originale e il **prompt in inglese** per il generatore.
+
+Copertura: **196 immagini da generare**, perché i **36 snodi** della Matrice di
+Esplorazione (6.5) sono marcati `"salta": true` — il motore li attraversa per instradare
+l'incontro e non li mostra **mai** al giocatore, quindi illustrarli sarebbe lavoro
+sprecato. Lo script li esclude da solo (con `--only N` si generano comunque).
+
+| Tipo | Quanti |
+|---|---|
+| creatura | 61 |
+| evento | 39 |
+| esito (conseguenze di un incontro) | 34 |
+| orbita (i pianeti visti dall'alto) | 27 |
+| atterraggio | 26 |
+| artefatto | 6 |
+| interno nave | 3 |
+| snodo (non illustrato) | 36 |
 
 Nel file stanno anche i parametri comuni, che garantiscono coerenza fra tutte le immagini:
 
@@ -33,8 +52,9 @@ Nel file stanno anche i parametri comuni, che garantiscono coerenza fra tutte le
 - `seed_base` — il seed di ogni immagine è `seed_base + numero di paragrafo`, così una
   rigenerazione a parità di prompt dà lo stesso risultato
 
-Il lotto attuale è un **pilota di 20 paragrafi** scelti per coprire tutti i tipi: ¶001, 002,
-044, 050, 058, 064, 066, 069, 070, 094, 114, 136, 139, 141, 148, 153, 162, 170, 201, 223.
+Il **lotto pilota** già generato copre 20 paragrafi scelti per rappresentare tutti i tipi:
+¶001, 002, 044, 050, 058, 064, 066, 069, 070, 094, 114, 136, 139, 141, 148, 153, 162, 170,
+201, 223.
 
 ### 2. La generazione
 
@@ -44,13 +64,19 @@ Richiede Stable Diffusion in locale e `pip install pillow`.
 # 1. controlla i prompt senza generare nulla
 python3 tools/genera_immagini.py --dry-run
 
-# 2. genera il lotto pilota (Automatic1111/Forge avviato con --api)
+# 2. genera tutto (Automatic1111/Forge avviato con --api)
 python3 tools/genera_immagini.py --api http://127.0.0.1:7860
 
-# ...oppure con ComfyUI, indicando il checkpoint
+# ...oppure con ComfyUI, indicando il checkpoint come lo vede lui
 python3 tools/genera_immagini.py --backend comfy --api http://127.0.0.1:8188 \
-    --model sd_xl_base_1.0.safetensors
+    --model sd_xl_base_1.0_0.9vae.safetensors
+
+# solo il lotto pilota, per una prova
+python3 tools/genera_immagini.py --prompts docs/immagini/prompts_pilota.json
 ```
+
+Se il nome del checkpoint è sbagliato, lo script lo dice **prima** di iniziare ed elenca
+quelli che ComfyUI vede davvero.
 
 Le immagini finiscono direttamente in `godot/assets/events/`, già ridimensionate: il gioco
 le usa senza altri passaggi.
@@ -69,11 +95,10 @@ Segna quelle che non c'entrano e rigenerale, cambiando seed per avere una varian
 python3 tools/genera_immagini.py --only 69,170 --seed-offset 100
 ```
 
-### 4. Estendere agli altri 212
+### 4. Aggiungere o correggere una voce
 
-Il formato è già pronto: basta aggiungere voci a `paragrafi` nello stesso file (o creare
-`prompts_completo.json` e passarlo con `--prompts`). Per ogni paragrafo servono solo `para`,
-`tipo`, `scena` e `prompt` — stile, negative, dimensioni e seed restano condivisi.
+Per ogni paragrafo servono solo `para`, `tipo`, `scena` e `prompt`: stile, negative,
+dimensioni e seed restano condivisi in testa al file.
 
 Regola pratica per scrivere il prompt: **descrivi ciò che il paragrafo fa vedere**, non ciò
 che fa fare. «Tira due dadi e confronta con l'Intelligenza» non è una scena; «lo shuttle

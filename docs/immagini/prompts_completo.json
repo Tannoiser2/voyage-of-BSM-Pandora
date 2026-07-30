@@ -1,0 +1,1448 @@
+{
+  "_nota": "Catalogo COMPLETO dei prompt per le illustrazioni dei 232 paragrafi. Ogni voce nasce dal testo originale del paragrafo. Le voci con \"salta\": true sono gli snodi della Matrice di Esplorazione (6.5): il motore li attraversa senza mostrarli, quindi non serve illustrarli.",
+  "stile": "1980s science-fiction paperback cover illustration, painted gouache and airbrush texture, visible brush work, muted desaturated palette, single dramatic light source, cinematic wide composition, slight print grain",
+  "negative": "text, letters, words, watermark, signature, logo, frame, border, ui, hud, modern city, contemporary clothing, cartoon, anime, chibi, low quality, blurry, jpeg artifacts, extra limbs, deformed hands, duplicate, oversaturated neon, cluttered composition",
+  "dimensioni": {
+    "generazione": [
+      1024,
+      576
+    ],
+    "output": [
+      768,
+      432
+    ],
+    "_nota": "Si genera a 1024×576 (16:9, comodo per SDXL) e si riduce a 768×432, il formato delle immagini attuali."
+  },
+  "seed_base": 1981,
+  "_seed": "Il seed di ogni immagine è seed_base + numero di paragrafo: stessa immagine a parità di prompt, utile per rigenerare solo ciò che non va.",
+  "paragrafi": [
+    {
+      "para": 1,
+      "tipo": "evento",
+      "scena": "Errore di navigazione: la Pandora esce leggermente di rotta durante il salto interstellare.",
+      "prompt": "a large deep-space exploration starship drifting slightly off its plotted course, glowing navigation plot lines and star charts reflected on the bridge canopy, cold starfield and a distant pale nebula"
+    },
+    {
+      "para": 2,
+      "tipo": "evento",
+      "scena": "Lo shuttle scende verso il pianeta: guasti meccanici e terreno imprevisto rischiano l'incidente.",
+      "prompt": "a blocky landing shuttle descending through turbulent alien atmosphere, thin smoke trailing from a faltering thruster, jagged unfamiliar terrain rushing below, pilots braced inside the lit cockpit"
+    },
+    {
+      "para": 3,
+      "tipo": "creatura",
+      "scena": "Branco di piccole creature anfibie erbivore in fuga; una viene isolata.",
+      "prompt": "a herd of small amphibious herbivore creatures scattering in panic across wet ground, one animal cut off from the group, space-suited explorers closing in"
+    },
+    {
+      "para": 4,
+      "tipo": "creatura",
+      "scena": "La struttura è un essere vivente gigantesco, con convulsioni ed emissioni di energia mortale.",
+      "prompt": "a colossal living structure of organic architecture convulsing, deadly energy arcs discharging from its flanks, tiny explorers fleeing its base"
+    },
+    {
+      "para": 5,
+      "tipo": "creatura",
+      "scena": "Piccolo insetto volante dalla pelle di rettile: una libellula in senso letterale.",
+      "prompt": "a small flying insect with scaly reptilian skin hovering on dragonfly wings, close view over alien vegetation"
+    },
+    {
+      "para": 6,
+      "tipo": "artefatto",
+      "scena": "Oggetto metallico a forma di asta lungo un metro, sembra un'arma.",
+      "prompt": "a metre-long metallic rod artefact half-buried in alien soil, unmistakably a weapon of unknown make, a gloved hand reaching for it"
+    },
+    {
+      "para": 7,
+      "tipo": "creatura",
+      "scena": "Lucertola alata lunga 9 metri che piomba sulla spedizione.",
+      "prompt": "a nine-metre winged lizard creature diving on a group of explorers, wings spread wide, dust blasted from the ground"
+    },
+    {
+      "para": 8,
+      "tipo": "evento",
+      "scena": "Un personaggio o robot precipita verso la morte.",
+      "prompt": "an explorer losing footing at the lip of a deep chasm and falling backwards, companions reaching out an instant too late"
+    },
+    {
+      "para": 9,
+      "tipo": "creatura",
+      "scena": "Creatura simile a una tartaruga; comunicazione col neuroscanner.",
+      "prompt": "a large turtle-like alien creature with a domed ridged shell resting calmly, explorers approaching with a scanning device"
+    },
+    {
+      "para": 10,
+      "tipo": "esito",
+      "scena": "La creatura è infuriata dai tentativi di comunicazione.",
+      "prompt": "an alien creature rearing up in fury, explorers stumbling backwards, a dropped communication device on the ground"
+    },
+    {
+      "para": 11,
+      "tipo": "esito",
+      "scena": "La creatura viene catturata facilmente, senza combattimento.",
+      "prompt": "an alien creature calmly secured inside a glowing energy cage by explorers, no struggle, equipment scattered around"
+    },
+    {
+      "para": 12,
+      "tipo": "esito",
+      "scena": "La creatura non segue la spedizione che si allontana.",
+      "prompt": "an alien creature turning away with indifference as explorers withdraw across open ground, long shadows"
+    },
+    {
+      "para": 13,
+      "tipo": "esito",
+      "scena": "La creatura è irritata dai tentativi di comunicazione.",
+      "prompt": "an alien creature bristling with irritation, crest raised, as explorers try to signal it"
+    },
+    {
+      "para": 14,
+      "tipo": "esito",
+      "scena": "Si determina l'aggressività: la creatura decide se caricare.",
+      "prompt": "an alien creature poised on the point of charging, muscles tensed, explorers frozen in place"
+    },
+    {
+      "para": 15,
+      "tipo": "esito",
+      "scena": "La creatura segue la spedizione con cautela.",
+      "prompt": "an alien creature trailing the expedition at a wary distance across open terrain, half hidden by rocks"
+    },
+    {
+      "para": 16,
+      "tipo": "esito",
+      "scena": "Tutti i tentativi di comunicazione falliscono.",
+      "prompt": "explorers lowering their communication equipment in defeat while an alien creature stares back blankly"
+    },
+    {
+      "para": 17,
+      "tipo": "esito",
+      "scena": "Si determina l'aggressività della creatura.",
+      "prompt": "an alien creature sizing up the expedition with head lowered, ready to charge"
+    },
+    {
+      "para": 18,
+      "tipo": "esito",
+      "scena": "La creatura segue le tracce della spedizione.",
+      "prompt": "an alien creature lowering its head to the expedition's footprints, following the trail across dust"
+    },
+    {
+      "para": 19,
+      "tipo": "esito",
+      "scena": "Si allestisce una gabbia energetica per attirare la creatura.",
+      "prompt": "explorers setting up a glowing energy cage as a lure, cables and power cells on the ground, a creature watching from the distance"
+    },
+    {
+      "para": 20,
+      "tipo": "esito",
+      "scena": "Si conduce il combattimento.",
+      "prompt": "explorers and an alien creature clashing at close quarters, weapon fire flaring, dust and confusion"
+    },
+    {
+      "para": 21,
+      "tipo": "esito",
+      "scena": "La creatura insegue la spedizione.",
+      "prompt": "an alien creature charging hard after fleeing explorers, ground churning under its limbs"
+    },
+    {
+      "para": 22,
+      "tipo": "esito",
+      "scena": "La creatura è disposta alla comunicazione primitiva.",
+      "prompt": "an explorer and an alien creature exchanging slow deliberate gestures, cautious mutual curiosity"
+    },
+    {
+      "para": 23,
+      "tipo": "esito",
+      "scena": "Si determina l'aggressività della creatura.",
+      "prompt": "an alien creature watching the expedition with rising hostility, body low and coiled"
+    },
+    {
+      "para": 24,
+      "tipo": "esito",
+      "scena": "La creatura dà la caccia alla spedizione instancabilmente.",
+      "prompt": "an alien creature relentlessly stalking the expedition through rough terrain, steadily closing the distance"
+    },
+    {
+      "para": 25,
+      "tipo": "esito",
+      "scena": "La creatura è entusiasta della comunicazione primitiva.",
+      "prompt": "an alien creature responding eagerly to an explorer's gestures, animated exchange, other crew watching"
+    },
+    {
+      "para": 26,
+      "tipo": "esito",
+      "scena": "La creatura sfugge, oppure si combatte.",
+      "prompt": "an alien creature slipping away into broken landscape, explorers left standing with nothing"
+    },
+    {
+      "para": 27,
+      "tipo": "creatura",
+      "scena": "Rettile arboricolo predatore piomba dal fogliame.",
+      "prompt": "an arboreal reptilian predator dropping out of dense alien canopy onto explorers below, leaves scattering"
+    },
+    {
+      "para": 28,
+      "tipo": "creatura",
+      "scena": "Clan di esseri invisibili e intelligenti, avidi di robot e strumenti.",
+      "prompt": "shimmering invisible presences revealed only as distortions in the air, circling explorers, their robots and equipment"
+    },
+    {
+      "para": 29,
+      "tipo": "creatura",
+      "scena": "Grande escrescenza rampicante: pianta carnivora semi-mobile.",
+      "prompt": "a huge carnivorous creeper plant lunging at explorers, thorned tendrils uncoiling from a tangled mass"
+    },
+    {
+      "para": 30,
+      "tipo": "artefatto",
+      "scena": "Globo trasparente incastonato in un pendio, liquido denso all'interno.",
+      "prompt": "a transparent malleable globe embedded in a rocky slope, thick liquid slowly swirling inside, catching the light"
+    },
+    {
+      "para": 31,
+      "tipo": "creatura",
+      "scena": "Creatura simile a uno scorpione esce dalla tana sotterranea.",
+      "prompt": "a giant scorpion-like creature bursting out of its burrow, claws raised, soil thrown into the air"
+    },
+    {
+      "para": 32,
+      "tipo": "evento",
+      "scena": "Scossa sismica: la spedizione subisce danni.",
+      "prompt": "the ground splitting open in a violent seismic shock, explorers thrown off balance, dust columns rising"
+    },
+    {
+      "para": 33,
+      "tipo": "creatura",
+      "scena": "Creatura tozza e pelosa, simbionte di un fiore sradicato, attacca disperata.",
+      "prompt": "a squat heavily furred alien creature attacking in desperation, a large uprooted flower lying nearby"
+    },
+    {
+      "para": 34,
+      "tipo": "creatura",
+      "scena": "Delegazione di quadrupedi alti 5 metri con esoscheletro traslucido.",
+      "prompt": "a delegation of five-metre armoured quadruped aliens with translucent plastic-like exoskeletons standing over tiny explorers"
+    },
+    {
+      "para": 35,
+      "tipo": "creatura",
+      "scena": "Branco di enormi creature mammifere; una si allontana dal gruppo.",
+      "prompt": "a herd of enormous mammalian alien beasts grazing, one strayed animal apart from the rest, explorers advancing"
+    },
+    {
+      "para": 36,
+      "tipo": "artefatto",
+      "scena": "Scultura di minerale simile al diamante, alta 45 cm, forma di vita branchiata.",
+      "prompt": "an exquisite forty-centimetre sculpture carved from diamond-like mineral depicting an elegant gilled creature, resting on bare stone"
+    },
+    {
+      "para": 37,
+      "tipo": "creatura",
+      "scena": "Creatura simile a un bradipo che mastica corteccia; poi svanisce.",
+      "prompt": "a sloth-like alien creature lazily chewing bark high in the fork of an alien tree"
+    },
+    {
+      "para": 38,
+      "tipo": "evento",
+      "scena": "Attività vulcanica improvvisa: magma verso il gruppo, pioggia di fuoco.",
+      "prompt": "a sudden volcanic surge spraying magma toward explorers, rain of fire and glowing ash, searing light"
+    },
+    {
+      "para": 39,
+      "tipo": "creatura",
+      "scena": "Creatura anfibia di palude, zampe robuste, sbatte le palpebre benevolmente.",
+      "prompt": "a sturdy-legged amphibious swamp creature blinking benignly at approaching explorers, marsh water and reeds"
+    },
+    {
+      "para": 40,
+      "tipo": "creatura",
+      "scena": "Rettiliani senzienti amichevoli comunicano telepaticamente.",
+      "prompt": "friendly sentient reptilian aliens greeting explorers in a calm gathering, silent telepathic communion"
+    },
+    {
+      "para": 41,
+      "tipo": "creatura",
+      "scena": "Creatura ricoperta di pelliccia bianca, arti lunghi, balzo veloce.",
+      "prompt": "a white-furred alien creature mid-leap on long powerful limbs, snow and frost thrown up behind it"
+    },
+    {
+      "para": 42,
+      "tipo": "artefatto",
+      "scena": "Oggetto a forma di uovo, colori vivaci, grande come un melone.",
+      "prompt": "a brightly coloured egg-shaped object the size of a melon resting on alien ground, patterned shell catching the light"
+    },
+    {
+      "para": 43,
+      "tipo": "creatura",
+      "scena": "Immensa mostruosità a base di silicio.",
+      "prompt": "an immense silicon-based monstrosity of crystalline rock and mineral plates looming over explorers, faceted surfaces catching the light"
+    },
+    {
+      "para": 44,
+      "tipo": "evento",
+      "scena": "Il salto mette sotto sforzo i sistemi FTL; l'ufficiale alla manutenzione ripara il danno.",
+      "prompt": "engineering deck of a starship, an overloaded faster-than-light drive core venting sparks and vapour, a maintenance officer in a work suit bracing against a control panel, warning lights washing the bulkheads"
+    },
+    {
+      "para": 45,
+      "tipo": "creatura",
+      "scena": "Grande insetto scavatore dal pesante carapace.",
+      "prompt": "a large burrowing insect creature with a heavy armoured carapace emerging from a tunnel mouth, mandibles wide"
+    },
+    {
+      "para": 46,
+      "tipo": "evento",
+      "scena": "Brillamenti stellari disturbano le rotte FTL: un mese perso.",
+      "prompt": "a violent stellar flare erupting from a nearby sun, its light washing over a small exploration starship forced off course"
+    },
+    {
+      "para": 47,
+      "tipo": "evento",
+      "scena": "Il Processore Centrale Fuji 5500 è in avaria; va riparato.",
+      "prompt": "a starship computer core hanging open, a technician deep inside the failed processor stack, warning lights on every panel"
+    },
+    {
+      "para": 48,
+      "tipo": "creatura",
+      "scena": "Creatura simile a una farfalla, ali di 25 cm rinforzate da ossa.",
+      "prompt": "a butterfly-like alien creature with wide bone-ribbed wings nibbling foliage, delicate and iridescent"
+    },
+    {
+      "para": 49,
+      "tipo": "evento",
+      "scena": "La Pandora esce dall'FTL dentro una tempesta di asteroidi.",
+      "prompt": "an exploration starship dropping out of faster-than-light travel into a dense asteroid storm, rocks tumbling past the hull"
+    },
+    {
+      "para": 50,
+      "tipo": "interno nave",
+      "scena": "Tutti rientrati sani a bordo della Pandora con creature catturate e artefatti; azioni di bordo.",
+      "prompt": "interior hangar bay of an exploration starship, crew unloading equipment, specimen cages and alien artefacts from a just-returned shuttle, technicians repairing a scuffed robot, warm work lights"
+    },
+    {
+      "para": 51,
+      "tipo": "creatura",
+      "scena": "Creatura amebiforme di 30 cm che fluttua accanto alla spedizione.",
+      "prompt": "a thirty-centimetre amoeba-like creature floating in mid-air beside explorers, translucent body drifting without support"
+    },
+    {
+      "para": 52,
+      "tipo": "evento",
+      "scena": "Una creatura catturata muore per esigenze di supporto vitale ignote.",
+      "prompt": "a captured alien creature lying dead inside its containment pod aboard a starship, crew looking on helplessly"
+    },
+    {
+      "para": 53,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: il motore lo attraversa senza mostrarlo.",
+      "prompt": ""
+    },
+    {
+      "para": 54,
+      "tipo": "creatura",
+      "scena": "Predatore felino balza da dietro un affioramento roccioso.",
+      "prompt": "a feline alien predator springing from behind a rock outcrop onto explorers, claws extended"
+    },
+    {
+      "para": 55,
+      "tipo": "evento",
+      "scena": "Il risveglio dall'ibernazione provoca un danno cerebrale permanente.",
+      "prompt": "a crew member being lifted from a malfunctioning hibernation pod, vacant stare, frost and warning lights around the capsule"
+    },
+    {
+      "para": 56,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 57,
+      "tipo": "creatura",
+      "scena": "Creatura composta di energia con nucleo organico fluttuante.",
+      "prompt": "a creature made entirely of energy, arcs of electricity radiating from a floating organic core, lighting the ground below"
+    },
+    {
+      "para": 58,
+      "tipo": "evento",
+      "scena": "Ceppi virali extraterrestri fanno impazzire l'ufficiale scientifico.",
+      "prompt": "a science officer losing his mind inside a starship laboratory, clutching his head, knocked-over sample vials glowing with alien culture, other crew reaching to restrain him, harsh clinical light"
+    },
+    {
+      "para": 59,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 60,
+      "tipo": "creatura",
+      "scena": "Creatura sauriana addormentata, lunga 3 metri, che si sveglia.",
+      "prompt": "a three-metre saurian creature stirring from sleep as explorers inspect it, eye opening"
+    },
+    {
+      "para": 61,
+      "tipo": "evento",
+      "scena": "Mercanti liberi rinnegati intercettano la Pandora per ispezionarne il carico.",
+      "prompt": "a small fleet of battered renegade trader ships closing in on an exploration starship, docking lights blinking"
+    },
+    {
+      "para": 62,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 63,
+      "tipo": "creatura",
+      "scena": "Gigantesco rettile marino simile a un plesiosauro.",
+      "prompt": "a gigantic marine reptile like a plesiosaur rising from alien water, long neck arched, spray falling"
+    },
+    {
+      "para": 64,
+      "tipo": "evento",
+      "scena": "I sensori captano trasmissioni indecifrabili da Opoplo: la Pandora deve deviare e investigare.",
+      "prompt": "starship bridge at low light, a sensor display showing an indecipherable alien signal waveform, officers turning toward a blue-green planet visible through the forward viewport"
+    },
+    {
+      "para": 65,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 66,
+      "tipo": "creatura",
+      "scena": "Una nebbia variopinta, organica e carnivora, compie gesti minacciosi.",
+      "prompt": "a living carnivorous fog of shifting iridescent colours rearing up over a barren plain, mist tendrils reaching toward small space-suited explorers, an unnatural glow inside the cloud"
+    },
+    {
+      "para": 67,
+      "tipo": "evento",
+      "scena": "La follia dell'ufficiale scientifico è temporanea e passa.",
+      "prompt": "a science officer resting exhausted but lucid in a starship medical bay, a colleague at his side, calm light"
+    },
+    {
+      "para": 68,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 69,
+      "tipo": "creatura",
+      "scena": "Creatura umanoide lunga e magra: le viscere gorgoglianti si vedono attraverso la pelle traslucida.",
+      "prompt": "a tall gaunt humanoid alien with translucent glassy skin revealing churning internal organs and fluids, standing motionless in dim alien wilderness, backlit so the body glows faintly"
+    },
+    {
+      "para": 70,
+      "tipo": "evento",
+      "scena": "L'atterraggio dello shuttle: da manovra perfetta a discesa movimentata.",
+      "prompt": "a landing shuttle setting down hard on rocky alien ground, landing struts flexing under the impact, thick dust cloud blown outward, hull lights cutting through the haze"
+    },
+    {
+      "para": 71,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 72,
+      "tipo": "creatura",
+      "scena": "Il terreno esplode: forma di vita blu con tentacoli erompe dalla roccia.",
+      "prompt": "hard ground bursting upward as an indescribable blue life form erupts from beneath the rock, tentacles reaching in every direction"
+    },
+    {
+      "para": 73,
+      "tipo": "evento",
+      "scena": "L'ufficiale medico tenta di curare la follia dell'ufficiale scientifico.",
+      "prompt": "a medical officer treating a restrained delirious crew member in a starship sickbay, instruments glowing"
+    },
+    {
+      "para": 74,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 75,
+      "tipo": "creatura",
+      "scena": "Creatura acquatica di forma umanoide sfreccia verso la spedizione.",
+      "prompt": "a humanoid aquatic creature streaking through water toward explorers at the shore, wake trailing behind it"
+    },
+    {
+      "para": 76,
+      "tipo": "atterraggio",
+      "scena": "Atterraggio su pianura con chiazze erbose; sotto c'è una struttura aliena.",
+      "prompt": "a landing shuttle standing on a wide plain dotted with patches of coarse grass, faint geometric outlines showing through the ground"
+    },
+    {
+      "para": 77,
+      "tipo": "creatura",
+      "scena": "Grande creatura simile a una stella marina distesa su una roccia.",
+      "prompt": "a large starfish-like alien creature spread across a boulder, radial arms textured and slowly flexing"
+    },
+    {
+      "para": 78,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 79,
+      "tipo": "creatura",
+      "scena": "Grande creatura simile a un orso con chiazze di esoscheletro naturale.",
+      "prompt": "a large bear-like alien creature with patches of natural exoskeleton plating across its shoulders, standing upright"
+    },
+    {
+      "para": 80,
+      "tipo": "evento",
+      "scena": "Una creatura a bordo si evolve in un essere aggressivo e intelligente.",
+      "prompt": "a captured creature transforming inside its containment pod aboard a starship, glowing eyes, cracks spreading across the pod"
+    },
+    {
+      "para": 81,
+      "tipo": "evento",
+      "scena": "La creatura evade, uccide l'equipaggio e prende il controllo della Pandora.",
+      "prompt": "an escaped alien creature standing triumphant on a wrecked starship bridge, disabled robots and bodies around it, emergency lights"
+    },
+    {
+      "para": 82,
+      "tipo": "evento",
+      "scena": "La creatura riduce la Pandora a un ammasso di metallo contorto.",
+      "prompt": "an exploration starship torn apart from within, twisted metal and venting atmosphere drifting in space"
+    },
+    {
+      "para": 83,
+      "tipo": "evento",
+      "scena": "La creatura distrugge il proprio baccello e un terzo delle creature a bordo.",
+      "prompt": "a shattered containment pod in a starship specimen bay, other pods cracked and dark, crew inspecting the damage"
+    },
+    {
+      "para": 84,
+      "tipo": "evento",
+      "scena": "La creatura vaga fuori dal baccello in cerca di carne umana.",
+      "prompt": "an alien creature prowling a dim starship corridor away from its broken pod, hunting, crew hiding behind a bulkhead"
+    },
+    {
+      "para": 85,
+      "tipo": "orbita",
+      "scena": "Korkran: gravità leggera, atmosfera velenosa, idrografia 75%, geologia quieta.",
+      "prompt": "view from orbit of an ocean-covered world, sickly yellow-green toxic atmosphere swirling above wide seas, few landmasses"
+    },
+    {
+      "para": 86,
+      "tipo": "orbita",
+      "scena": "Picole: gravità quasi assente, atmosfera velenosa, idrografia 25%.",
+      "prompt": "view from orbit of a small pale world with a thin toxic haze, sparse dark seas between cratered highlands"
+    },
+    {
+      "para": 87,
+      "tipo": "orbita",
+      "scena": "Suwathe: gravità terrestre, atmosfera corrosiva, idrografia 0%.",
+      "prompt": "view from orbit of a bone-dry world with no oceans, corrosive orange-brown atmosphere streaked over endless dust plains"
+    },
+    {
+      "para": 88,
+      "tipo": "orbita",
+      "scena": "Opoplo: gravità pesante, atmosfera normale, idrografia 50%, geologia attiva.",
+      "prompt": "view from orbit of a massive world of blue seas and dark volcanic land, eruption plumes visible along a fault line"
+    },
+    {
+      "para": 89,
+      "tipo": "orbita",
+      "scena": "Mezo: gravità terrestre, nessuna atmosfera, idrografia 0%, supporto vitale 4.",
+      "prompt": "view from orbit of an airless grey world, razor-sharp shadows across craters, no atmospheric haze, hard starlight"
+    },
+    {
+      "para": 90,
+      "tipo": "orbita",
+      "scena": "Paleo: gravità terrestre, atmosfera rarefatta, idrografia 0%, geologia attiva.",
+      "prompt": "view from orbit of a dry rust-coloured world under a thin wisp of atmosphere, volcanic scars and lava fields tracing its surface"
+    },
+    {
+      "para": 91,
+      "tipo": "orbita",
+      "scena": "Birss: gravità leggera, nessuna atmosfera, idrografia 0%, geologia attiva.",
+      "prompt": "view from orbit of a small airless world scarred by fresh volcanic vents glowing faintly, no atmosphere, hard shadows"
+    },
+    {
+      "para": 92,
+      "tipo": "orbita",
+      "scena": "Mephisto: gravità leggera, atmosfera normale, idrografia 0%, geologia attiva.",
+      "prompt": "view from orbit of a dry world with clear thin air over cracked volcanic plains, ash plumes drifting from active vents"
+    },
+    {
+      "para": 93,
+      "tipo": "orbita",
+      "scena": "New Alto: gravità leggera, atmosfera rarefatta, idrografia 0%, geologia quieta.",
+      "prompt": "view from orbit of a pale still world with a faint thin atmosphere, ancient smooth plains and old craters, no seas"
+    },
+    {
+      "para": 94,
+      "tipo": "orbita",
+      "scena": "In orbita attorno a Korkran: gravità terrestre, atmosfera normale, idrografia 50%, geologia quieta.",
+      "prompt": "view from high orbit of a temperate earthlike planet, blue oceans and tan continents under scattered cloud bands, the exploration starship silhouetted in the foreground against the planet limb"
+    },
+    {
+      "para": 95,
+      "tipo": "orbita",
+      "scena": "Picole: gravità quasi assente, nessuna atmosfera, idrografia 25%.",
+      "prompt": "view from orbit of a tiny airless world with frozen dark basins where seas once lay, sharp unfiltered sunlight"
+    },
+    {
+      "para": 96,
+      "tipo": "orbita",
+      "scena": "Suwathe: gravità pesante, atmosfera velenosa, idrografia 100%, geologia attiva.",
+      "prompt": "view from orbit of a world entirely covered by ocean beneath dense poisonous cloud bands, storm spirals across the water"
+    },
+    {
+      "para": 97,
+      "tipo": "orbita",
+      "scena": "Opoplo: gravità opprimente, atmosfera velenosa, idrografia 50%, geologia quieta.",
+      "prompt": "view from orbit of a heavy massive world half ocean half land, thick sulphurous atmosphere pressing down, muted colours"
+    },
+    {
+      "para": 98,
+      "tipo": "orbita",
+      "scena": "Mezo: gravità pesante, atmosfera rarefatta, idrografia 25%, geologia quieta.",
+      "prompt": "view from orbit of a large cold world with scattered shallow seas under a thin pale atmosphere, quiet weathered terrain"
+    },
+    {
+      "para": 99,
+      "tipo": "orbita",
+      "scena": "Paleo: gravità pesante, atmosfera normale, idrografia 25%, geologia attiva.",
+      "prompt": "view from orbit of a heavy world with narrow seas and long volcanic ridges, weather systems curling over the land"
+    },
+    {
+      "para": 100,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 101,
+      "tipo": "orbita",
+      "scena": "Birss: gravità terrestre, atmosfera rarefatta, idrografia 0%, geologia attiva.",
+      "prompt": "view from orbit of an arid world under thin air, fresh lava flows glowing dull red across dark plains"
+    },
+    {
+      "para": 102,
+      "tipo": "orbita",
+      "scena": "Mephisto: gravità terrestre, atmosfera velenosa, idrografia 0%, geologia attiva.",
+      "prompt": "view from orbit of a dry world wrapped in dense poisonous haze, volcanic light glowing through the clouds"
+    },
+    {
+      "para": 103,
+      "tipo": "orbita",
+      "scena": "New Alto: gravità terrestre, atmosfera normale, idrografia 25%, geologia attiva.",
+      "prompt": "view from orbit of a temperate world with modest seas and clear skies, a chain of active volcanoes venting along a coast"
+    },
+    {
+      "para": 104,
+      "tipo": "orbita",
+      "scena": "Korkran: gravità pesante, atmosfera normale, idrografia 100%, supporto vitale 0.",
+      "prompt": "view from orbit of a world of unbroken ocean, no land at all, clear atmosphere and sunlight glinting off endless water"
+    },
+    {
+      "para": 105,
+      "tipo": "orbita",
+      "scena": "Picole: gravità leggera, atmosfera rarefatta, idrografia 50%, geologia quieta.",
+      "prompt": "view from orbit of a small quiet world, half pale seas half dusty land, a thin veil of atmosphere at the limb"
+    },
+    {
+      "para": 106,
+      "tipo": "orbita",
+      "scena": "Suwathe: gravità pesante, atmosfera corrosiva, idrografia 50%, geologia attiva.",
+      "prompt": "view from orbit of a heavy world with corrosive yellow-brown skies over dark seas, volcanic islands smoking"
+    },
+    {
+      "para": 107,
+      "tipo": "orbita",
+      "scena": "Opoplo: gravità opprimente, atmosfera corrosiva, idrografia 0%, geologia quieta.",
+      "prompt": "view from orbit of an enormous dry world beneath a thick corrosive orange atmosphere, no water anywhere"
+    },
+    {
+      "para": 108,
+      "tipo": "orbita",
+      "scena": "Mezo: gravità pesante, atmosfera velenosa, idrografia 50%, geologia attiva.",
+      "prompt": "view from orbit of a large world with murky seas under poisonous cloud, volcanic glow along a rift"
+    },
+    {
+      "para": 109,
+      "tipo": "orbita",
+      "scena": "Paleo: gravità pesante, atmosfera corrosiva, idrografia 0%, geologia attiva.",
+      "prompt": "view from orbit of a heavy desert world under corrosive haze, long fissures of molten rock cutting the surface"
+    },
+    {
+      "para": 110,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 111,
+      "tipo": "orbita",
+      "scena": "Birss: gravità pesante, atmosfera velenosa, idrografia 0%, geologia attiva.",
+      "prompt": "view from orbit of a heavy dry world choked in poisonous cloud, volcanic hotspots burning through the murk"
+    },
+    {
+      "para": 112,
+      "tipo": "orbita",
+      "scena": "Mephisto: gravità pesante, atmosfera velenosa, idrografia 25%, geologia attiva.",
+      "prompt": "view from orbit of a massive world with small dark seas under toxic cloud layers, ash plumes rising"
+    },
+    {
+      "para": 113,
+      "tipo": "orbita",
+      "scena": "New Alto: gravità pesante, atmosfera velenosa, idrografia 50%, geologia attiva.",
+      "prompt": "view from orbit of a heavy world half covered in sullen seas beneath poisonous cloud, volcanic islands venting steam"
+    },
+    {
+      "para": 114,
+      "tipo": "atterraggio",
+      "scena": "Shuttle ammarato: nessuna terra in vista, vegetazione e strutture artificiali sotto la superficie.",
+      "prompt": "a landing shuttle floating on a calm alien ocean with no land in sight, beneath the clear water luminous kelp-like vegetation and geometric artificial ruins are visible, pale overcast sky"
+    },
+    {
+      "para": 115,
+      "tipo": "atterraggio",
+      "scena": "Distesa pianeggiante e brulla, colline desolate e montagne a ovest, clima artico.",
+      "prompt": "a landing shuttle on a bleak flat expanse, desolate hills and mountains rising to the west, arctic light and frost"
+    },
+    {
+      "para": 116,
+      "tipo": "atterraggio",
+      "scena": "Radura erbosa circondata da fitta foresta, rumore d'acqua a sud-est, clima temperato.",
+      "prompt": "a landing shuttle in a grassy clearing ringed by dense alien forest, temperate light filtering through the canopy"
+    },
+    {
+      "para": 117,
+      "tipo": "atterraggio",
+      "scena": "Terreno duro e freddo riparato da una collinetta, ghiacciaio a est.",
+      "prompt": "a landing shuttle on hard frozen ground sheltered by a low ridge, the tongue of a great glacier reaching from the east"
+    },
+    {
+      "para": 118,
+      "tipo": "atterraggio",
+      "scena": "Bordo di una colata di lava solidificata; a ovest un vulcano attivo. Clima sahariano.",
+      "prompt": "a landing shuttle at the edge of a solidified lava flow, an active volcano spilling fire over the landscape to the west, scorching desert light"
+    },
+    {
+      "para": 119,
+      "tipo": "atterraggio",
+      "scena": "Ai piedi di una montagna massiccia dalla cima piatta, chiazze di cespugli.",
+      "prompt": "a landing shuttle at the foot of a massive flat-topped mountain, patches of low scrub across the slopes, temperate haze"
+    },
+    {
+      "para": 120,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 121,
+      "tipo": "atterraggio",
+      "scena": "Pianura perfettamente piatta e sconfinata, canyon a est, nessuna vegetazione, clima sahariano.",
+      "prompt": "a landing shuttle on a perfectly flat endless plain broken only by a deep canyon to the east, no vegetation, desert glare"
+    },
+    {
+      "para": 122,
+      "tipo": "atterraggio",
+      "scena": "Radura asciutta tra fiumi lenti e paludi; a ovest un grande lago. Clima tropicale.",
+      "prompt": "a landing shuttle on a dry clearing among slow rivers and marshes, a great lake gleaming to the west, humid tropical air"
+    },
+    {
+      "para": 123,
+      "tipo": "atterraggio",
+      "scena": "Ammaraggio su un oceano sconfinato; vegetazione e strutture artificiali sotto la superficie.",
+      "prompt": "a landing shuttle afloat on an ocean stretching to every horizon, lush vegetation and artificial structures visible far below the clear surface"
+    },
+    {
+      "para": 124,
+      "tipo": "atterraggio",
+      "scena": "Pianura dura con colline brulle e montagne a ovest, clima temperato.",
+      "prompt": "a landing shuttle on a hard barren plain, bare hills and a mountain wall rising to the west, temperate overcast"
+    },
+    {
+      "para": 125,
+      "tipo": "atterraggio",
+      "scena": "Collina coperta di felci, fogliame fitto, fiume giù per un ripido pendio. Clima tropicale.",
+      "prompt": "a landing shuttle on a fern-covered hilltop surrounded by dense foliage, a river glinting far below a steep slope, tropical light"
+    },
+    {
+      "para": 126,
+      "tipo": "atterraggio",
+      "scena": "Pianura brulla ai margini di un campo di ghiaccio; a est bagliore di metallo lucente.",
+      "prompt": "a landing shuttle on a barren plain at the edge of an endless ice field, a glint of polished metal breaking the whiteness far to the east"
+    },
+    {
+      "para": 127,
+      "tipo": "atterraggio",
+      "scena": "Zona contorta di lava solidificata, roccia fusa da un foro a est e un cono a ovest.",
+      "prompt": "a landing shuttle on twisted solidified lava, molten rock creeping in from a vent to the east and a huge cone to the west"
+    },
+    {
+      "para": 128,
+      "tipo": "atterraggio",
+      "scena": "Pianura brulla; a ovest una montagna enorme con tre torri costruite sulla cima piatta.",
+      "prompt": "a landing shuttle on a barren plain, an enormous flat-topped mountain filling the western view with three built towers on its summit"
+    },
+    {
+      "para": 129,
+      "tipo": "atterraggio",
+      "scena": "Pianura con arbusti; canyon con fiume subito a ovest. Clima tropicale.",
+      "prompt": "a landing shuttle on a plain dotted with shrubs, a canyon with a river at its bottom cutting past just to the west"
+    },
+    {
+      "para": 130,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 131,
+      "tipo": "atterraggio",
+      "scena": "Accanto a un ruscello che sfocia in una palude; a ovest un mare immobile. Clima temperato.",
+      "prompt": "a landing shuttle beside a stream running into marshland, the muddy water widening into a motionless sea to the west"
+    },
+    {
+      "para": 132,
+      "tipo": "atterraggio",
+      "scena": "Ammaraggio su un oceano circondato da alte escrescenze di vegetazione che spuntano dall'acqua.",
+      "prompt": "a landing shuttle afloat on an ocean surrounded by towering growths of alien vegetation rising straight out of the water"
+    },
+    {
+      "para": 133,
+      "tipo": "atterraggio",
+      "scena": "Pendio brullo circondato da montagne; una valle obliqua conduce a est verso una pianura desolata.",
+      "prompt": "a landing shuttle on a barren slope ringed by mountains, a slanting valley cutting east through the peaks toward a desolate plain"
+    },
+    {
+      "para": 134,
+      "tipo": "atterraggio",
+      "scena": "Cima di un pendio coperto di edera; fitta foschia che impedisce di vedere oltre. Clima tropicale.",
+      "prompt": "a landing shuttle atop an ivy-covered slope, thick haze swallowing everything beyond a few hundred metres, humid tropical light"
+    },
+    {
+      "para": 135,
+      "tipo": "atterraggio",
+      "scena": "Campo di neve fra colline e ghiaccio; a sud e ovest conglomerati di strutture di metallo e pietra.",
+      "prompt": "a landing shuttle on a snowfield among low hills, clusters of coloured metal and stone structures stretching to the southern and western horizon"
+    },
+    {
+      "para": 136,
+      "tipo": "atterraggio",
+      "scena": "Atterraggio su lava indurita, nebbia vaporosa, bagliore di roccia fusa a ovest, clima tropicale.",
+      "prompt": "a landing shuttle standing on a field of black hardened lava, curtains of steam and vapour drifting across the ground, molten rock glowing orange on the western horizon, humid tropical haze"
+    },
+    {
+      "para": 137,
+      "tipo": "atterraggio",
+      "scena": "Pianura con rampicanti striscianti; a ovest una mesa gigantesca sormontata da una cupola artificiale.",
+      "prompt": "a landing shuttle on a plain of creeping vines, a giant mesa to the west crowned by an artificial dome"
+    },
+    {
+      "para": 138,
+      "tipo": "atterraggio",
+      "scena": "Pianura a ovest di un canyon, con zone di vegetazione erbosa. Clima temperato.",
+      "prompt": "a landing shuttle on a plain west of a deep canyon, patches of grassy vegetation breaking the flatness"
+    },
+    {
+      "para": 139,
+      "tipo": "atterraggio",
+      "scena": "Atterraggio su terreno ghiacciato accanto a un fiume gelato, fitta nebbia, clima artico.",
+      "prompt": "a landing shuttle on an icy plain beside a frozen river, thick freezing fog reducing everything to pale silhouettes, arctic twilight, frost crusting the hull"
+    },
+    {
+      "para": 140,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 141,
+      "tipo": "atterraggio",
+      "scena": "Atterraggio su terreno piatto e privo di vita, fitta nebbia, clima temperato.",
+      "prompt": "a landing shuttle on a flat lifeless plain swallowed by thick grey fog, featureless ground fading into white, the craft the only shape in the emptiness"
+    },
+    {
+      "para": 142,
+      "tipo": "creatura",
+      "scena": "Predatore arancione dai molti tentacoli coglie di sorpresa la spedizione.",
+      "prompt": "a bright orange many-tentacled predator lunging out at explorers, tentacles whipping forward"
+    },
+    {
+      "para": 143,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 144,
+      "tipo": "evento",
+      "scena": "L'ufficiale scientifico muore della sua misteriosa afflizione.",
+      "prompt": "a science officer lying dead in a starship medical bay, crew gathered in silence, instruments dark"
+    },
+    {
+      "para": 145,
+      "tipo": "creatura",
+      "scena": "Insetto alato bipede alto circa un metro, al pascolo.",
+      "prompt": "a metre-tall bipedal winged insect creature grazing quietly, folded wings, thin legs"
+    },
+    {
+      "para": 146,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 147,
+      "tipo": "creatura",
+      "scena": "La spedizione è circondata da una colonia di minuscoli vermi-tunnel carnivori.",
+      "prompt": "explorers ringed by a seething colony of tiny carnivorous tunnelling worms boiling up out of the soil"
+    },
+    {
+      "para": 148,
+      "tipo": "evento",
+      "scena": "Lo shuttle si schianta e slitta sul terreno.",
+      "prompt": "a shuttle crashed and skidding across alien ground, torn hull plating, a long furrow of debris and dust behind it, small fires along the wreck"
+    },
+    {
+      "para": 149,
+      "tipo": "creatura",
+      "scena": "Umanoide alto 3 metri, ricoperto di pelliccia e con molti arti.",
+      "prompt": "a three-metre furred humanoid with many limbs rearing up in front of explorers, arms spread wide"
+    },
+    {
+      "para": 150,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 151,
+      "tipo": "creatura",
+      "scena": "Grande creatura simile a un orso con otto zampe e lunga pelliccia ispida.",
+      "prompt": "a large eight-legged bear-like creature with long shaggy fur, moving toward explorers"
+    },
+    {
+      "para": 152,
+      "tipo": "evento",
+      "scena": "Un personaggio muore per un attacco virale da organismi dello stagno.",
+      "prompt": "explorers carrying the body of a fallen companion away from a still alien pond, heads lowered"
+    },
+    {
+      "para": 153,
+      "tipo": "creatura",
+      "scena": "Orribile massa di gelatina luminescente spinta da potenti tentacoli.",
+      "prompt": "a towering mass of luminescent gelatinous flesh hauling itself forward on thick powerful tentacles, inner light pulsing through the translucent body, explorers dwarfed in the foreground"
+    },
+    {
+      "para": 154,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 155,
+      "tipo": "evento",
+      "scena": "Elementi distruttivi nell'atmosfera fanno deteriorare i robot della spedizione.",
+      "prompt": "expedition robots corroding visibly in a caustic atmosphere, pitted plating and sparking joints, crew inspecting the damage"
+    },
+    {
+      "para": 156,
+      "tipo": "creatura",
+      "scena": "Grande creatura mammifera alata che vola pigramente in cerchi vicino al suolo.",
+      "prompt": "a large winged mammalian creature circling lazily close to the ground, broad leathery wings"
+    },
+    {
+      "para": 157,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 158,
+      "tipo": "creatura",
+      "scena": "Creatura intelligente e amichevole, ultima superstite di una grande civiltà, comunica per telepatia.",
+      "prompt": "a lone intelligent alien communicating telepathically with explorers, the ruins of a vanished civilisation behind it, melancholy light"
+    },
+    {
+      "para": 159,
+      "tipo": "creatura",
+      "scena": "Grande creatura simile a un insetto, coperta da un carapace duro e riflettente.",
+      "prompt": "a large insect-like creature encased in a hard mirror-bright carapace reflecting the explorers"
+    },
+    {
+      "para": 160,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 161,
+      "tipo": "creatura",
+      "scena": "Gruppo di insetti bipedi senzienti alti un metro e mezzo.",
+      "prompt": "a group of sentient bipedal insect aliens about a metre and a half tall standing together, watching the explorers"
+    },
+    {
+      "para": 162,
+      "tipo": "creatura",
+      "scena": "Umanoide alto 60 cm con mascella disarticolabile e file di denti aguzzi.",
+      "prompt": "a knee-high humanoid alien with an enormous unhinged jaw opening wider than its own body, rows upon rows of needle teeth lining the maw, crouched on rocky ground"
+    },
+    {
+      "para": 163,
+      "tipo": "evento",
+      "scena": "Colonia di insetti mangia-metallo sta divorando lo shuttle.",
+      "prompt": "a swarm of metal-eating insects covering a landing shuttle, hull plating pitted and crumbling under them"
+    },
+    {
+      "para": 164,
+      "tipo": "creatura",
+      "scena": "Una vetta dai lati lisci si rivela viva: tentacoli spuntano dalla montagna.",
+      "prompt": "a mountain peak with unnaturally smooth sides revealed to be alive, huge tentacles unfurling from its flanks over tiny explorers"
+    },
+    {
+      "para": 165,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 166,
+      "tipo": "evento",
+      "scena": "La gravità estrema fa cadere rovinosamente i membri del gruppo.",
+      "prompt": "explorers tumbling and sprawling on a deceptive slope under punishing gravity, equipment scattering"
+    },
+    {
+      "para": 167,
+      "tipo": "creatura",
+      "scena": "Scultura metallica di un'antilope che si risveglia: è viva.",
+      "prompt": "a metallic sculpture of an antelope-like creature coming to life, joints turning, explorers stepping back in alarm"
+    },
+    {
+      "para": 168,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 169,
+      "tipo": "evento",
+      "scena": "I pirati si agganciano alla Pandora; il comandante tratta.",
+      "prompt": "pirate ships clamped onto an exploration starship hull, boarding tube extended, the commander facing armed raiders"
+    },
+    {
+      "para": 170,
+      "tipo": "creatura",
+      "scena": "Una grande roccia liscia si rivela il guscio di un enorme orrore rettiliano dai molti occhi.",
+      "prompt": "a huge smooth boulder splitting open to reveal a many-eyed reptilian horror uncoiling from inside its shell, explorers recoiling, dust falling from the cracking surface"
+    },
+    {
+      "para": 171,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 172,
+      "tipo": "creatura",
+      "scena": "In un corridoio della città abbandonata, un piccolo essere peloso in stracci sgargianti.",
+      "prompt": "a small furred alien in faded once-splendid rags standing calmly in a vast corridor of an abandoned alien city"
+    },
+    {
+      "para": 173,
+      "tipo": "creatura",
+      "scena": "Piccola escrescenza simile a un fungo, dalla complessa struttura organica.",
+      "prompt": "a small fungus-like growth with an intricate organic structure on a rock face, explorers examining it closely"
+    },
+    {
+      "para": 174,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 175,
+      "tipo": "artefatto",
+      "scena": "L'ufficiale alle armi esamina l'asta metallica: è un'arma aliena.",
+      "prompt": "an explorer examining a metre-long alien weapon rod, its surface awakening with faint light in gloved hands"
+    },
+    {
+      "para": 176,
+      "tipo": "creatura",
+      "scena": "Vasta rete di filamenti e ragnatele multicolori tesa fra due pareti rocciose: una sola entità.",
+      "prompt": "a vast web of multicoloured filaments strung from one rock wall to another, a single living entity, explorers dwarfed beneath it"
+    },
+    {
+      "para": 177,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 178,
+      "tipo": "creatura",
+      "scena": "L'oggetto è un uovo che si schiude: nasce una piccola creatura feroce.",
+      "prompt": "an alien egg cracking open in an explorer's hands, a small ferocious creature bursting out, shell fragments flying"
+    },
+    {
+      "para": 179,
+      "tipo": "creatura",
+      "scena": "Grande bestia piumata a quattro zampe con corna affilate carica la spedizione.",
+      "prompt": "a large four-legged feathered beast charging, a menacing array of sharp horns jutting from its front, explorers scattering"
+    },
+    {
+      "para": 180,
+      "tipo": "esito",
+      "scena": "Un personaggio viene incornato da uno sperone velenoso.",
+      "prompt": "an explorer gored by a venomous horn spur, companions catching him as he falls, medical kit already open"
+    },
+    {
+      "para": 181,
+      "tipo": "creatura",
+      "scena": "Piccola creatura a metà tra un roditore e un uccello incapace di volare.",
+      "prompt": "a small creature halfway between a rodent and a flightless bird, sniffing at the explorers, sleek feathered coat"
+    },
+    {
+      "para": 182,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 183,
+      "tipo": "evento",
+      "scena": "Combattimento totale con i pirati a bordo della Pandora.",
+      "prompt": "a running firefight through a starship corridor between crew and armed pirates, muzzle flashes and smoke"
+    },
+    {
+      "para": 184,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 185,
+      "tipo": "artefatto",
+      "scena": "L'oggetto è un dispositivo di comunicazione alieno che si attiva e si autodistrugge.",
+      "prompt": "an alien communication device flaring alight in an explorer's hands an instant before it destroys itself, sparks and vapour"
+    },
+    {
+      "para": 186,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 187,
+      "tipo": "evento",
+      "scena": "Raggi brucianti: chi non è abbastanza veloce viene distrutto.",
+      "prompt": "searing energy beams lancing across a chamber as explorers dive for cover, one figure caught in the light"
+    },
+    {
+      "para": 188,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 189,
+      "tipo": "evento",
+      "scena": "Ospiti invisibili ipnotizzano la spedizione e la derubano con botole e raggi di aggancio.",
+      "prompt": "explorers standing entranced and motionless while their equipment and robots are lifted away by unseen forces through hidden hatches"
+    },
+    {
+      "para": 190,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 191,
+      "tipo": "evento",
+      "scena": "Dopo un'aspra battaglia i pirati si ritirano, lasciando morti e danni.",
+      "prompt": "the aftermath of a boarding battle aboard a starship, pirates withdrawing down the docking tube, wounded crew and wrecked equipment"
+    },
+    {
+      "para": 192,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 193,
+      "tipo": "creatura",
+      "scena": "La densa struttura vivente si neutralizza solo tagliandone il sistema cerebrale simile a un circuito.",
+      "prompt": "explorers cutting into the circuit-like neural lattice of a dense living structure, glowing filaments severing"
+    },
+    {
+      "para": 194,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 195,
+      "tipo": "creatura",
+      "scena": "Alieni di intelletto superiore comprendono la spedizione e si consultano fra loro.",
+      "prompt": "tall superior alien beings conferring among themselves in high shrill tones while explorers wait, unreadable and calm"
+    },
+    {
+      "para": 196,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 197,
+      "tipo": "evento",
+      "scena": "Un personaggio viene ricoperto da un fungo parassita.",
+      "prompt": "an explorer's suit and helmet spreading over with a creeping parasitic fungus, companions recoiling"
+    },
+    {
+      "para": 198,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 199,
+      "tipo": "creatura",
+      "scena": "La luce del prisma si intensifica mentre la spedizione punta le armi.",
+      "prompt": "a prismatic alien entity blazing brighter as explorers level their weapons at it, refracted light across the ground"
+    },
+    {
+      "para": 200,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 201,
+      "tipo": "interno nave",
+      "scena": "La Pandora parte dal Watkins Memorial Exploration Depot nel Sistema Creighton.",
+      "prompt": "an exploration starship undocking from an orbital supply depot station, mooring arms retracting, faster-than-light engines beginning to glow, a yellow sun beyond the structure"
+    },
+    {
+      "para": 202,
+      "tipo": "snodo",
+      "salta": true,
+      "scena": "Snodo della Matrice di Esplorazione: non viene mai mostrato.",
+      "prompt": ""
+    },
+    {
+      "para": 203,
+      "tipo": "evento",
+      "scena": "I pirati accettano un tributo: un robot e uno strumento di ogni tipo.",
+      "prompt": "crew handing over robots and equipment crates to pirates at a docking hatch, reluctant faces, armed raiders supervising"
+    },
+    {
+      "para": 204,
+      "tipo": "creatura",
+      "scena": "Gli alieni restano immobili mentre la spedizione punta le armi.",
+      "prompt": "alien figures standing perfectly still and unmoved as explorers aim weapons at them, a tense standoff"
+    },
+    {
+      "para": 205,
+      "tipo": "esito",
+      "scena": "L'aggressività della creatura sale automaticamente di due.",
+      "prompt": "an alien creature working itself into open aggression, head lowered and body swelling, explorers gripping their weapons"
+    },
+    {
+      "para": 206,
+      "tipo": "creatura",
+      "scena": "Combattimento con l'Unithalo, che si risolve in due round.",
+      "prompt": "a massive horned alien beast locked in a prolonged fight with explorers, dust and debris, the struggle far from over"
+    },
+    {
+      "para": 207,
+      "tipo": "creatura",
+      "scena": "Fiore bellissimo simile a un'orchidea, con petali che si aprono e chiudono lentamente.",
+      "prompt": "an unusually beautiful orchid-like alien flower slowly opening and closing its petals, luminous colours against dark foliage"
+    },
+    {
+      "para": 208,
+      "tipo": "esito",
+      "scena": "La forma larvale può essere riportata sulla Pandora dall'ufficiale scientifico.",
+      "prompt": "a science officer carefully sealing an alien larval form into a specimen container, steady hands and bright light"
+    },
+    {
+      "para": 209,
+      "tipo": "evento",
+      "scena": "Un personaggio ha le convulsioni: è stato infettato dalla creatura che si allontana.",
+      "prompt": "an explorer convulsing on the ground while companions rush to help, the offending creature lumbering awkwardly away"
+    },
+    {
+      "para": 210,
+      "tipo": "evento",
+      "scena": "Tutti i personaggi vengono trasportati istantaneamente allo shuttle; il resto è svanito.",
+      "prompt": "explorers materialising abruptly beside their shuttle, bewildered and empty-handed, their robots and gear gone"
+    },
+    {
+      "para": 211,
+      "tipo": "creatura",
+      "scena": "Il Garbrist contatta la spedizione per via telepatica e chiede di proseguire.",
+      "prompt": "a large starfish-like alien on a boulder reaching the explorers' minds telepathically, the crew standing transfixed"
+    },
+    {
+      "para": 212,
+      "tipo": "esito",
+      "scena": "La spedizione tenta di catturare uno dei vermi parassiti.",
+      "prompt": "explorers trapping a writhing parasitic worm in a sample container, careful gloved hands"
+    },
+    {
+      "para": 213,
+      "tipo": "esito",
+      "scena": "Il Glassman mostra intelligenza più che primitiva: la cattura è vietata.",
+      "prompt": "a tall translucent humanoid alien communicating with explorers who lower their weapons and step back"
+    },
+    {
+      "para": 214,
+      "tipo": "esito",
+      "scena": "La creatura svanisce lentamente dal basso verso l'alto, fino all'apice che luccica.",
+      "prompt": "an alien creature dissolving slowly from the ground upward, only its glimmering apex still visible before it too vanishes"
+    },
+    {
+      "para": 215,
+      "tipo": "esito",
+      "scena": "Il Garbrist emette un campo di forza mentale che danneggia robot e strumenti.",
+      "prompt": "a wave of mental force radiating from a starfish-like alien, expedition robots and instruments sparking and failing"
+    },
+    {
+      "para": 216,
+      "tipo": "creatura",
+      "scena": "L'Abomnid balza all'inseguimento della spedizione.",
+      "prompt": "a powerful alien predator bounding after the fleeing expedition across broken ground"
+    },
+    {
+      "para": 217,
+      "tipo": "esito",
+      "scena": "Il Glassman estrae un'arma ad alta energia e distrugge un personaggio e un robot.",
+      "prompt": "a tall translucent humanoid alien firing a high-energy weapon, an explorer and a robot destroyed in the blast"
+    },
+    {
+      "para": 218,
+      "tipo": "esito",
+      "scena": "Combattimento di uccisione, con il turbolaser determinante.",
+      "prompt": "explorers firing a heavy turbolaser at an alien creature, the beam blindingly bright, the weapon glowing with strain"
+    },
+    {
+      "para": 219,
+      "tipo": "esito",
+      "scena": "Il fungo è intelligente e secerne un veleno corrosivo mortale.",
+      "prompt": "an intelligent fungal growth oozing corrosive venom as explorers examine it with a scanner from a safe distance"
+    },
+    {
+      "para": 220,
+      "tipo": "esito",
+      "scena": "Il Glassman tenta di fuggire; conta la sua velocità contro quella della squadra.",
+      "prompt": "a tall translucent humanoid alien breaking into a run to escape, explorers giving chase across open ground"
+    },
+    {
+      "para": 221,
+      "tipo": "evento",
+      "scena": "Campo di forza psionico: tutti i personaggi perdono i sensi per ore.",
+      "prompt": "explorers collapsed unconscious on alien ground as a psionic shockwave ripples outward from a creature, equipment lying where it fell"
+    },
+    {
+      "para": 222,
+      "tipo": "esito",
+      "scena": "Si valuta l'aggressività delle creature: se ne vanno oppure attaccano.",
+      "prompt": "a group of armoured alien quadrupeds deciding whether to withdraw or charge, explorers holding position"
+    },
+    {
+      "para": 223,
+      "tipo": "creatura",
+      "scena": "L'aeron piomba giù, afferra un robot e schizza via.",
+      "prompt": "a winged alien predator diving out of the sky and snatching a walking robot from a group of space-suited explorers, wings spread wide, the party scattering below"
+    },
+    {
+      "para": 224,
+      "tipo": "esito",
+      "scena": "Chi investiga il fungo viene spruzzato da un veleno corrosivo e mortale.",
+      "prompt": "an intelligent fungus spraying corrosive venom over an explorer's suit, the fabric smoking and pitting"
+    },
+    {
+      "para": 225,
+      "tipo": "esito",
+      "scena": "Si combatte contro l'intero gruppo di creature, col valore combinato.",
+      "prompt": "explorers fighting an entire pack of alien creatures at once, surrounded on all sides, weapons flaring"
+    },
+    {
+      "para": 226,
+      "tipo": "creatura",
+      "scena": "L'Oraloid ha un debole per il metallo e fa a pezzi il rover (o divora un robot).",
+      "prompt": "an alien creature tearing a six-wheeled rover apart for its metal, torn plating scattered across the ground"
+    },
+    {
+      "para": 227,
+      "tipo": "esito",
+      "scena": "Combattimento in cui la creatura può fare a pezzi un personaggio.",
+      "prompt": "a monstrous alien creature seizing an explorer in mid-battle while the others fire desperately"
+    },
+    {
+      "para": 228,
+      "tipo": "creatura",
+      "scena": "L'inacidito superstite di una civiltà perduta ha teso una trappola suicida.",
+      "prompt": "an embittered lone alien survivor pulling a hidden lever inside a ruined hall, explorers realising the trap an instant too late"
+    },
+    {
+      "para": 229,
+      "tipo": "esito",
+      "scena": "Il monoke segue la spedizione senza ostilità e si lascia catturare.",
+      "prompt": "a docile alien creature trotting along behind the withdrawing expedition, keeping pace without hostility"
+    },
+    {
+      "para": 230,
+      "tipo": "esito",
+      "scena": "Il radrod possiede poteri mentali; si può studiarlo oltre.",
+      "prompt": "explorers studying a small alien creature that radiates faint mental energy, instruments reacting around it"
+    },
+    {
+      "para": 231,
+      "tipo": "evento",
+      "scena": "La razza aliena è ora ostile: rischio d'imboscata nelle strutture e nelle città.",
+      "prompt": "alien security forces massing at the entrance of an alien city, watching the expedition with open hostility"
+    },
+    {
+      "para": 232,
+      "tipo": "interno nave",
+      "scena": "La Pandora attracca al Watkins Memorial: il viaggio è completato.",
+      "prompt": "an exploration starship docking at a great orbital station at journey's end, mooring lights guiding it in, crew visible at the viewports"
+    }
+  ]
+}
