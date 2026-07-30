@@ -1682,13 +1682,48 @@ func _disp_rows_needed(groups: Array, cols: int) -> int:
 
 # Dimensione GLOBALE delle pedine: la più grande in [MIN,MAX] per cui TUTTI i box
 # visibili riescono a contenere le proprie pedine senza scroll né tagli.
-# Dimensione FISSA e COSTANTE delle pedine, identica in ogni schermata (orbita,
-# viaggio interstellare, environ): non si ricalcola mai in base allo spazio o al numero
-# di unità. Le pedine sono disposte in file per categoria, dall'alto.
-const DISP_TILE := 60.0
+# Dimensione delle pedine: la PIÙ GRANDE che entra in TUTTI i box visibili, così le
+# file riempiono davvero lo spazio invece di lasciarlo vuoto. Il valore è unico per
+# tutti i box (le pedine non cambiano mai misura da un box all'altro) e resta stabile
+# fra le schermate perché l'altezza di ogni box è già proporzionale alle sue file.
+const DISP_TILE_MIN := 44.0
+const DISP_TILE_MAX := 112.0
+const DISP_TILE := 60.0   # misura di riferimento per il calcolo delle file
 
 func _disp_global_tile_size() -> float:
-	return DISP_TILE
+	var migliore := DISP_TILE_MAX
+	var trovato := false
+	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
+		var box := find_child("Disp_%s" % bucket, true, false) as Control
+		if box == null or not box.is_visible_in_tree():
+			continue
+		var keys: Array = box.get_meta("keys", [])
+		if keys.is_empty():
+			continue
+		var w := box.size.x
+		var h := box.size.y
+		if w < 10.0 or h < 10.0:
+			continue
+		trovato = true
+		var groups := _disp_groups(keys)
+		var gap := 4.0
+		# La più grande misura con cui le file di questo box stanno nell'altezza.
+		var fit := DISP_TILE_MIN
+		var t := DISP_TILE_MAX
+		while t >= DISP_TILE_MIN:
+			var cols := maxi(1, int((w + gap) / (t + gap)))
+			var righe := 0
+			for g in groups:
+				if not g.is_empty():
+					righe += int(ceil(float(g.size()) / float(cols)))
+			if righe * (t + gap) <= h:
+				fit = t
+				break
+			t -= 4.0
+		migliore = minf(migliore, fit)
+	if not trovato:
+		return DISP_TILE
+	return clampf(migliore, DISP_TILE_MIN, DISP_TILE_MAX)
 
 # Numero di file (per categoria, con a-capo) necessarie a un box di larghezza w, a
 # dimensione di pedina fissa. Serve a dare a ogni box l'altezza proporzionale al contenuto.
@@ -1705,10 +1740,11 @@ func _disp_rows_for(keys: Array, w: float) -> int:
 
 # Ridispone TUTTI i box con la stessa dimensione di pedina (fissa, uguale ovunque).
 func _relayout_all_disp() -> void:
+	var ts := _disp_global_tile_size()
 	for bucket in ["Pandora", "Shuttle", "A piedi", "Rover"]:
 		var box := find_child("Disp_%s" % bucket, true, false) as Control
 		if box:
-			_layout_disp_box(box, DISP_TILE)
+			_layout_disp_box(box, ts)
 
 # Dispone le pedine in file per categoria (equipaggio / strumenti / robot), dall'alto,
 # a dimensione fissa; va a capo se una categoria supera la larghezza del box.
@@ -1758,11 +1794,45 @@ func _disp_bucket_for(key: String, deployed: bool, landed: bool, rover: bool) ->
 		return "Shuttle"
 	return _unit_bucket(deployed, landed, rover)
 
+# Descrizione completa di un'unità per il tooltip: a cosa serve, quanto pesa, quanto
+# porta e — dove ha senso — i suoi Valori di Combattimento e di Velocità.
+func _tooltip_unita(key: String, u: Dictionary, damaged: bool) -> String:
+	var righe: Array = []
+	var titolo: String = str(u.get("name", key))
+	if damaged:
+		titolo += "  (danneggiato)"
+	righe.append(titolo)
+	var uso := str(u.get("uso", u.get("desc", "")))
+	if uso != "":
+		righe.append(uso)
+	# Numeri utili: peso e, per chi lo ha, Porto e Velocità.
+	var numeri: Array = ["Peso %d" % int(u.get("weight", 0))]
+	if int(u.get("port", 0)) > 0:
+		numeri.append("Porto %d" % int(u.get("port", 0)))
+	if int(u.get("speed", 0)) > 0:
+		numeri.append("Velocità %d" % int(u.get("speed", 0)))
+	righe.append(" · ".join(numeri))
+	# Valori di combattimento: solo per chi combatte davvero.
+	var cap := int(u.get("capture", 0))
+	var kill := int(u.get("kill", 0))
+	if cap > 0 or kill > 0:
+		righe.append("Combattimento — Cattura %d · Uccisione %d" % [cap, kill])
+	# Stato dei personaggi: Resistenza attuale.
+	if GameData.get_character_keys().has(key):
+		var c: Dictionary = GameState.crew.get(key, {})
+		if c.get("alive", true):
+			righe.append("Resistenza %d/%d" % [int(c.get("endurance", GameState.MAX_ENDURANCE)), GameState.MAX_ENDURANCE])
+		else:
+			righe.append("Caduto")
+	if damaged:
+		righe.append("Danneggiato: va riparato col Botkit (robot) o col Toolkit (strumenti).")
+	return "\n".join(righe)
+
 func _make_disp_tile(key: String, clickable: bool) -> Control:
 	var u := GameData.get_unit(key)
 	var damaged := key in GameState.damaged_gear
 	var base: Control = Button.new() if clickable else PanelContainer.new()
-	base.tooltip_text = "%s — Peso %d%s" % [u.get("name", key), int(u.get("weight", 0)), " (danneggiato)" if damaged else ""]
+	base.tooltip_text = _tooltip_unita(key, u, damaged)
 	var tex := TextureRect.new()
 	var path := _unit_token_path(key)
 	if ResourceLoader.exists(path): tex.texture = load(path)

@@ -7,7 +7,8 @@
       "weight": 5,
       "port": 5,
       "speed": 8,
-      "img": "Char_CO"
+      "img": "Char_CO",
+      "uso": "Comanda la spedizione. La sua Intelligenza pesa in molti eventi di bordo ed è, con l'Uff. Armi, il migliore in combattimento."
     },
     "Nav": {
       "name": "Navigatore",
@@ -16,25 +17,28 @@
       "weight": 6,
       "port": 6,
       "speed": 7,
-      "img": "Char_Nav"
+      "img": "Char_Nav",
+      "uso": "Pilota lo shuttle: dalla sua Intelligenza dipende la riuscita dell'atterraggio. Senza di lui a bordo l'atterraggio è molto più rischioso."
     },
     "SO": {
-      "name": "Uff. di Sicurezza",
+      "name": "Ufficiale Scientifico",
       "capture": 4,
       "kill": 2,
       "weight": 6,
       "port": 5,
       "speed": 6,
-      "img": "Char_SO"
+      "img": "Char_SO",
+      "uso": "Studia le forme di vita: cattura gli esemplari delicati, riporta le larve senza rischi e abilita l'azione «Studia» sulle creature."
     },
     "GSO": {
-      "name": "Uff. Scienze",
+      "name": "Uff. Rilevamento Terrestre",
       "capture": 3,
       "kill": 2,
       "weight": 7,
       "port": 6,
       "speed": 6,
-      "img": "Char_GSO"
+      "img": "Char_GSO",
+      "uso": "Esperto del terreno: previene le cadute in gravità difficile, riconosce creature e strutture aliene e abilita l'azione «Studia»."
     },
     "MedO": {
       "name": "Uff. Medico",
@@ -43,7 +47,8 @@
       "weight": 6,
       "port": 5,
       "speed": 6,
-      "img": "Char_MedO"
+      "img": "Char_MedO",
+      "uso": "Cura i feriti durante la spedizione riportandoli a Resistenza piena e attenua gli effetti dei veleni."
     },
     "MntO": {
       "name": "Uff. Manutenzione",
@@ -52,7 +57,8 @@
       "weight": 6,
       "port": 6,
       "speed": 9,
-      "img": "Char_MntO"
+      "img": "Char_MntO",
+      "uso": "Ripara i guasti della nave (compresi quelli ai sistemi FTL) e l'equipaggiamento. È il più veloce del gruppo."
     },
     "WO": {
       "name": "Uff. Armi",
@@ -61,7 +67,8 @@
       "weight": 7,
       "port": 7,
       "speed": 8,
-      "img": "Char_WO"
+      "img": "Char_WO",
+      "uso": "Il miglior combattente della squadra e l'unico che sa riconoscere e usare le armi aliene ritrovate."
     }
   },
   "bots": {
@@ -73,7 +80,8 @@
       "port": 9,
       "speed": 3,
       "img": "Bots_Ambot",
-      "desc": "Robot ambasciatore"
+      "desc": "Robot ambasciatore",
+      "uso": "Robot ambasciatore, pensato per il contatto con creature intelligenti. Ha il Porto più alto: è il vero portatore di carico della squadra."
     },
     "Reconbot": {
       "name": "Reconbot",
@@ -83,7 +91,8 @@
       "port": 3,
       "speed": 5,
       "img": "Bots_Aeconbot",
-      "desc": "Robot da ricognizione"
+      "desc": "Robot da ricognizione",
+      "uso": "Robot da ricognizione: previene le cadute in gravità difficile e se la cava bene in combattimento."
     },
     "Imrebot": {
       "name": "Imrebot",
@@ -93,7 +102,8 @@
       "port": 3,
       "speed": 4,
       "img": "Bots_Imrebot",
-      "desc": "Robot da carico"
+      "desc": "Robot da carico",
+      "uso": "Robot da carico e riparazione, robusto negli scontri."
     },
     "Specibot": {
       "name": "Specibot",
@@ -103,7 +113,8 @@
       "port": 3,
       "speed": 7,
       "img": "Bots_Specibot",
-      "desc": "Robot specializzato"
+      "desc": "Robot specializzato",
+      "uso": "Robot specializzato nella raccolta di esemplari: ha i migliori Valori di Combattimento di tutta la spedizione."
     }
   },
   "tools": {
@@ -114,7 +125,8 @@
       "weight": 2,
       "combat": true,
       "img": "Tools_Netgun",
-      "desc": "Arma da cattura"
+      "desc": "Arma da cattura",
+      "uso": "Arma da cattura: il modo migliore per prendere viva una creatura. Poco efficace per ucciderla."
     },
     "Stunbomb": {
       "name": "Bomba stordente",
@@ -125,7 +137,8 @@
       "qty": 2,
       "oneshot": true,
       "img": "Tools_Stunbomb (x2)",
-      "desc": "Arma monouso (x2)"
+      "desc": "Arma monouso (x2)",
+      "uso": "Bomba stordente monouso (due cariche): il Valore di Cattura più alto fra gli strumenti."
     },
     "Turbolaser": {
       "name": "Turbolaser",
@@ -134,7 +147,8 @@
       "weight": 2,
       "combat": true,
       "img": "Tools_Turbolaser",
-      "desc": "Arma da uccisione"
+      "desc": "Arma da uccisione",
+      "uso": "L'arma più letale a disposizione. Alcuni incontri la escludono o la distruggono nell'uso."
     },
     "Climbkit": {
       "name": "Kit arrampicata",
@@ -142,7 +156,8 @@
       "kill": 0,
       "weight": 2,
       "img": "Tools_Climbkit",
-      "desc": "Riduce le ore in montagna e dirupi"
+      "desc": "Riduce le ore in montagna e dirupi",
+      "uso": "Riduce le ore per entrare in montagna (da 3 a 2) e sui dirupi (da 5 a 3). Non velocizza l'esplorazione né il Rover."
     },
     "Medkit": {
       "name": "Medkit",
@@ -150,7 +165,8 @@
       "kill": 0,
       "weight": 2,
       "img": "Tools_Medkit",
-      "desc": "Cura i personaggi feriti"
+      "desc": "Cura i personaggi feriti",
+      "uso": "Cura un personaggio ferito riportandolo a Resistenza piena e riduce il danno da veleno."
     },
     "Botkit": {
       "name": "Botkit",
@@ -158,7 +174,8 @@
       "kill": 0,
       "weight": 3,
       "img": "Tools_Botkit",
-      "desc": "Ripara i robot danneggiati"
+      "desc": "Ripara i robot danneggiati",
+      "uso": "Ripara un robot danneggiato: costa un'ora di spedizione."
     },
     "Toolkit": {
       "name": "Toolkit",
@@ -166,7 +183,8 @@
       "kill": 0,
       "weight": 2,
       "img": "Tools_Toolkit",
-      "desc": "Ripara gli strumenti danneggiati"
+      "desc": "Ripara gli strumenti danneggiati",
+      "uso": "Ripara uno strumento danneggiato: costa un'ora di spedizione."
     },
     "Scanner": {
       "name": "Scanner",
@@ -174,7 +192,8 @@
       "kill": 0,
       "weight": 2,
       "img": "Tools_Scanner",
-      "desc": "Riduce gli attacchi a sorpresa"
+      "desc": "Riduce gli attacchi a sorpresa",
+      "uso": "Riduce il rischio di essere colti di sorpresa da una creatura e permette di ritrovare gli esemplari svaniti."
     },
     "Neuroscan": {
       "name": "Neuroscan",
@@ -182,7 +201,8 @@
       "kill": 0,
       "weight": 2,
       "img": "Tools_Neuroscan",
-      "desc": "Per le forme di vita intelligenti"
+      "desc": "Per le forme di vita intelligenti",
+      "uso": "Permette di comunicare con le forme di vita intelligenti: apre esiti pacifici e Punti Vittoria altrimenti irraggiungibili."
     },
     "Holographer": {
       "name": "Holographer",
@@ -190,7 +210,8 @@
       "kill": 0,
       "weight": 2,
       "img": "Tools_Holographer",
-      "desc": "Crea ologrammi delle creature catturate"
+      "desc": "Crea ologrammi delle creature catturate",
+      "uso": "Documenta creature ed eventi: fa guadagnare Punti Vittoria aggiuntivi in diversi incontri."
     },
     "Ecage": {
       "name": "E-cage",
@@ -199,7 +220,8 @@
       "weight": 1,
       "qty": 5,
       "img": "Tools_E-cage (x5)",
-      "desc": "Contiene una creatura viva catturata"
+      "desc": "Contiene una creatura viva catturata",
+      "uso": "Gabbia energetica per trasportare viva una creatura catturata. Le creature più grandi ne richiedono più di una."
     },
     "Armorig": {
       "name": "Armorig",
@@ -208,7 +230,8 @@
       "weight": 9,
       "combat": true,
       "img": "Tools_Armorig (x4)",
-      "desc": "Protezione per atmosfera corrosiva"
+      "desc": "Protezione per atmosfera corrosiva",
+      "uso": "Protezione per atmosfera corrosiva; vale anche come arma. Ripara da vermi, veleni e cadute."
     },
     "Rover": {
       "name": "Rover",
@@ -216,7 +239,8 @@
       "kill": 0,
       "weight": 20,
       "img": "Tools_Rover",
-      "desc": "Veicolo da trasporto della spedizione"
+      "desc": "Veicolo da trasporto della spedizione",
+      "uso": "Veicolo di superficie: trasporta la squadra, aumenta la capacità di carico e riduce le ore di movimento. Vietato in gravità opprimente e non può entrare in dirupi, caverne e paludi."
     }
   },
   "shuttle_capacity": {

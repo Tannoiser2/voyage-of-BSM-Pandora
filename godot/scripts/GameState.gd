@@ -55,8 +55,8 @@ const MAX_EXP_REROLL := 10      # ri-tiri massimi della Matrice di Esplorazione 
 var crew: Dictionary = {
 	"CO":   {"name": "Comandante",            "alive": true, "endurance": 5, "intelligence": 0},
 	"Nav":  {"name": "Navigatore",            "alive": true, "endurance": 5, "intelligence": 0},
-	"SO":   {"name": "Ufficiale di Sicurezza","alive": true, "endurance": 5, "intelligence": 0},
-	"GSO":  {"name": "Ufficiale Scienze",     "alive": true, "endurance": 5, "intelligence": 0},
+	"SO":   {"name": "Ufficiale Scientifico", "alive": true, "endurance": 5, "intelligence": 0},
+	"GSO":  {"name": "Uff. Rilevamento Terrestre", "alive": true, "endurance": 5, "intelligence": 0},
 	"MedO": {"name": "Ufficiale Medico",      "alive": true, "endurance": 5, "intelligence": 0},
 	"WO":   {"name": "Ufficiale Armi",        "alive": true, "endurance": 5, "intelligence": 0},
 	"MntO": {"name": "Ufficiale Manutenzione","alive": true, "endurance": 5, "intelligence": 0}
@@ -641,31 +641,31 @@ func _apply_interstellar_event_effect(para: int) -> void:
 
 # ===== Esiti degli eventi interstellari (4.2). I dadi interni sono auto-risolti. =====
 
-# ¶067 — la follia dell'Ufficiale Scienze è temporanea: un Mese di Tour extra.
+# ¶067 — la follia dell'Ufficiale Scientifico è temporanea: un Mese di Tour extra.
 func _event_067() -> void:
-	_spend_tour_months(1, "¶067 follia temporanea (Ufficiale Scienze)")
+	_spend_tour_months(1, "¶067 follia temporanea (Ufficiale Scientifico)")
 
 # ¶073 — cura: 2 dadi vs Int dell'Ufficiale Medico. ≤ Int → curato; altrimenti (o
-# MedO assente) l'Ufficiale Scienze va in animazione sospesa (Resistenza persa).
+# MedO assente) l'Ufficiale Scientifico va in animazione sospesa (Resistenza persa).
 func _event_073() -> void:
 	var roll := randi_range(1, 6) + randi_range(1, 6)
 	if _officer_aboard("MedO") and roll <= character_intelligence("MedO"):
 		add_log("¶073: 2 dadi %d ≤ Int Medico → la follia è curata." % roll)
 		return
-	if crew.has("GSO") and crew["GSO"].get("alive", false):
-		crew["GSO"]["endurance"] = 0
-		crew["GSO"]["alive"] = false
-		add_log("¶073: nessuna cura → Ufficiale Scienze in animazione sospesa (inutilizzabile, Resistenza persa).")
+	if crew.has("SO") and crew["SO"].get("alive", false):
+		crew["SO"]["endurance"] = 0
+		crew["SO"]["alive"] = false
+		add_log("¶073: nessuna cura → Ufficiale Scientifico in animazione sospesa (inutilizzabile, Resistenza persa).")
 		state_updated.emit()
 
-# ¶144 — l'Ufficiale Scienze muore. 1 dado per i Mesi di Tour (5-6 = nessuno). Se Int
+# ¶144 — l'Ufficiale Scientifico muore. 1 dado per i Mesi di Tour (5-6 = nessuno). Se Int
 # dell'Ufficiale Medico ≤ 6 o assente, il virus infetta un altro membro a caso → ¶058.
 func _event_144() -> void:
-	if crew.has("GSO") and crew["GSO"].get("alive", false):
-		crew["GSO"]["alive"] = false
-		crew["GSO"]["endurance"] = 0
-		lose_vp(10, "¶144 Ufficiale Scienze deceduto")
-		add_log("¶144: l'Ufficiale Scienze muore della sua afflizione.")
+	if crew.has("SO") and crew["SO"].get("alive", false):
+		crew["SO"]["alive"] = false
+		crew["SO"]["endurance"] = 0
+		lose_vp(10, "¶144 Ufficiale Scientifico deceduto")
+		add_log("¶144: l'Ufficiale Scientifico muore della sua afflizione.")
 	var die := randi_range(1, 6)
 	_spend_tour_months(die if die <= 4 else 0, "¶144 cure intensive (dado %d)" % die)
 	if current_phase == Phase.GAME_OVER:
@@ -790,9 +790,9 @@ func _event_046() -> void:
 	_spend_tour_months(1, "¶046 brillamenti stellari")
 
 # ¶047 — avaria del Processore Fuji: 9 − (Int più alta tra scienze/manutenzione).
-# L'ufficiale al rilevamento terrestre coincide con l'Ufficiale Scienze (GSO).
+# L'ufficiale al rilevamento terrestre è il GSO (Ground Survey Officer).
 func _event_047() -> void:
-	var best := highest_intelligence(["GSO", "MntO"])
+	var best := highest_intelligence(["SO", "GSO", "MntO"])
 	_spend_tour_months(maxi(0, 9 - best), "¶047 avaria Processore Fuji (9 − Int %d)" % best)
 
 # ¶049 — tempesta di asteroidi: 9 − (Int più alta tra comandante/navigatore/manutenzione).
@@ -847,32 +847,33 @@ func _resolve_055(roll: int) -> void:
 		add_log("¶055: %s non è più in grado di svolgere i suoi compiti (Int ≤ 2)." % crew[key]["name"])
 	state_updated.emit()
 
-# ¶058 — ceppi virali: follia dell'Ufficiale Scienze (GSO). Ignora se GSO assente o
-# nessuna superficie ancora visitata. Altrimenti: 1 dado sottratto all'Int del GSO →
-# tanti Punti Resistenza persi dagli altri; poi un altro dado instrada a 067/073/144.
+# ¶058 — ceppi virali: follia dell'Ufficiale Scientifico (SO, «science officer»
+# nell'originale). Ignora se l'SO è assente o nessuna superficie è stata visitata.
+# Altrimenti: 1 dado sottratto alla sua Intelligenza → tanti Punti Resistenza persi
+# dagli altri; poi un altro dado instrada a 067/073/144.
 func _event_058() -> void:
 	_madness_depth = 0
-	if not _officer_aboard("GSO") or surfaces_visited <= 0:
-		add_log("¶058: Ufficiale Scienze assente o nessuna superficie visitata → ignorato.")
+	if not _officer_aboard("SO") or surfaces_visited <= 0:
+		add_log("¶058: Ufficiale Scientifico assente o nessuna superficie visitata → ignorato.")
 		return
 	if manual_dice:
 		pending_event_para = 58
 		pending_die_purpose = "event_058"
 		awaiting_die_roll = true
-		message_posted.emit("¶058: tira un dado (sottratto all'Intelligenza dell'Ufficiale Scienze).")
+		message_posted.emit("¶058: tira un dado (sottratto all'Intelligenza dell'Ufficiale Scientifico).")
 	else:
 		_resolve_058(randi_range(1, 6))
 
 func _resolve_058(roll: int) -> void:
-	var intel := character_intelligence("GSO")
+	var intel := character_intelligence("SO")
 	var loss := maxi(0, intel - roll)
-	add_log("¶058: dado %d, Int Scienze %d → %d Punti Resistenza persi dagli altri." % [roll, intel, loss])
+	add_log("¶058: dado %d, Int Scientifico %d → %d Punti Resistenza persi dagli altri." % [roll, intel, loss])
 	# Distribuisce la perdita di Resistenza tra gli ALTRI personaggi imbarcati (8.8).
 	for _i in range(loss):
 		var target := ""
 		var best_e := 0
 		for k in crew.keys():
-			if k == "GSO" or not crew[k].get("alive", false):
+			if k == "SO" or not crew[k].get("alive", false):
 				continue
 			var e: int = int(crew[k].get("endurance", 0))
 			if e > best_e:
