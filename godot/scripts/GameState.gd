@@ -461,6 +461,21 @@ func add_log(msg: String) -> void:
 		_trail(msg)
 	message_posted.emit(msg)
 
+# Esito dell'ultima azione, in parole povere: è la riga più recente della narrazione
+# (o l'esito esplicito impostato dai rami dei paragrafi). La finestra principale lo
+# mostra in evidenza, così la conseguenza di ciò che è appena successo è sempre chiara.
+func outcome_summary() -> String:
+	if encounter_outcome_text != "":
+		return encounter_outcome_text
+	var t := encounter_trail.strip_edges()
+	if t.is_empty():
+		return ""
+	var lines := t.split("\n")
+	var last := str(lines[lines.size() - 1]).strip_edges()
+	if last.begins_with("•"):
+		last = last.substr(1).strip_edges()
+	return last
+
 # Vero nelle fasi in cui ha senso mostrare il diario «Cosa succede» (tutto tranne menu
 # e setup): include ora anche viaggio interstellare e orbita, non solo la spedizione.
 func _narration_active() -> bool:
@@ -4123,6 +4138,10 @@ func start_encounter(creature_name: String) -> void:
 func resolve_combat(mode: String, player_combat: int) -> void:
 	if current_creature.is_empty():
 		return
+	# Servono per il riepilogo finale in chiaro (nome, PV e Resistenza prima/dopo).
+	var creature_name := current_creature
+	var vp_before := victory_points
+	var endurance_before := _total_crew_endurance()
 	var die := randi_range(1, 6)
 	var differential := player_combat - creature_rating
 	var result := GameData.combat_result(differential, die, pending_combat_shift)
@@ -4241,15 +4260,40 @@ func resolve_combat(mode: String, player_combat: int) -> void:
 		state_updated.emit()
 		return
 	if escapes:
-		_narrate("Esito: %s sfugge al combattimento e fugge." % current_creature)
+		_narrate("%s sfugge al combattimento e fugge." % current_creature)
 		_end_encounter()
 	elif as_capture:
 		_capture_creature(current_creature)
 	else:
 		_kill_creature(current_creature)
 
+	# Riepilogo finale in chiaro: è l'ULTIMA riga della narrazione, quindi quella che
+	# la finestra principale mostra come esito dell'azione.
+	var fate := "è fuggita" if escapes else ("è stata catturata viva" if as_capture else "è stata uccisa")
+	var conseq: Array = []
+	var lost := endurance_before - _total_crew_endurance()
+	if lost > 0:
+		conseq.append("la squadra perde %d %s" % [lost, ("Punto Resistenza" if lost == 1 else "Punti Resistenza")])
+	var vp_delta := victory_points - vp_before
+	if vp_delta != 0:
+		conseq.append("%+d Punti Vittoria" % vp_delta)
+	if as_capture and not escapes:
+		conseq.append("riportala sulla Pandora per incassare i Punti Vittoria")
+	_narrate("Combattimento concluso: %s %s%s." % [
+		creature_name, fate, ("" if conseq.is_empty() else " — " + ", ".join(conseq))])
+
 	combat_resolved.emit(result, detail)
 	state_updated.emit()
+
+# Somma della Resistenza dei personaggi vivi in spedizione: serve a quantificare i
+# danni realmente subiti in un'azione (per i riepiloghi in chiaro).
+func _total_crew_endurance() -> int:
+	var t := 0
+	for k in expedition_units:
+		var c: Dictionary = crew.get(k, {})
+		if c.get("alive", false):
+			t += int(c.get("endurance", 0))
+	return t
 
 # Punti Danno subiti dalla spedizione per lettera di risultato (8.7), distinti per
 # uccisione e cattura.

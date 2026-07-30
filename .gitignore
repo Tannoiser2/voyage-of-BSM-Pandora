@@ -1,3 +1,6 @@
 # Artefatti di build (esportazione Web/HTML5)
 /build/
 /builds/
+
+# Foglio di controllo delle immagini (generato da tools/contact_sheet.py)
+docs/immagini/controllo.html

@@ -18,6 +18,8 @@ var dice_panel: Control
 var current_para_num: int = 0
 var _prep_updating: bool = false
 var _show_full_trail: bool = false
+var _show_rules: bool = false     # «Regole del paragrafo» (testo originale) espanse?
+var _in_expedition_panel: bool = false   # vista corrente: pannello di spedizione o paragrafo?
 var choices_box: VBoxContainer
 
 # Audio: effetti brevi caricati all'avvio (feedback sugli eventi chiave)
@@ -1085,6 +1087,9 @@ func _connect_signals() -> void:
 func _on_combat_resolved(result: String, _detail: String) -> void:
 	# A/B = esito netto a favore (poco danno); C/D/E = colpo duro alla spedizione.
 	_play("success" if result in ["A", "B"] else "hit")
+	# Il riepilogo finale del combattimento è narrato DOPO la fine dell'incontro:
+	# senza questo ridisegno la schermata resterebbe ferma all'esito intermedio.
+	_redraw_current_view()
 
 func _on_environ_changed() -> void:
 	_update_left_panel_mode()
@@ -2421,6 +2426,7 @@ func _set_para_image(path: String, caption: String) -> void:
 		img_caption.visible = ok and caption != ""
 
 func _show_expedition_panel() -> void:
+	_in_expedition_panel = true
 	_clear_choices()
 	_set_para_image("", "")   # vista di movimento: nessuna immagine, colonna nascosta
 	var title_lbl := find_child("ParaTitle", true, false) as Label
@@ -2430,9 +2436,12 @@ func _show_expedition_panel() -> void:
 	if para_display:
 		var cell: Dictionary = GameState.environ_grid.get(GameState.expedition_pos, {})
 		var terr_class: String = cell.get("terrain", "Open")
-		var bb := "Posizione: esagono [b]%s[/b] · terreno [b]%s[/b] (entrata %d ore, esplorazione %d ore).\n\n" % [
+		# L'esito dell'ultima azione (es. la fine di un combattimento) resta in vista:
+		# prima spariva col cambio di pannello e non si leggeva mai.
+		var bb := _outcome_box() + _trail_box()
+		bb += "Posizione: esagono [b]%s[/b] · terreno [b]%s[/b] (entrata %d ore, esplorazione %d ore).\n\n" % [
 			cell.get("real", "?"), GameData.terrain_it(terr_class),
-			GameState.enter_cost_for(terr_class), GameState.explore_cost_for(terr_class)]
+			GameState.cell_enter_cost(cell), GameState.cell_explore_cost(cell)]
 		bb += "Ore di spedizione: [b]%d[/b]  ·  Rifornimenti: [b]%d[/b]  ·  Danni: [b]%d[/b]\n\n" % [
 			GameState.expedition_hours, GameState.expedition_supply, GameState.damage_points
 		]
@@ -2572,6 +2581,8 @@ func _on_paragraph_request(para_num: int) -> void:
 		_play("page")
 		_flash_paragraph()
 		_show_full_trail = false
+		_show_rules = false
+	_in_expedition_panel = false
 	current_para_num = para_num
 	var text := GameData.get_paragraph_text(para_num)
 
@@ -2593,42 +2604,27 @@ func _on_paragraph_request(para_num: int) -> void:
 			bb += _creature_combat_summary() + "\n\n"
 		else:
 			_set_para_image(GameData.get_event_image_path(para_num), "")
-		# Diario «Cosa succede»: tiri della Matrice/snodi 6.5, controlli di rifornimento,
-		# combattimenti, MA anche eventi interstellari (4.2) e arrivo in orbita — tutta la
-		# logica/esiti dell'azione corrente, non solo nel log.
-		if GameState.encounter_trail != "" or GameState.encounter_formulas != "":
-			# «Cosa succede» = feedback meccanico dell'azione, COLLASSABILE e chiuso di
-			# default (importa poco): un clic sull'intestazione lo apre/chiude.
-			var narr := GameState.encounter_trail.strip_edges()
-			var formulas := GameState.encounter_formulas.strip_edges()
-			var n := 0
-			if narr != "": n += narr.split("\n").size()
-			if formulas != "": n += formulas.split("\n").size()
-			if _show_full_trail:
-				bb += "[bgcolor=#10243a]  [url=trail_expand][color=#7fc7ff]▼ Cosa succede[/color][/url]\n"
-				if narr != "":
-					bb += "[color=#d6e8c6]%s[/color]" % narr
-				if formulas != "":
-					bb += ("\n" if narr != "" else "") + "[color=#9fb8d6]%s[/color]" % formulas
-				bb += "  [/bgcolor]\n"
-			else:
-				# Chiuso, ma con l'ULTIMA riga-esito sempre in chiaro accanto all'intestazione.
-				var src := narr if narr != "" else formulas
-				var lines := src.split("\n")
-				var last_line := lines[lines.size() - 1].strip_edges() if lines.size() > 0 else ""
-				if last_line.begins_with("•"):
-					last_line = last_line.substr(1).strip_edges()
-				bb += "[bgcolor=#10243a]  [url=trail_expand][color=#7fc7ff]▶ Cosa succede (%d)[/color][/url]  [color=#ffe27a][b]%s[/b][/color]  [/bgcolor]\n" % [n, last_line]
-		# In orbita i rimandi del paragrafo (opzioni d'atterraggio) non sono cliccabili:
-		# l'atterraggio si determina col tiro alla preparazione (5.4).
+		# ESITO in evidenza: cosa è appena successo, in parole povere.
+		bb += _outcome_box()
+		# Diario «Cosa succede» (dettaglio dell'azione) — collassabile.
+		bb += _trail_box()
+		# Testo del paragrafo: SOLO la narrazione. Le istruzioni di gioco («tira due
+		# dadi…», «se … vai al ¶NNN») vanno nel collassabile «Regole del paragrafo».
+		var split := GameData.split_paragraph_text(para_num)
+		var story: String = str(split.get("narrative", text))
+		var rules: String = str(split.get("rules", ""))
 		if GameState.is_orbit_decision():
-			bb += "[p]" + text + "[/p]"
+			bb += "[p]" + story + "[/p]"
 		else:
-			bb += "[p]" + _linkify(text) + "[/p]"
-		# Esito risolto dal sistema (rami codificati 8.2/8.5), o valori calcolati.
-		if GameState.encounter_outcome_text != "":
-			bb += "\n\n[color=#ffd24d]➡ %s[/color]" % GameState.encounter_outcome_text
-		elif not GameState.current_creature.is_empty() and not is_creature_here:
+			bb += "[p]" + _linkify(story) + "[/p]"
+		if rules != "":
+			if _show_rules:
+				bb += "\n[bgcolor=#181c26]  [url=rules_expand][color=#8fa6c0]▼ Regole del paragrafo[/color][/url]\n[color=#8fa6c0]%s[/color]  [/bgcolor]\n" % _linkify(rules)
+			else:
+				bb += "\n[url=rules_expand][color=#6f8296]▶ Regole del paragrafo (testo originale)[/color][/url]\n"
+		# Valori calcolati dal sistema per le condizioni del paragrafo.
+		if GameState.encounter_outcome_text == "" \
+				and not GameState.current_creature.is_empty() and not is_creature_here:
 			bb += _computed_values_box(text)
 		# Anteprima probabilità sui paragrafi-esito che richiedono combattimento (8.5).
 		if not GameState.current_creature.is_empty() and not is_creature_here \
@@ -2718,11 +2714,49 @@ func _on_choice_act(act: Dictionary) -> void:
 	_play("click")
 	GameState.resolve_paragraph_choice(act)
 
+# Ridisegna la vista attualmente mostrata (pannello di spedizione o paragrafo), così
+# i collassabili funzionano in entrambe senza cambiare schermata.
+func _redraw_current_view() -> void:
+	if _in_expedition_panel:
+		_show_expedition_panel()
+	elif current_para_num > 0:
+		_on_paragraph_request(current_para_num)
+
+# Box ESITO: la conseguenza dell'ultima azione, in evidenza e in parole povere.
+func _outcome_box() -> String:
+	var outcome := GameState.outcome_summary()
+	if outcome == "":
+		return ""
+	return "[bgcolor=#2a2410]  [color=#ffd24d]➡ %s[/color]  [/bgcolor]\n\n" % outcome
+
+# Box «Cosa succede»: dettaglio meccanico dell'azione, collassabile e chiuso di default.
+func _trail_box() -> String:
+	if GameState.encounter_trail == "" and GameState.encounter_formulas == "":
+		return ""
+	var narr := GameState.encounter_trail.strip_edges()
+	var formulas := GameState.encounter_formulas.strip_edges()
+	var n := 0
+	if narr != "": n += narr.split("\n").size()
+	if formulas != "": n += formulas.split("\n").size()
+	if _show_full_trail:
+		var s := "[bgcolor=#10243a]  [url=trail_expand][color=#7fc7ff]▼ Cosa succede[/color][/url]\n"
+		if narr != "":
+			s += "[color=#d6e8c6]%s[/color]" % narr
+		if formulas != "":
+			s += ("\n" if narr != "" else "") + "[color=#9fb8d6]%s[/color]" % formulas
+		return s + "  [/bgcolor]\n\n"
+	return "[url=trail_expand][color=#7fc7ff]▶ Cosa succede (%d %s)[/color][/url]\n\n" % [n, ("passaggio" if n == 1 else "passaggi")]
+
 func _on_meta_clicked(meta) -> void:
+	if str(meta) == "rules_expand":
+		# Espande/comprime le istruzioni originali del paragrafo.
+		_show_rules = not _show_rules
+		_redraw_current_view()
+		return
 	if str(meta) == "trail_expand":
 		# Espande/comprime la sezione collassabile «Formule e controlli» del centro.
 		_show_full_trail = not _show_full_trail
-		_on_paragraph_request(current_para_num)
+		_redraw_current_view()
 		return
 	var n := int(str(meta))
 	if n > 0:

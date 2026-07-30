@@ -1,0 +1,134 @@
+{
+  "_nota": "Catalogo dei prompt per le illustrazioni dei paragrafi. Ogni voce nasce dal testo ORIGINALE del paragrafo (godot/data/paragrafi_it.json), non da un tema generico: è questo il difetto delle immagini attuali. Lotto PILOTA: 20 paragrafi rappresentativi (atterraggi, creature, eventi, interni nave). Estendere allo stesso formato per gli altri 212.",
+  "stile": "1980s science-fiction paperback cover illustration, painted gouache and airbrush texture, visible brush work, muted desaturated palette, single dramatic light source, cinematic wide composition, slight print grain",
+  "negative": "text, letters, words, watermark, signature, logo, frame, border, ui, hud, modern city, contemporary clothing, cartoon, anime, chibi, low quality, blurry, jpeg artifacts, extra limbs, deformed hands, duplicate, oversaturated neon, cluttered composition",
+  "dimensioni": {
+    "generazione": [1024, 576],
+    "output": [768, 432],
+    "_nota": "Si genera a 1024×576 (16:9, comodo per SDXL) e si riduce a 768×432, il formato delle immagini attuali."
+  },
+  "seed_base": 1981,
+  "_seed": "Il seed di ogni immagine è seed_base + numero di paragrafo: stessa immagine a parità di prompt, utile per rigenerare solo ciò che non va.",
+  "paragrafi": [
+    {
+      "para": 1,
+      "tipo": "evento",
+      "scena": "Errore di navigazione: la Pandora esce leggermente di rotta durante il salto interstellare.",
+      "prompt": "a large deep-space exploration starship drifting slightly off its plotted course, glowing navigation plot lines and star charts reflected on the bridge canopy, cold starfield and a distant pale nebula"
+    },
+    {
+      "para": 2,
+      "tipo": "evento",
+      "scena": "Lo shuttle scende verso il pianeta: guasti meccanici e terreno imprevisto rischiano l'incidente.",
+      "prompt": "a blocky landing shuttle descending through turbulent alien atmosphere, thin smoke trailing from a faltering thruster, jagged unfamiliar terrain rushing below, pilots braced inside the lit cockpit"
+    },
+    {
+      "para": 44,
+      "tipo": "evento",
+      "scena": "Il salto mette sotto sforzo i sistemi FTL; l'ufficiale alla manutenzione ripara il danno.",
+      "prompt": "engineering deck of a starship, an overloaded faster-than-light drive core venting sparks and vapour, a maintenance officer in a work suit bracing against a control panel, warning lights washing the bulkheads"
+    },
+    {
+      "para": 50,
+      "tipo": "interno nave",
+      "scena": "Tutti rientrati sani a bordo della Pandora con creature catturate e artefatti; azioni di bordo.",
+      "prompt": "interior hangar bay of an exploration starship, crew unloading equipment, specimen cages and alien artefacts from a just-returned shuttle, technicians repairing a scuffed robot, warm work lights"
+    },
+    {
+      "para": 58,
+      "tipo": "evento",
+      "scena": "Ceppi virali extraterrestri fanno impazzire l'ufficiale scientifico.",
+      "prompt": "a science officer losing his mind inside a starship laboratory, clutching his head, knocked-over sample vials glowing with alien culture, other crew reaching to restrain him, harsh clinical light"
+    },
+    {
+      "para": 64,
+      "tipo": "evento",
+      "scena": "I sensori captano trasmissioni indecifrabili da Opoplo: la Pandora deve deviare e investigare.",
+      "prompt": "starship bridge at low light, a sensor display showing an indecipherable alien signal waveform, officers turning toward a blue-green planet visible through the forward viewport"
+    },
+    {
+      "para": 66,
+      "tipo": "creatura",
+      "scena": "Una nebbia variopinta, organica e carnivora, compie gesti minacciosi.",
+      "prompt": "a living carnivorous fog of shifting iridescent colours rearing up over a barren plain, mist tendrils reaching toward small space-suited explorers, an unnatural glow inside the cloud"
+    },
+    {
+      "para": 69,
+      "tipo": "creatura",
+      "scena": "Creatura umanoide lunga e magra: le viscere gorgoglianti si vedono attraverso la pelle traslucida.",
+      "prompt": "a tall gaunt humanoid alien with translucent glassy skin revealing churning internal organs and fluids, standing motionless in dim alien wilderness, backlit so the body glows faintly"
+    },
+    {
+      "para": 70,
+      "tipo": "evento",
+      "scena": "L'atterraggio dello shuttle: da manovra perfetta a discesa movimentata.",
+      "prompt": "a landing shuttle setting down hard on rocky alien ground, landing struts flexing under the impact, thick dust cloud blown outward, hull lights cutting through the haze"
+    },
+    {
+      "para": 94,
+      "tipo": "orbita",
+      "scena": "In orbita attorno a Korkran: gravità terrestre, atmosfera normale, idrografia 50%, geologia quieta.",
+      "prompt": "view from high orbit of a temperate earthlike planet, blue oceans and tan continents under scattered cloud bands, the exploration starship silhouetted in the foreground against the planet limb"
+    },
+    {
+      "para": 114,
+      "tipo": "atterraggio",
+      "scena": "Shuttle ammarato: nessuna terra in vista, vegetazione e strutture artificiali sotto la superficie.",
+      "prompt": "a landing shuttle floating on a calm alien ocean with no land in sight, beneath the clear water luminous kelp-like vegetation and geometric artificial ruins are visible, pale overcast sky"
+    },
+    {
+      "para": 136,
+      "tipo": "atterraggio",
+      "scena": "Atterraggio su lava indurita, nebbia vaporosa, bagliore di roccia fusa a ovest, clima tropicale.",
+      "prompt": "a landing shuttle standing on a field of black hardened lava, curtains of steam and vapour drifting across the ground, molten rock glowing orange on the western horizon, humid tropical haze"
+    },
+    {
+      "para": 139,
+      "tipo": "atterraggio",
+      "scena": "Atterraggio su terreno ghiacciato accanto a un fiume gelato, fitta nebbia, clima artico.",
+      "prompt": "a landing shuttle on an icy plain beside a frozen river, thick freezing fog reducing everything to pale silhouettes, arctic twilight, frost crusting the hull"
+    },
+    {
+      "para": 141,
+      "tipo": "atterraggio",
+      "scena": "Atterraggio su terreno piatto e privo di vita, fitta nebbia, clima temperato.",
+      "prompt": "a landing shuttle on a flat lifeless plain swallowed by thick grey fog, featureless ground fading into white, the craft the only shape in the emptiness"
+    },
+    {
+      "para": 148,
+      "tipo": "evento",
+      "scena": "Lo shuttle si schianta e slitta sul terreno.",
+      "prompt": "a shuttle crashed and skidding across alien ground, torn hull plating, a long furrow of debris and dust behind it, small fires along the wreck"
+    },
+    {
+      "para": 153,
+      "tipo": "creatura",
+      "scena": "Orribile massa di gelatina luminescente spinta da potenti tentacoli.",
+      "prompt": "a towering mass of luminescent gelatinous flesh hauling itself forward on thick powerful tentacles, inner light pulsing through the translucent body, explorers dwarfed in the foreground"
+    },
+    {
+      "para": 162,
+      "tipo": "creatura",
+      "scena": "Umanoide alto 60 cm con mascella disarticolabile e file di denti aguzzi.",
+      "prompt": "a knee-high humanoid alien with an enormous unhinged jaw opening wider than its own body, rows upon rows of needle teeth lining the maw, crouched on rocky ground"
+    },
+    {
+      "para": 170,
+      "tipo": "creatura",
+      "scena": "Una grande roccia liscia si rivela il guscio di un enorme orrore rettiliano dai molti occhi.",
+      "prompt": "a huge smooth boulder splitting open to reveal a many-eyed reptilian horror uncoiling from inside its shell, explorers recoiling, dust falling from the cracking surface"
+    },
+    {
+      "para": 201,
+      "tipo": "interno nave",
+      "scena": "La Pandora parte dal Watkins Memorial Exploration Depot nel Sistema Creighton.",
+      "prompt": "an exploration starship undocking from an orbital supply depot station, mooring arms retracting, faster-than-light engines beginning to glow, a yellow sun beyond the structure"
+    },
+    {
+      "para": 223,
+      "tipo": "creatura",
+      "scena": "L'aeron piomba giù, afferra un robot e schizza via.",
+      "prompt": "a winged alien predator diving out of the sky and snatching a walking robot from a group of space-suited explorers, wings spread wide, the party scattering below"
+    }
+  ]
+}
