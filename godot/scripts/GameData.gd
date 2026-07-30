@@ -186,6 +186,14 @@ func paragraph_climate(num: int) -> String:
 	var m := re.search(get_paragraph_text(num))
 	return m.get_string(1).to_lower() if m else ""
 
+# Nebbia nell'environ dichiarata dal paragrafo d'atterraggio (Carta 6.6, nota):
+# «Una (fitta/vaporosa) nebbia copre/avvolge la zona» → ogni esagono costa 1 ora in
+# più per entrare e 2 in più per esplorare (¶136/¶139/¶141).
+func paragraph_has_fog(num: int) -> bool:
+	var re := RegEx.new()
+	re.compile("(?i)nebbia")
+	return re.search(get_paragraph_text(num)) != null
+
 # Variazione del Valore di Supporto Vitale dichiarata nel testo di un paragrafo
 # d'atterraggio (5.1): «Aggiungi uno/due … al Valore di Supporto Vitale» (o «Sottrai»).
 func paragraph_lsv_delta(num: int) -> int:

@@ -453,6 +453,16 @@ func _build_ui() -> void:
 	btn_heal.pressed.connect(_on_heal)
 	actions_hbox.add_child(btn_heal)
 
+	# Studio della creatura (6.9): terza azione di spedizione accanto a cura e riparazione.
+	var btn_study := Button.new()
+	btn_study.name = "BtnStudy"
+	btn_study.text = "🔬 Studia"
+	btn_study.visible = false
+	btn_study.tooltip_text = "Studia la creatura (2 ore): la registra sul Registro degli Attributi (9.1) anche senza ucciderla o catturarla."
+	btn_study.add_theme_color_override("font_color", UITheme.CYAN)
+	btn_study.pressed.connect(_on_study)
+	actions_hbox.add_child(btn_study)
+
 	var btn_repair := Button.new()
 	btn_repair.name = "BtnRepair"
 	btn_repair.text = "Ripara (Botkit/Toolkit)"
@@ -1090,6 +1100,9 @@ func _update_action_buttons(phase: String) -> void:
 	var has_choices: bool = choices_box != null and choices_box.get_child_count() > 0
 	if btn_continue: btn_continue.visible = (phase == "paragraph") and not orbit_decision and not has_choices and not encounter_busy
 	if btn_heal: btn_heal.visible = (phase == "expedition") and not creature_active and GameState.can_heal()
+	# Studio (6.9): durante un incontro, se il tipo di creatura non è ancora registrato.
+	var btn_study := find_child("BtnStudy", true, false)
+	if btn_study: btn_study.visible = GameState.can_study()
 	var btn_repair := find_child("BtnRepair", true, false)
 	if btn_repair: btn_repair.visible = (phase == "expedition") and not creature_active and GameState.can_repair()
 	# Acquisizione artefatto (2.6/9.1): sul paragrafo dell'artefatto, in spedizione,
@@ -2127,6 +2140,14 @@ func _on_flee() -> void:
 func _on_heal() -> void:
 	GameState.heal_wounded()
 	_show_expedition_panel()
+
+func _on_study() -> void:
+	_play("click")
+	GameState.study_creature()
+	# Aggiorna il pannello centrale mantenendo il paragrafo corrente (l'incontro resta).
+	if current_para_num > 0:
+		_on_paragraph_request(current_para_num)
+	_update_display()
 
 func _on_repair() -> void:
 	GameState.repair_gear()

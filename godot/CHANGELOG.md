@@ -2,6 +2,32 @@
 
 Adattamento digitale in Godot del libro-gioco SPI *Voyage of the BSM Pandora* (1981).
 
+## v0.10.1 — 2026-06-16
+
+### Fedeltà al regolamento (Carta 6.6 verificata sull'originale)
+- **Carta Effetti del Terreno completa:** trascritti tutti i **18 tipi di terreno**
+  (prima 12 — mancavano Abisso, Fiume, Stagno, Immersione, Lava fluente e Struttura
+  aliena, che però le mappe usano: ricadevano su valori di default sbagliati).
+  Corretto anche il costo d'esplorazione del ghiaccio (5 → **3**).
+- **Terreni multipli (6.7):** «tutto il terreno in un esagono viene considerato» —
+  ore d'ingresso, ore d'esplorazione e Modificatore di Rifornimento ora **sommano
+  tutti gli strati** dell'esagono (prima si usava solo il terreno base). Esempio del
+  regolamento: pianura + vegetazione fitta + stagno = 3 ore per entrare, 8 per
+  esplorare, −2 di rifornimento.
+- **Ingressi proibiti («P» sulla carta):** la lava fluente è vietata a tutti;
+  dirupi, caverne e paludi sono vietati alla spedizione che usa il **Rover** (prima
+  erano attraversabili). Rispettato anche dal calcolo dei percorsi.
+- **Climbkit (nota «A»):** riduce solo le ore d'**ingresso** a piedi (montagna 3→2,
+  dirupi 5→3); prima riduceva per errore anche l'esplorazione.
+- **Nebbia nell'area:** +1 ora per entrare e +2 per esplorare ogni esagono, come da
+  nota della carta; rilevata dal paragrafo d'atterraggio (¶136/¶139/¶141).
+
+### Regole
+- **Studio in spedizione (6.9):** nuova azione «🔬 Studia» (2 ore) accanto a cura e
+  riparazione. Con l'Uff. Scienze, l'Uff. Rilevamento, lo Specibot o il Neuroscan
+  registra il tipo di creatura sul Registro degli Attributi (9.1) **anche senza
+  ucciderla né catturarla**; ogni tipo si studia una volta sola.
+
 ## v0.10.0 — 2026-06-16
 
 ### Diario «Cosa succede» — la finestra centrale è il cuore dell'azione

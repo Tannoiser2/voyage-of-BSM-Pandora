@@ -134,6 +134,9 @@ var hostile_race: bool = false        # ¶231: rischio d'imboscata a ogni Contro
 var cannot_leave_until_explored: Array = []  # ¶076: reali da esplorare prima di poter lasciare l'area
 var shuttle_devour_pending: bool = false     # ¶163: shuttle in pericolo; risolto al prossimo Controllo del Rifornimento
 var submerged_env: bool = false              # ¶114/123: esplorazione condotta in immersione (6.7)
+# Nebbia nell'area (nota della Carta 6.6): +1 ora per entrare e +2 per esplorare
+# ogni esagono. Dichiarata dal paragrafo d'atterraggio (¶136/¶139/¶141).
+var environ_fog: bool = false
 var current_environ_id: int = 0       # quale degli 8 environ reali è in uso (0 = nessuno)
 # Traccia leggibile di «come si è arrivati a questo paragrafo» (mossa, Matrice di
 # Esplorazione, instradamento snodo 6.5, controllo rifornimento): mostrata nel box
@@ -296,7 +299,7 @@ func save_game(silent := false) -> bool:
 		"surprise_active": surprise_active, "chosen_strategy": chosen_strategy,
 		"encounter_outcome_text": encounter_outcome_text,
 		"environ_grid": environ_grid, "expedition_pos": expedition_pos,
-		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "robot_endurance": robot_endurance, "hostile_race": hostile_race, "cannot_leave_until_explored": cannot_leave_until_explored, "shuttle_devour_pending": shuttle_devour_pending, "submerged_env": submerged_env, "current_environ_id": current_environ_id,
+		"landing_hex": landing_hex, "pond_supply_used": pond_supply_used, "infected_chars": infected_chars, "robot_decay": robot_decay, "robot_endurance": robot_endurance, "hostile_race": hostile_race, "cannot_leave_until_explored": cannot_leave_until_explored, "shuttle_devour_pending": shuttle_devour_pending, "submerged_env": submerged_env, "environ_fog": environ_fog, "current_environ_id": current_environ_id,
 		"hasty_path_terrains": hasty_path_terrains,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -410,6 +413,7 @@ func load_game() -> bool:
 	cannot_leave_until_explored = d.get("cannot_leave_until_explored", [])
 	shuttle_devour_pending = bool(d.get("shuttle_devour_pending", false))
 	submerged_env = bool(d.get("submerged_env", false))
+	environ_fog = bool(d.get("environ_fog", false))
 	infected_chars = d.get("infected_chars", [])
 	robot_decay = int(d.get("robot_decay", 0))
 	robot_endurance = d.get("robot_endurance", {})
@@ -3357,7 +3361,8 @@ func resolve_supply_check(die: int) -> void:
 	# 6.5: se il Controllo avviene su uno stagno, ne è stato «usato» il modificatore.
 	if _cell_terrain_is(cell, "Pond"):
 		pond_supply_used = true
-	var terr_supply := int(GameData.terrain_effect(cell.get("terrain", "Open")).get("supply", 0))
+	# 6.7: il Modificatore di Rifornimento considera TUTTI i terreni dell'esagono.
+	var terr_supply := cell_supply_modifier(cell)
 	var summ := lsv + terr_supply
 	var calc2 := mini(int(summ / die), 4) if summ > 0 else 0
 	var total := calc1 + calc2
@@ -3514,6 +3519,10 @@ func generate_environ_at(landing_real: String, redef_para: int = 0) -> void:
 	cannot_leave_until_explored = []
 	shuttle_devour_pending = false
 	submerged_env = false
+	# Nebbia dell'area (Carta 6.6): dichiarata dal paragrafo d'atterraggio.
+	environ_fog = redef_para > 0 and GameData.paragraph_has_fog(redef_para)
+	if environ_fog:
+		add_log("Nebbia nell'area: ogni esagono costa +1 ora per entrare e +2 per esplorare (6.6).")
 	var place := GameData.find_environ_hex(landing_real) if landing_real != "" else {}
 	if place.is_empty():
 		# Fallback: environ deterministico per sistema, atterraggio al centro.
@@ -3678,6 +3687,9 @@ func can_move_expedition(hex_id: int) -> bool:
 		return false
 	if not current_creature.is_empty():
 		return false
+	# «P» sulla Carta 6.6: lava fluente vietata a tutti, dirupi/caverne/paludi al Rover.
+	if environ_grid.has(hex_id) and cell_entry_prohibited(environ_grid[hex_id]):
+		return false
 	return hex_id in environ_neighbors(expedition_pos)
 
 # Movimento affrettato (6.3): si può andare in QUALSIASI esagono dell'area pagando
@@ -3686,6 +3698,8 @@ func can_move_expedition(hex_id: int) -> bool:
 func can_hasty_move(hex_id: int) -> bool:
 	if current_phase != Phase.EXPEDITION or not current_creature.is_empty():
 		return false
+	if environ_grid.has(hex_id) and cell_entry_prohibited(environ_grid[hex_id]):
+		return false   # «P» sulla Carta 6.6
 	return environ_grid.has(hex_id) and hex_id != expedition_pos and not (hex_id in environ_neighbors(expedition_pos))
 
 func hasty_move_to(hex_id: int) -> void:
@@ -3724,8 +3738,11 @@ func _hasty_path_cost(from_hex: int, to_hex: int) -> int:
 		for nb in environ_neighbors(cur):
 			if not environ_grid.has(nb):
 				continue
-			var nterr: String = environ_grid[nb].get("terrain", "Open")
-			var nd: int = dist[cur] + enter_cost_for(nterr)
+			# 6.6/6.7: costo d'ingresso di TUTTI i terreni dell'esagono; gli esagoni a
+			# ingresso proibito («P») non sono percorribili.
+			if cell_entry_prohibited(environ_grid[nb]):
+				continue
+			var nd: int = dist[cur] + cell_enter_cost(environ_grid[nb])
 			if not dist.has(nb) or nd < dist[nb]:
 				dist[nb] = nd
 				if not (nb in queue):
@@ -3751,8 +3768,11 @@ func _hasty_path_terrains(from_hex: int, to_hex: int) -> Array:
 		for nb in environ_neighbors(cur):
 			if not environ_grid.has(nb):
 				continue
-			var nterr: String = environ_grid[nb].get("terrain", "Open")
-			var nd: int = dist[cur] + enter_cost_for(nterr)
+			# 6.6/6.7: costo d'ingresso di TUTTI i terreni dell'esagono; gli esagoni a
+			# ingresso proibito («P») non sono percorribili.
+			if cell_entry_prohibited(environ_grid[nb]):
+				continue
+			var nd: int = dist[cur] + cell_enter_cost(environ_grid[nb])
 			if not dist.has(nb) or nd < dist[nb]:
 				dist[nb] = nd
 				prev[nb] = cur
@@ -3806,8 +3826,9 @@ func move_expedition(hex_id: int) -> void:
 	var cell: Dictionary = environ_grid.get(hex_id, {})
 	var terrain: String = cell.get("terrain", "Open")
 	var real_id: String = cell.get("real", str(hex_id))
-	# Entrare in un esagono costa le ore del terreno (Carta 6.6), modificate dall'equipaggiamento
-	var enter_cost := enter_cost_for(terrain)
+	# Entrare in un esagono costa le ore di TUTTI i suoi terreni (Carta 6.6 + 6.7),
+	# modificate dall'equipaggiamento e dalla nebbia.
+	var enter_cost := cell_enter_cost(cell)
 	expedition_pos = hex_id
 	_trail("La spedizione entra in %s (esagono %s), %d ore col mezzo %s." % [_terrain_it(terrain), real_id, enter_cost, ("Rover" if expedition_on_rover() else "a piedi")])
 	add_expedition_hours(enter_cost)
@@ -3830,8 +3851,8 @@ func explore_environ_hex(hex_id: int, terrain: String) -> void:
 	if not environ_grid.has(hex_id):
 		return  # nessun esagono valido da esplorare (spedizione non sbarcata)
 	environ_grid[hex_id]["explored"] = true
-	# Esplorare costa le ore del terreno (Carta 6.6), modificate dall'equipaggiamento
-	var explore_cost := explore_cost_for(terrain)
+	# Esplorare costa le ore di TUTTI i terreni dell'esagono (Carta 6.6 + 6.7), più la nebbia.
+	var explore_cost := cell_explore_cost(environ_grid.get(hex_id, {}))
 	add_expedition_hours(explore_cost)
 	add_log("Esplorazione di %s — %d ore%s." % [
 		_terrain_it(terrain), explore_cost, _gear_cost_note(terrain)])
@@ -3862,22 +3883,77 @@ func _climbkit_applies(terrain: String) -> bool:
 	var real := GameData.terrain_real(terrain)
 	return _gear_has("Climbkit") and (real == "Mountain" or real == "Cliffs")
 
+# --- Costi del terreno: Carta 6.6 + regola 6.7 --------------------------------
+# 6.7: «Tutto il terreno in un esagono viene considerato quando si calcola il numero
+# di ore spese per entrare e/o esplorare un esagono» → i valori degli strati
+# (`terrain` + `extra`) si SOMMANO. Coerente con la Carta 6.6, che segna «–» (0 ore
+# d'ingresso) proprio per i terreni-sovrapposizione (vegetazione rada, fiume, stagno,
+# abisso, struttura aliena), quelli che nei dati compaiono come strati extra.
+
+# Strati di terreno REALI presenti nell'esagono (base + extra), senza duplicati.
+func _cell_layers(cell: Dictionary) -> Array:
+	var out: Array = [GameData.terrain_real(str(cell.get("terrain", "Open")))]
+	for e in cell.get("extra", []):
+		var r := GameData.terrain_real(str(e))
+		if not (r in out):
+			out.append(r)
+	return out
+
+# Nota «A» della Carta 6.6: col Climbkit un esagono di montagna costa 2 e uno di
+# dirupi 3 ore d'INGRESSO a piedi. Nessun effetto sul rover né sull'esplorazione.
+const CLIMBKIT_ENTER := {"Mountain": 2, "Cliffs": 3}
+
+# Ore per ENTRARE nell'esagono: somma degli strati (colonna rover se la squadra lo usa),
+# più 1 ora se c'è nebbia nell'area (nota della Carta 6.6). Minimo 1 ora.
+func cell_enter_cost(cell: Dictionary) -> int:
+	var rover := expedition_on_rover()
+	var total := 0.0
+	for real in _cell_layers(cell):
+		var eff := GameData.terrain_effect(real)
+		var c := float(eff.get("enter_rover", 0)) if rover else float(eff.get("enter_foot", 0))
+		if not rover and _gear_has("Climbkit") and CLIMBKIT_ENTER.has(real):
+			c = minf(c, float(CLIMBKIT_ENTER[real]))
+		total += c
+	if environ_fog:
+		total += 1.0
+	return maxi(1, int(ceil(total)))
+
+# Ore per ESPLORARE l'esagono: somma degli strati, +2 con la nebbia. Minimo 1 ora.
+func cell_explore_cost(cell: Dictionary) -> int:
+	var total := 0
+	for real in _cell_layers(cell):
+		total += int(GameData.terrain_effect(real).get("explore", 0))
+	if environ_fog:
+		total += 2
+	return maxi(1, total)
+
+# Modificatore di Rifornimento dell'esagono (usato dal Controllo 7.2): somma degli
+# strati, così un esagono «pianura + vegetazione fitta + stagno» vale +1 −2 −1 = −2.
+func cell_supply_modifier(cell: Dictionary) -> int:
+	var total := 0
+	for real in _cell_layers(cell):
+		total += int(GameData.terrain_effect(real).get("supply", 0))
+	return total
+
+# «P» sulla Carta 6.6: ingresso proibito. La lava fluente è sempre proibita; dirupi,
+# caverne e paludi sono proibiti alla spedizione che usa il Rover.
+func cell_entry_prohibited(cell: Dictionary) -> bool:
+	var rover := expedition_on_rover()
+	for real in _cell_layers(cell):
+		var eff := GameData.terrain_effect(real)
+		if bool(eff.get("prohibited", false)):
+			return true
+		if rover and bool(eff.get("rover_prohibited", false)):
+			return true
+	return false
+
+# Versioni per singola classe di terreno (usate dalla UI per mostrare i costi
+# «nominali» di un tipo di terreno): delegano al calcolo per esagono.
 func enter_cost_for(terrain: String) -> int:
-	var c := GameData.terrain_enter_cost(terrain)
-	# Rover: usa il costo d'ingresso con veicolo dove il terreno è percorribile
-	if _gear_has("Rover"):
-		var rc := int(GameData.terrain_effect(terrain).get("enter_rover", c))
-		if rc > 0:
-			c = rc
-	if _climbkit_applies(terrain):
-		c = maxi(1, int(ceil(c / 2.0)))
-	return c
+	return cell_enter_cost({"terrain": terrain})
 
 func explore_cost_for(terrain: String) -> int:
-	var c := GameData.terrain_explore_cost(terrain)
-	if _climbkit_applies(terrain):
-		c = maxi(1, int(ceil(c / 2.0)))
-	return c
+	return cell_explore_cost({"terrain": terrain})
 
 # Nota da appendere al log quando l'equipaggiamento riduce il costo.
 func _gear_cost_note(terrain: String) -> String:
@@ -4388,6 +4464,40 @@ func heal_wounded() -> void:
 	var healer := "L'Ufficiale Medico" if ("MedO" in expedition_units and crew.get("MedO", {}).get("alive", false)) else "Il Medkit"
 	add_log("%s cura %s (Resistenza %d/%d)." % [
 		healer, crew[target]["name"], crew[target]["endurance"], MAX_ENDURANCE])
+	state_updated.emit()
+
+# --- Studio di una creatura in spedizione (6.9) --------------------------------
+# La terza azione di spedizione accanto a riparazione e cura: studiare la creatura
+# dell'incontro in corso. È il canale «studio» del Registro degli Attributi (9.1),
+# che così vale anche per le creature NON uccise né catturate (comunicate, rilasciate,
+# fuggite). Richiede una competenza scientifica a bordo: l'Ufficiale Scienze (GSO),
+# l'Ufficiale al Rilevamento (SO), lo Specibot o il Neuroscan. Costa 2 ore e ogni tipo
+# di creatura si studia una sola volta.
+func _can_study() -> bool:
+	if ("GSO" in expedition_units and crew.get("GSO", {}).get("alive", false)) \
+			or ("SO" in expedition_units and crew.get("SO", {}).get("alive", false)):
+		return true
+	return _gear_active("Specibot") or _gear_active("Neuroscan")
+
+func can_study() -> bool:
+	if current_phase != Phase.EXPEDITION and current_phase != Phase.PARAGRAPH:
+		return false
+	if current_creature.is_empty():
+		return false
+	if current_creature in recorded_creatures:
+		return false   # tipo già sul Registro degli Attributi
+	return _can_study()
+
+func study_creature() -> void:
+	if not can_study():
+		return
+	var name := current_creature
+	var who := "L'Ufficiale Scienze" if ("GSO" in expedition_units and crew.get("GSO", {}).get("alive", false)) \
+		else ("L'Ufficiale al Rilevamento" if ("SO" in expedition_units and crew.get("SO", {}).get("alive", false)) \
+		else ("Lo Specibot" if _gear_active("Specibot") else "Il Neuroscan"))
+	add_expedition_hours(2)
+	_narrate("%s studia %s: 2 ore di osservazione (6.9)." % [who, name])
+	_record_creature_attributes(name)   # 9.1: 1 PV per attributo a zero, una volta per tipo
 	state_updated.emit()
 
 func _most_wounded() -> String:
