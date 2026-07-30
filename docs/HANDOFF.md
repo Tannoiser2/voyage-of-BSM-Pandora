@@ -20,6 +20,10 @@ Adattamento digitale Godot del libro-gioco SPI (232 paragrafi). Vedi
 
 **Tutti i 232 paragrafi sono pienamente automatizzati e fedeli al regolamento (0 🟡, 0 🔴): indice 100%.**
 
+**Regole di sistema (2026-06-16): 51 🟢 · 1 🟡 · 0 🔴.** L'unico residuo è **4.4**
+(Pandora Entry Box, sezione non tradotta nel regolamento). Vedi `STATO_REGOLE.md` §
+«Residui noti» per il quadro completo (incluse le voci fuori scope dichiarate).
+
 ---
 
 ## 2. Come lavorare (setup operativo)
@@ -64,6 +68,30 @@ di Bordo) è la memoria storica. Due canali in `GameState`:
   `_refresh_paragraph_view()` in `resolve_interstellar_event`/`resolve_event_die`
   aggiorna il centro (e `_on_paragraph_request` non rigioca il suono sul refresh dello
   stesso paragrafo).
+
+### Terreno: Carta 6.6 + regola 6.7 (multi-strato)
+- Dati in `data/terrain.json`: **18 terreni** trascritti dalla carta originale
+  (`effects` con `enter_foot`/`enter_rover`/`explore`/`supply` + flag `prohibited`,
+  `rover_prohibited`, `explore_prohibited`), `class_map` (classe campionata → terreno
+  reale) e `terrain_it`.
+- **6.7:** un esagono ha `terrain` (base) + `extra` (strati). Ore e Modificatore di
+  Rifornimento **sommano tutti gli strati**: `_cell_layers(cell)` +
+  `cell_enter_cost` / `cell_explore_cost` / `cell_supply_modifier`. I terreni-
+  sovrapposizione hanno 0 ore d'ingresso («–» sulla carta), il che rende la somma
+  coerente coi dati (es. base «Light Vegetation» + extra «Flat»).
+- **Proibizioni «P»:** `cell_entry_prohibited` blocca lava fluente (tutti) e
+  dirupi/caverne/paludi col Rover; rispettata anche da `can_move_expedition`,
+  `can_hasty_move` e dal Dijkstra del movimento affrettato.
+- **Climbkit** (nota A): solo ingresso a piedi, montagna→2 / dirupi→3
+  (`CLIMBKIT_ENTER`); **non** riduce l'esplorazione.
+- **Nebbia:** `environ_fog` (+1 ingresso, +2 esplorazione), impostata in
+  `generate_environ_at` da `GameData.paragraph_has_fog(paragrafo d'atterraggio)`.
+  Serializzata.
+
+### Studio in spedizione (6.9)
+`can_study()` / `study_creature()`: 2 ore, richiede GSO/SO/Specibot/Neuroscan, registra
+il tipo di creatura sul Registro degli Attributi (9.1) anche senza uccisione o cattura
+(un tipo una volta sola). UI: pulsante «🔬 Studia» nella sezione Azioni.
 
 ### Export Web (GitHub Pages)
 `godot/export_presets.cfg` ha `include_filter="*.json,*.md"`: i dati (`data/*.json`) e
