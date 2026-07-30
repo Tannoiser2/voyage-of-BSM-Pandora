@@ -348,7 +348,15 @@ func load_game() -> bool:
 	jump_dest_hex = int(d.get("jump_dest_hex", 46))
 	pending_event_para = int(d.get("pending_event_para", 0))
 	surfaces_visited = int(d.get("surfaces_visited", 0))
-	manual_dice = bool(d.get("manual_dice", false))
+	# I tiri sono sempre automatici (il pannello Dado non esiste più): un salvataggio
+	# vecchio con i tiri manuali resterebbe in attesa di un dado che nessuno può tirare.
+	manual_dice = false
+	if bool(d.get("manual_dice", false)):
+		add_log("Tiri manuali disattivati: i dadi sono tirati dal sistema e il risultato è nel testo.")
+	# Se il salvataggio era in attesa di un tiro manuale, lo si risolve subito.
+	if awaiting_die_roll:
+		awaiting_die_roll = false
+		pending_die_purpose = ""
 	var cr: Variant = d.get("crew", {})
 	if typeof(cr) == TYPE_DICTIONARY:
 		for k in cr:
