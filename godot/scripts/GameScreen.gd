@@ -40,8 +40,13 @@ const CHARTS := [
 # Overlay della mappa interstellare reale (Voyage Map.jpg)
 # Coordinate ricavate per calibrazione dai cerchi dei sistemi stellari sull'originale.
 const INTER_REGION := Rect2(34, 1346, 336, 656)
-const INTER_SCALE := 1.26
-const INTER_OFFSET := Vector2(33, 36)
+const INTER_SCALE := 1.26                # scala di riferimento della calibrazione
+const INTER_OFFSET := Vector2(33, 36)    # offset di riferimento della calibrazione
+# Scala e offset EFFETTIVI: ricalcolati per riempire il pannello sinistro a ogni
+# ridimensionamento (sfondo e pulsanti-esagono usano gli stessi valori, quindi
+# l'allineamento della calibrazione è preservato).
+var inter_scale: float = INTER_SCALE
+var inter_offset: Vector2 = INTER_OFFSET
 const GRID_BASE := Vector2(82, 1399)   # centro esagono 11 in pixel mappa
 const GRID_DX := 81.0                   # passo orizzontale (calibrato sui dischi-sistema)
 const GRID_DY := 92.0
@@ -52,6 +57,7 @@ func _ready() -> void:
 	_init_audio()
 	_connect_signals()
 	_render_full_log()
+	_layout_interstellar()   # adatta la mappa alla dimensione reale del pannello
 	_update_display()
 	# Ripristina la visualizzazione corrente al (ri)entro nella scena
 	if not GameState.current_creature.is_empty():
@@ -85,6 +91,7 @@ func _build_ui() -> void:
 
 	# Sfondo: ritaglio reale del Display Interstellare dalla mappa originale
 	var inter_bg := TextureRect.new()
+	inter_bg.name = "InterBg"
 	var atlas := AtlasTexture.new()
 	atlas.atlas = load("res://assets/map/Voyage Map.jpg")
 	atlas.region = INTER_REGION
@@ -93,6 +100,8 @@ func _build_ui() -> void:
 	inter_bg.size = INTER_REGION.size * INTER_SCALE
 	inter_bg.stretch_mode = TextureRect.STRETCH_SCALE
 	interstellar_display.add_child(inter_bg)
+	# Al ridimensionamento del pannello la mappa si riadatta (scala + posizioni).
+	left_panel.resized.connect(_layout_interstellar)
 
 	# LEFT PANEL title
 	var left_title := Label.new()
@@ -206,11 +215,19 @@ func _build_ui() -> void:
 		var cv := VBoxContainer.new()
 		cv.add_theme_constant_override("separation", 2)
 		col.add_child(cv)
+		# Intestazione del box: barra piena, ben leggibile a colpo d'occhio.
 		var hdr := Label.new()
+		hdr.name = "DispHdr_%s" % bucket
 		hdr.text = bucket.to_upper()
 		hdr.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		hdr.add_theme_font_size_override("font_size", 12)
-		hdr.add_theme_color_override("font_color", UITheme.CYAN)
+		hdr.add_theme_font_size_override("font_size", 13)
+		hdr.add_theme_color_override("font_color", Color(0.85, 0.96, 1.0))
+		var hdr_sb := StyleBoxFlat.new()
+		hdr_sb.bg_color = Color(0.11, 0.20, 0.30)
+		hdr_sb.set_corner_radius_all(4)
+		hdr_sb.content_margin_top = 2
+		hdr_sb.content_margin_bottom = 2
+		hdr.add_theme_stylebox_override("normal", hdr_sb)
 		cv.add_child(hdr)
 		var box := Control.new()
 		box.name = "Disp_%s" % bucket
@@ -354,6 +371,7 @@ func _build_ui() -> void:
 	btn_land.visible = false
 	btn_land.add_theme_color_override("font_color", UITheme.CYAN)
 	btn_land.pressed.connect(_on_land)
+	_style_primary_button(btn_land, UITheme.CYAN)
 	actions_hbox.add_child(btn_land)
 
 	var btn_orbit := Button.new()
@@ -361,6 +379,7 @@ func _build_ui() -> void:
 	btn_orbit.text = "➡ Riparti (non esplorare)"
 	btn_orbit.visible = false
 	btn_orbit.pressed.connect(_on_leave_orbit)
+	_style_primary_button(btn_orbit, UITheme.AMBER)
 	actions_hbox.add_child(btn_orbit)
 
 	var btn_continue := Button.new()
@@ -368,6 +387,7 @@ func _build_ui() -> void:
 	btn_continue.text = "Continua"
 	btn_continue.visible = false
 	btn_continue.pressed.connect(_on_continue)
+	_style_primary_button(btn_continue, UITheme.GREEN)
 	actions_hbox.add_child(btn_continue)
 
 	var btn_return := Button.new()
@@ -375,6 +395,7 @@ func _build_ui() -> void:
 	btn_return.text = "Torna alla Pandora"
 	btn_return.visible = false
 	btn_return.pressed.connect(_on_return_to_pandora)
+	_style_primary_button(btn_return, UITheme.AMBER)
 	actions_hbox.add_child(btn_return)
 
 	var btn_artifact := Button.new()
@@ -403,6 +424,7 @@ func _build_ui() -> void:
 	btn_explore.text = "Esplora (tira dado)"
 	btn_explore.visible = false
 	btn_explore.pressed.connect(_on_explore)
+	_style_primary_button(btn_explore, UITheme.CYAN)
 	actions_hbox.add_child(btn_explore)
 
 	# Pulsanti di combattimento (visibili durante un incontro)
@@ -470,23 +492,33 @@ func _build_ui() -> void:
 	btn_repair.pressed.connect(_on_repair)
 	actions_hbox.add_child(btn_repair)
 
+	# Azioni SECONDARIE (sempre disponibili, non di gioco): riga separata e più sobria,
+	# così le azioni di gioco qui sopra restano quelle in evidenza.
+	var actions_secondary := HFlowContainer.new()
+	actions_secondary.name = "ActionsSecondary"
+	actions_secondary.add_theme_constant_override("h_separation", 4)
+	actions_secondary.add_theme_constant_override("v_separation", 4)
+
 	var btn_save := Button.new()
 	btn_save.name = "BtnSave"
 	btn_save.text = "💾 Salva"
+	_style_secondary_button(btn_save)
 	btn_save.pressed.connect(_on_save)
-	actions_hbox.add_child(btn_save)
+	actions_secondary.add_child(btn_save)
 
 	var btn_charts := Button.new()
 	btn_charts.name = "BtnCharts"
 	btn_charts.text = "📖 Tabelle"
+	_style_secondary_button(btn_charts)
 	btn_charts.pressed.connect(_toggle_charts)
-	actions_hbox.add_child(btn_charts)
+	actions_secondary.add_child(btn_charts)
 
 	var btn_menu := Button.new()
 	btn_menu.name = "BtnMenu"
 	btn_menu.text = "☰ Menu"
+	_style_secondary_button(btn_menu)
 	btn_menu.pressed.connect(_on_menu)
-	actions_hbox.add_child(btn_menu)
+	actions_secondary.add_child(btn_menu)
 
 	# (Il Registro di Bordo è nel pannello destro, in basso.)
 
@@ -538,6 +570,10 @@ func _build_ui() -> void:
 	var sec_actions := UITheme.section("Azioni")
 	right_vbox.add_child(sec_actions["panel"])
 	sec_actions["vbox"].add_child(actions_hbox)
+	var act_sep := HSeparator.new()
+	act_sep.add_theme_constant_override("separation", 6)
+	sec_actions["vbox"].add_child(act_sep)
+	sec_actions["vbox"].add_child(actions_secondary)
 	# Controlli di preparazione in orbita (carico, rifornimenti, lancio), impilati qui.
 	var prep_ctrl := VBoxContainer.new()
 	prep_ctrl.name = "DispPrepControls"
@@ -807,9 +843,45 @@ func _hex_to_screen_pos(hex_id: int) -> Vector2:
 	var fy := GRID_BASE.y + (row - 1) * GRID_DY
 	if col % 2 == 0:
 		fy += GRID_EVEN_OFFSET
-	var px := INTER_OFFSET.x + (fx - INTER_REGION.position.x) * INTER_SCALE
-	var py := INTER_OFFSET.y + (fy - INTER_REGION.position.y) * INTER_SCALE
+	var px := inter_offset.x + (fx - INTER_REGION.position.x) * inter_scale
+	var py := inter_offset.y + (fy - INTER_REGION.position.y) * inter_scale
 	return Vector2(px, py)
+
+# Ridimensiona la mappa interstellare perché riempia il pannello sinistro, mantenendo
+# le proporzioni e riposizionando sfondo, pulsanti-esagono e marker della Pandora.
+func _layout_interstellar() -> void:
+	if left_panel == null or interstellar_display == null:
+		return
+	var margin := 8.0
+	var top := 26.0
+	var avail_w := maxf(left_panel.size.x - margin * 2.0, 120.0)
+	var avail_h := maxf(left_panel.size.y - top - margin, 120.0)
+	inter_scale = minf(avail_w / INTER_REGION.size.x, avail_h / INTER_REGION.size.y)
+	var w := INTER_REGION.size.x * inter_scale
+	var h := INTER_REGION.size.y * inter_scale
+	inter_offset = Vector2(maxf((left_panel.size.x - w) * 0.5, margin), top)
+	var bg := interstellar_display.find_child("InterBg", false, false) as TextureRect
+	if bg:
+		bg.position = inter_offset
+		bg.size = Vector2(w, h)
+	# Pulsanti-esagono: dimensione proporzionale al passo della griglia.
+	var bsize := GRID_DX * inter_scale * 0.86
+	for col in range(1, 5):
+		var max_row := 7 if col % 2 == 1 else 6
+		for row in range(1, max_row + 1):
+			var hid := col * 10 + row
+			var btn := interstellar_display.find_child("Hex_%d" % hid, false, false) as Button
+			if btn:
+				btn.size = Vector2(bsize, bsize)
+				btn.custom_minimum_size = Vector2(bsize, bsize)
+				btn.position = _hex_to_screen_pos(hid) - Vector2(bsize, bsize) / 2.0
+	var marker := interstellar_display.find_child("PandoraMarker", false, false) as TextureRect
+	if marker:
+		var msize := Vector2(44, 38) * (inter_scale / INTER_SCALE)
+		marker.size = msize
+		marker.custom_minimum_size = msize
+		marker.position = _hex_to_screen_pos(GameState.pandora_hex) - msize / 2.0
+	_refresh_hex_buttons()
 
 # --- Environ (superficie planetaria) -----------------------------------------
 
@@ -1469,6 +1541,14 @@ func _refresh_disposition() -> void:
 					col.visible = false
 				else:
 					col.visible = (surf == "Rover") if on_rover else (surf == "A piedi")
+	# Sulla superficie, se allo shuttle non è rimasto nessuno il suo box vuoto sparisce:
+	# così il box della squadra usa TUTTA la larghezza e le tre file ci stanno senza tagli.
+	var shuttle_col := (find_child("Disp_Shuttle", true, false) as Control)
+	if shuttle_col:
+		var scol := shuttle_col.get_parent().get_parent() as Control
+		if scol:
+			var surf_keys_now: Array = buckets["Rover"] if on_rover else buckets["A piedi"]
+			scol.visible = not (landed and buckets["Shuttle"].is_empty() and not surf_keys_now.is_empty())
 	# Altezze proporzionali al contenuto: Pandora si stringe quando ha poche pedine e
 	# cede spazio alla riga Shuttle/superficie (che con la squadra può servirne di più),
 	# così non si tagliano le pedine in basso.
@@ -1479,13 +1559,17 @@ func _refresh_disposition() -> void:
 		var half_w: float = maxf(shuttle_box.size.x, 280.0)
 		var pandora_rows := _disp_rows_for(buckets["Pandora"], full_w)
 		var surf_keys: Array = buckets["Rover"] if on_rover else buckets["A piedi"]
-		var bottom_rows: int = maxi(_disp_rows_for(buckets["Shuttle"], half_w), _disp_rows_for(surf_keys, half_w))
+		# Se il box Shuttle è nascosto la squadra dispone di tutta la larghezza.
+		var shuttle_visible: bool = (shuttle_box.get_parent().get_parent() as Control).visible
+		var surf_w: float = half_w if shuttle_visible else full_w
+		var bottom_rows: int = maxi(_disp_rows_for(buckets["Shuttle"], half_w), _disp_rows_for(surf_keys, surf_w))
 		var pandora_col := pandora_box.get_parent().get_parent() as Control
 		var disp_row := shuttle_box.get_parent().get_parent().get_parent() as Control
+		# Un box vuoto si riduce a una striscia (0.35) invece di occupare una fila piena.
 		if pandora_col:
-			pandora_col.size_flags_stretch_ratio = float(maxi(1, pandora_rows))
+			pandora_col.size_flags_stretch_ratio = float(pandora_rows) if pandora_rows > 0 else 0.35
 		if disp_row:
-			disp_row.size_flags_stretch_ratio = float(maxi(1, bottom_rows))
+			disp_row.size_flags_stretch_ratio = float(bottom_rows) if bottom_rows > 0 else 0.35
 	# Ridispone tutte le pedine con dimensione uniforme che entra in ogni box.
 	_relayout_all_disp()
 	# Riga informativa: fase + capacità di superficie + scelta del mezzo.
@@ -1683,6 +1767,33 @@ func _make_disp_tile(key: String, clickable: bool) -> Control:
 	tex.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if damaged: tex.modulate = Color(0.62, 0.38, 0.38)
 	base.add_child(tex)
+	# Segno di stato sulla pedina: Resistenza per i personaggi feriti, «⚠» per
+	# l'equipaggiamento danneggiato — visibile senza passare dal pannello di stato.
+	var badge_text := ""
+	var badge_col := Color(1, 0.55, 0.45)
+	if GameData.get_character_keys().has(key):
+		var c: Dictionary = GameState.crew.get(key, {})
+		var e: int = int(c.get("endurance", GameState.MAX_ENDURANCE))
+		if c.get("alive", true) and e < GameState.MAX_ENDURANCE:
+			badge_text = "%d/%d" % [e, GameState.MAX_ENDURANCE]
+			base.tooltip_text += " — ferito (%d/%d)" % [e, GameState.MAX_ENDURANCE]
+	elif damaged:
+		badge_text = "⚠"
+		badge_col = Color(1, 0.75, 0.35)
+	if badge_text != "":
+		var badge := Label.new()
+		badge.text = badge_text
+		badge.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		badge.offset_top = -14
+		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		badge.add_theme_font_size_override("font_size", 10)
+		badge.add_theme_color_override("font_color", badge_col)
+		var bsb := StyleBoxFlat.new()
+		bsb.bg_color = Color(0.05, 0.07, 0.11, 0.82)
+		bsb.set_corner_radius_all(3)
+		badge.add_theme_stylebox_override("normal", bsb)
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		base.add_child(badge)
 	if clickable and base is Button:
 		(base as Button).pressed.connect(_disp_toggle.bind(key))
 	return base
@@ -2141,6 +2252,44 @@ func _on_heal() -> void:
 	GameState.heal_wounded()
 	_show_expedition_panel()
 
+# Azione secondaria (Salva/Tabelle/Menu): compatta e sobria, non compete con le
+# azioni di gioco.
+func _style_secondary_button(b: Button) -> void:
+	b.add_theme_font_size_override("font_size", 12)
+	b.add_theme_color_override("font_color", UITheme.MUTED)
+	b.custom_minimum_size = Vector2(0, 26)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.13, 0.16, 0.22)
+	sb.set_corner_radius_all(4)
+	sb.set_content_margin_all(5)
+	sb.border_color = Color(0.35, 0.42, 0.52, 0.5)
+	sb.set_border_width_all(1)
+	var sbh := sb.duplicate() as StyleBoxFlat
+	sbh.bg_color = Color(0.20, 0.24, 0.32)
+	b.add_theme_stylebox_override("normal", sb)
+	b.add_theme_stylebox_override("hover", sbh)
+	b.add_theme_stylebox_override("pressed", sbh)
+	b.add_theme_stylebox_override("focus", sb)
+
+# Azione di gioco: più grande e con l'accento del tema, così si distingue a colpo
+# d'occhio dalle azioni di servizio.
+func _style_primary_button(b: Button, accent: Color) -> void:
+	b.add_theme_font_size_override("font_size", 14)
+	b.custom_minimum_size = Vector2(0, 34)
+	b.add_theme_color_override("font_color", Color(0.95, 0.97, 1.0))
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(accent.r * 0.32, accent.g * 0.32, accent.b * 0.32, 1.0)
+	sb.set_corner_radius_all(5)
+	sb.set_content_margin_all(7)
+	sb.border_color = accent
+	sb.set_border_width_all(1)
+	var sbh := sb.duplicate() as StyleBoxFlat
+	sbh.bg_color = Color(accent.r * 0.48, accent.g * 0.48, accent.b * 0.48, 1.0)
+	b.add_theme_stylebox_override("normal", sb)
+	b.add_theme_stylebox_override("hover", sbh)
+	b.add_theme_stylebox_override("pressed", sbh)
+	b.add_theme_stylebox_override("focus", sb)
+
 func _on_study() -> void:
 	_play("click")
 	GameState.study_creature()
@@ -2520,15 +2669,15 @@ func _build_choices(para_num: int) -> void:
 	for ch in choices:
 		var b := Button.new()
 		var label_text: String = ch.label
-		if label_text.length() > 90:
-			label_text = label_text.substr(0, 88) + "…"
 		if ch.has("act"):
 			b.text = "▶  %s" % label_text
 		else:
 			b.text = "▶  %s  (¶%03d)" % [label_text, ch.para]
 		b.tooltip_text = ch.label
-		b.clip_text = true
-		b.custom_minimum_size = Vector2(0, 34)
+		# Scelte leggibili per intero: niente troncamento con «…», il testo va a capo.
+		b.clip_text = false
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		b.custom_minimum_size = Vector2(0, 38)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.add_theme_font_size_override("font_size", 13)

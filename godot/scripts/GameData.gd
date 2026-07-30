@@ -235,17 +235,52 @@ func get_paragraph_choices(num: int) -> Array:
 		var cleaner := RegEx.new()
 		cleaner.compile("¶\\s*\\d{1,3}")
 		label = cleaner.sub(label, "", true).strip_edges()
-		label = label.rstrip(":.,; ").strip_edges()
+		label = _strip_trailing_connector(label.rstrip(":.,; ").strip_edges())
 		for m in matches:
 			var target := int(m.get_string(1))
 			if seen.has(target):
 				continue
 			seen[target] = true
 			var lbl := label
+			# Se lo stesso segmento contiene PIÙ rimandi (es. «…vai al ¶070. Se… ¶148»),
+			# l'etichetta di ogni scelta è la frase che contiene quel rimando: così i
+			# pulsanti dicono la condizione, invece di ripetere tutto il paragrafo.
+			if matches.size() > 1:
+				var sentence := _sentence_around(s, m.get_start())
+				if not sentence.is_empty():
+					lbl = sentence
 			if lbl.is_empty():
 				lbl = "Vai al paragrafo %03d" % target
 			choices.append({"para": target, "label": lbl})
 	return choices
+
+# Frase che contiene la posizione indicata (delimitata da «. »), ripulita dal
+# marcatore d'elenco e dai rimandi ¶NNN.
+func _sentence_around(text: String, idx: int) -> String:
+	var start := 0
+	var end := text.length()
+	var before := text.substr(0, idx)
+	var dot := before.rfind(". ")
+	if dot >= 0:
+		start = dot + 2
+	var after_idx := text.find(". ", idx)
+	if after_idx >= 0:
+		end = after_idx + 1
+	var s := text.substr(start, end - start).strip_edges()
+	s = s.lstrip("* ").strip_edges()
+	var cleaner := RegEx.new()
+	cleaner.compile("¶\\s*\\d{1,3}")
+	s = cleaner.sub(s, "", true).strip_edges()
+	return _strip_trailing_connector(s.rstrip(":.,; ").strip_edges())
+
+# Toglie il connettivo penzolante lasciato dalla rimozione del rimando
+# («…vai al ¶070» → «…»), così l'etichetta del pulsante finisce sulla condizione.
+func _strip_trailing_connector(s: String) -> String:
+	var low := s.to_lower()
+	for tail in [", vai al", " vai al", ", vai a", " vai a", ", andate al", " andate al", ", vedi", " vedi"]:
+		if low.ends_with(tail):
+			return s.substr(0, s.length() - tail.length()).rstrip(":.,; ").strip_edges()
+	return s
 
 func get_planet_paragraph(planet_name: String, tour_length: int) -> int:
 	var systems: Dictionary = interstellar.get("star_systems", {})
